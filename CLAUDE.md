@@ -829,7 +829,7 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
   command failed; put it back with the tap.
 - **Public since 27 Oct 2026, from a fresh start** (Gokul's pick). The 190 commits before it
   held colleagues' names, work topics and a work email in old mockups, so they live only in the
-  private `itsgrj/SigmaFlow-history` (and the local `history` branch); the public
+  private `itsgrj/SigmaFlow-history` (remote `private`, local branch `history`); the public
   `itsgrj/SigmaFlow` begins with one commit of the cleaned tree. Commit hashes quoted in this file
   or in old notes from before that day are in the history copy. Mockups stay public: anything
   real in a new one (a colleague, a customer, a work topic, the work email) is replaced with a
