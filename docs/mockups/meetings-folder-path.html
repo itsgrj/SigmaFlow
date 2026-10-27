@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Where meetings are kept</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--footer:rgba(0,0,0,.35);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:48px 0 6px}
+h3{font-size:15px;font-weight:500;margin:30px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.scroll{overflow-x:auto}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;max-width:1180px}
+.opt{border:1px solid var(--border);border-radius:6px;padding:14px 16px;background:#0e0e0e}
+.opt b{display:block;font-weight:500;margin-bottom:6px}
+.opt .k{font:11px var(--mono);color:var(--dim);margin-right:6px}
+.opt p{margin:0;font-size:13px;line-height:1.55;color:var(--ink2)}
+.opt code{font:12px var(--mono);color:var(--ink)}
+
+/* the window at its real size */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:210px;flex:0 0 210px;background:#000;border-right:1px solid var(--border);padding:22px 10px}
+.rail .wm{font:22px var(--pixel);padding:0 10px 18px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:5px;font-size:14px}
+.rail .it.on{background:var(--sel)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.pg{flex:1;padding:30px 34px;min-width:0;display:flex;flex-direction:column;gap:22px}
+.hd{display:flex;justify-content:space-between;align-items:flex-start}
+.hd h4{font-size:22px;font-weight:400;margin:0 0 8px}
+.hd .sub{font-size:14px;color:var(--ink2)}
+.rec{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:7px 13px;background:var(--fill);white-space:nowrap;display:inline-flex;gap:8px;align-items:center}
+.btn img{width:13px;height:13px;filter:invert(1)}
+.press{font-size:12px;color:var(--ink2)}.kc{border:1px solid var(--border);border-radius:4px;padding:0 6px;font:12px var(--mono);background:var(--fill);margin-left:6px}
+.tools{display:flex;justify-content:space-between;align-items:center}
+.search{width:360px;height:32px;border:1px solid var(--border);border-radius:5px;background:var(--fill);display:flex;align-items:center;gap:8px;padding:0 11px;color:var(--ph);font-size:13px}
+.search img{width:13px;filter:invert(1);opacity:.5}
+.count{font-size:13px;color:var(--ink2)}
+
+/* the card, shared by the window and the crops */
+.card{border:1px solid var(--border);border-radius:6px;background:var(--glass);display:flex;flex-direction:column;overflow:hidden;font-family:var(--pixel)}
+.win .card{flex:1;min-height:0}
+.card .rows{flex:1;overflow:hidden}
+.card .mh{font:12px var(--mono);letter-spacing:.06em;color:var(--ink2);padding:14px 16px 6px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:52px;border-bottom:1px solid var(--border);font-size:14px}
+.row .go{color:var(--ink2);font-size:13px}
+.crop{width:888px;background:#0a0a0a url("../../Resources/background-colour.jpg") center 80%/cover;padding:18px;border:1px solid var(--border);border-radius:10px;position:relative}
+.crop:before{content:"";position:absolute;inset:0;background:var(--scrim);border-radius:10px}
+.crop>*{position:relative}
+
+/* footers */
+.ft{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;height:44px;border-top:1px solid var(--border);font-size:12px}
+.ft.tint{background:var(--footer)}
+.faint{display:inline-flex;align-items:center;gap:6px;color:var(--dim);opacity:.75;cursor:pointer}
+.faint img{width:11px;height:11px;filter:invert(1);opacity:.6}
+.faint:hover{opacity:1;color:var(--ink2)}
+.path{font-family:var(--mono);font-size:12px}
+.faint.lift:hover .path{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.crumbs{display:inline-flex;align-items:center;gap:4px;font:12px var(--mono);color:var(--dim)}
+.crumbs .seg{display:inline-flex;align-items:center;gap:5px;padding:3px 6px;border-radius:4px;cursor:pointer}
+.crumbs .seg img{width:11px;filter:invert(1);opacity:.6}
+.crumbs .seg:hover{background:var(--sel);color:var(--ink)}
+.crumbs .sep{color:var(--ph)}
+.boxed{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:5px;background:var(--fill);font:12px var(--mono);color:var(--ink);cursor:pointer}
+.boxed img{width:11px;filter:invert(1);opacity:.75}
+.boxed:hover{border-color:var(--strong);background:var(--sel)}
+.words{color:var(--ink2);font-size:12px}
+.words a{color:var(--ink);font-family:var(--mono);text-decoration:underline;text-decoration-color:var(--strong);text-underline-offset:3px;cursor:pointer}
+.reveal{display:inline-flex;align-items:center;gap:10px;color:var(--dim);cursor:pointer}
+.reveal img{width:11px;filter:invert(1);opacity:.6}
+.reveal .open{display:inline-flex;gap:5px;align-items:center;opacity:0;color:var(--ink);transition:opacity .15s}
+.reveal .open img{opacity:1}
+.reveal:hover{color:var(--ink2)}.reveal:hover .open{opacity:1}
+.btn.sm{padding:4px 10px;font-size:12px}
+.hint{color:var(--ink2);font-size:12px}
+.pair{display:flex;flex-direction:column;gap:10px}
+.cap{font:11px var(--mono);color:var(--dim);letter-spacing:.04em;margin:2px 0 0}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Where your meetings are kept</h1>
+<p class="lead"><b>Picks, 27 Oct 2026: 1B 2C 3C 4B.</b> A path bar, Home › SigmaFlow › Meetings; a click on a part shows that folder selected in the one around it (Meetings: the SigmaFlow folder opens with Meetings selected); the path stays while deleting and just after.</p>
+<p class="lead"><b>Asked 27 Oct 2026:</b> show people where their meetings live, on this Mac, and let one click open that folder in Finder. The footer strip that holds Delete meetings has room on its left. The same goes for Conversations. Meeting names below are made up.</p>
+<p class="note"><b>From Mobbin:</b> very few apps show where files live on disk, so most of these ideas come from the Mac itself. The closest pattern is the path bar along the bottom of a file list, as in <a style="color:var(--ink)" href="https://mobbin.com/screens/50679553-4fdc-4bb1-a068-d63654a6a767">Google Drive</a> (My Drive › Feedback form) and in Finder’s own path bar. Settings › Your data already shows the folder as a boxed path that opens Finder. Option C reuses that button.</p>
+<p class="note"><b>Hover the footers.</b> Each one shows how it looks before and after the pointer is on it.</p>
+
+<h2>1. The footer</h2>
+
+<h3><span class="tag">1A</span>The path, as faint as Delete</h3>
+<p class="note">A folder icon and <code>~/SigmaFlow/Meetings</code> in mono on the left, matching Delete meetings on the right. Hover brightens it and underlines the path. The strip stays quiet, just as the delete link is quiet.</p>
+<div class="scroll"><div class="crop" data-foot="A"></div></div>
+
+<h3><span class="tag">1B</span>A path bar, like Finder’s</h3>
+<p class="note">SigmaFlow › Meetings, each part with its own folder icon. Clicking a part opens that folder: Meetings opens the meetings, and SigmaFlow opens the whole folder, which also holds Conversations and Dictations.</p>
+<div class="scroll"><div class="crop" data-foot="B"></div></div>
+
+<h3><span class="tag">1C</span>The Settings button, moved here</h3>
+<p class="note">The same boxed path button as Settings › Your data, at full ink. It is easy to find, and it looks like the button on Settings. Delete stays faint, so the two never look alike.</p>
+<div class="scroll"><div class="crop" data-foot="C"></div></div>
+
+<h3><span class="tag">1D</span>One plain sentence</h3>
+<p class="note">“Kept on this Mac in <u>~/SigmaFlow/Meetings</u>”, with the path as the link. This one does the most to build trust. It also breaks the rule against reassurance lines (13 Oct). Pick it only if building trust is worth that one exception.</p>
+<div class="scroll"><div class="crop" data-foot="D"></div></div>
+
+<h3><span class="tag">1E</span>The path, and Open in Finder on hover</h3>
+<p class="note">Like 1A, but the path says nothing about what a click does until the pointer is on it. Then “Open in Finder” appears beside it.</p>
+<div class="scroll"><div class="crop" data-foot="E"></div></div>
+
+<h2>2. A click opens</h2>
+<div class="opts">
+ <div class="opt"><b><span class="k">2A</span>The Meetings folder</b><p>Finder opens <code>~/SigmaFlow/Meetings</code>, with the year folders inside. Conversations opens <code>~/SigmaFlow/Conversations</code>.</p></div>
+ <div class="opt"><b><span class="k">2B</span>This month’s folder</b><p>Finder opens <code>Meetings/2026/10 October</code>, where the newest meetings are. It is one step closer to the files, but the path on screen gets longer every month.</p></div>
+ <div class="opt"><b><span class="k">2C</span>The SigmaFlow folder, Meetings selected</b><p>Finder opens <code>~/SigmaFlow</code> with Meetings highlighted. People can see that Conversations and Dictations sit right beside it.</p></div>
+</div>
+
+<h2>3. How the path reads</h2>
+<div class="opts">
+ <div class="opt"><b><span class="k">3A</span>~/SigmaFlow/Meetings</b><p>Short, and the way Settings already writes it. The ~ means the home folder. Some people won’t know that.</p></div>
+ <div class="opt"><b><span class="k">3B</span>/Users/alex/SigmaFlow/Meetings</b><p>The full path, with nothing to decode. It is longer, and it shows the Mac’s account name on a page people may share on screen.</p></div>
+ <div class="opt"><b><span class="k">3C</span>Home › SigmaFlow › Meetings</b><p>Words, not slashes, like Finder’s path bar. Goes with 1B.</p></div>
+</div>
+
+<h2>4. While deleting, and just after</h2>
+<p class="note">Today the strip turns into “3 selected”, Cancel and Delete 3 while you tick, and into “Meeting deleted” and Undo after a delete.</p>
+<div class="pair">
+ <div class="scroll"><div class="crop" data-foot="pick-hide"></div></div>
+ <p class="cap">4A: THE STRIP IS THE DELETE CONTROLS ONLY, AS TODAY. THE PATH COMES BACK WHEN YOU’RE DONE.</p>
+ <div class="scroll"><div class="crop" data-foot="pick-keep"></div></div>
+ <p class="cap">4B: THE PATH STAYS ON THE LEFT AND THE COUNT MOVES BESIDE THE BUTTONS.</p>
+</div>
+
+<h2>The page, at its real size, with 1A</h2>
+<p class="note">1160 by 760, the window’s size. When the folder can’t be found, the card already says “Can’t find your meetings” with Find it, so the strip shows no path at all.</p>
+<div class="scroll"><div class="win" id="meetings"></div></div>
+
+<h2>Conversations, with 1A</h2>
+<div class="scroll"><div class="win" id="conversations"></div></div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const ico=n=>`<img src="${ICON(n)}" alt="">`;
+const rail=on=>`<div class="rail"><div class="wm">Sigma<span>flow</span></div>${[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']].map(([t,i])=>`<div class="it ${t===on?'on':''}">${ico(i)}${t}</div>`).join('')}</div>`;
+const MEETINGS=[
+ '[ 27 Oct ] Tue 10.16 am - 21 min - Brewly launch plan',
+ '[ 26 Oct ] Mon 4.11 pm - 42 min - Kettle pricing review',
+ '[ 26 Oct ] Mon 10.18 am - 66 min - Weekly design review',
+ '[ 23 Oct ] Fri 11.30 am - 3 min - Choosing a venue for the offsite',
+ '[ 23 Oct ] Fri 11.25 am - 2 min - Hiring plan for next quarter',
+ '[ 20 Oct ] Tue 12.23 pm - 1 min',
+ '[ 20 Oct ] Tue 10.16 am - 14 min - Kettle support handover',
+ '[ 19 Oct ] Mon 8.09 am - 1 min - Testing the new microphone',
+ '[ 19 Oct ] Mon 8.07 am - 1 min - Holiday party ideas',
+];
+const CONVOS=[
+ '[ 27 Oct ] Tue 1.05 pm - 34 min - Lunch with the Brewly team',
+ '[ 24 Oct ] Sat 6.40 pm - 18 min - Planning the garden',
+ '[ 22 Oct ] Thu 9.12 am - 51 min - Whiteboard session on onboarding',
+ '[ 21 Oct ] Wed 3.30 pm - 12 min - Coffee with a mentor',
+ '[ 17 Oct ] Sat 11.02 am - 26 min - Bookshop visit',
+ '[ 16 Oct ] Fri 10.32 am - 8 min - First try of live notes',
+];
+const row=t=>`<div class="row"><span>${t}</span><span class="go">Open transcript →</span></div>`;
+const del=noun=>`<span class="faint">${ico('trash-can')}Delete ${noun}</span>`;
+
+function footer(kind,dir,noun){
+ const p=`~/SigmaFlow/${dir}`;
+ switch(kind){
+  case 'A':return `<div class="ft"><span class="faint lift" title="Open in Finder">${ico('folder')}<span class="path">${p}</span></span>${del(noun)}</div>`;
+  case 'B':return `<div class="ft"><span class="crumbs"><span class="seg">${ico('folder')}SigmaFlow</span><span class="sep">›</span><span class="seg">${ico('folder')}${dir}</span></span>${del(noun)}</div>`;
+  case 'C':return `<div class="ft"><span class="boxed" title="Open in Finder">${ico('folder')}${p}</span>${del(noun)}</div>`;
+  case 'D':return `<div class="ft"><span class="words">Kept on this Mac in <a>${p}</a></span>${del(noun)}</div>`;
+  case 'E':return `<div class="ft"><span class="reveal">${ico('folder')}<span class="path">${p}</span><span class="open">Open in Finder ${ico('arrow--right')}</span></span>${del(noun)}</div>`;
+  case 'pick-hide':return `<div class="ft tint"><span class="hint">3 selected</span><span style="display:flex;gap:8px"><span class="btn sm">Cancel</span><span class="btn sm">${ico('trash-can')}Delete 3</span></span></div>`;
+  case 'pick-keep':return `<div class="ft tint"><span class="faint lift">${ico('folder')}<span class="path">${p}</span></span><span style="display:flex;gap:8px;align-items:center"><span class="hint" style="margin-right:6px">3 selected</span><span class="btn sm">Cancel</span><span class="btn sm">${ico('trash-can')}Delete 3</span></span></div>`;
+ }
+}
+
+document.querySelectorAll('.crop').forEach(el=>{
+ el.innerHTML=`<div class="card"><div class="rows">${MEETINGS.slice(6).map(row).join('')}</div>${footer(el.dataset.foot,'Meetings','meetings')}</div>`;
+});
+
+function page(id,on,title,sub,button,key,count,dir,noun,list){
+ document.getElementById(id).innerHTML=rail(on)+`<div class="pg">
+  <div class="hd"><div><h4>${title}</h4><div class="sub">${sub}</div></div>
+   <div class="rec"><span class="btn">${ico(button[1])}${button[0]}</span><span class="press">Press<span class="kc">${key}</span></span></div></div>
+  <div class="tools"><div class="search">${ico('search')}Search ${noun}</div><span class="count">${count}</span></div>
+  <div class="card"><div class="rows"><div class="mh">OCTOBER 2026</div>${list.map(row).join('')}</div>${footer('A',dir,noun)}</div>
+ </div>`;
+}
+page('meetings','Meetings','Meetings','Record a meeting and read it back the moment it ends.',['Record meeting','microphone'],'⌃⌥M','17 meetings','Meetings','meetings',MEETINGS);
+page('conversations','Conversations','Conversations','Write down a conversation in the room as it happens.',['Take notes','camera'],'⌃⌥N','6 conversations','Conversations','conversations',CONVOS);
+</script>
+</body></html>

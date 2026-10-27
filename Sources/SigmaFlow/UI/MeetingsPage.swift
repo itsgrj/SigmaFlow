@@ -296,12 +296,14 @@ struct MeetingsPage: View {
 
     /// While ticking: how many, Cancel and Delete. Just after a delete: what went, and Undo.
     /// Otherwise the faint way in to deleting, fixed under the rows so no scrolling finds it
-    /// (Gokul, 18 Oct 2026).
+    /// (Gokul, 18 Oct 2026). The folder's path stays at the left through all three (4B).
     @ViewBuilder
     private var footer: some View {
         if isPicking {
             let count = tickedMeetings.count
             CardFooter(hint: count == 0 ? "Tick the \(kind.noun)s to delete" : "\(count.formatted()) selected") {
+                folderPath
+            } actions: {
                 AppButton(title: "Cancel", kind: .secondary) { stopPicking() }
                 AppButton(
                     title: count == 0 ? "Delete" : "Delete \(count.formatted())", kind: .secondary, icon: "trash-can",
@@ -312,14 +314,23 @@ struct MeetingsPage: View {
             }
         } else if let deleted = library.lastDeleted {
             CardFooter(hint: "\(deleted.label) deleted") {
+                folderPath
+            } actions: {
                 AppButton(title: "Undo", kind: .secondary) { library.undoDelete() }
             }
         } else if !library.meetings.isEmpty, !library.isFolderMissing {
             FaintDelete(title: "Delete \(kind.noun)s") {
+                folderPath
+            } action: {
                 renamingID = nil
                 isPicking = true
             }
         }
+    }
+
+    @ViewBuilder
+    private var folderPath: some View {
+        if let folder = library.meetingsURL { PathBar(folder: folder) }
     }
 
     private var countLabel: String {

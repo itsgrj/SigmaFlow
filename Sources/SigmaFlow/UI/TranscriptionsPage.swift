@@ -163,13 +163,16 @@ struct TranscriptionsPage: View {
 
     /// While ticking: how many, Select all, Cancel and Delete. Just after a delete: what
     /// went, and Undo. Otherwise the faint way in, fixed under the rows so no scrolling
-    /// finds it (Gokul, 18 Oct 2026).
+    /// finds it (Gokul, 18 Oct 2026). The Dictations folder's path stays at the left through
+    /// all three, as on Meetings (27 Oct 2026).
     @ViewBuilder
     private var footer: some View {
         if isPicking {
             let count = ticked.count
             let shown = runs
             CardFooter(hint: count == 0 ? "Tick the transcriptions to delete" : "\(count.formatted()) selected") {
+                folderPath
+            } actions: {
                 if !shown.allSatisfy({ ticked.contains($0.id) }) {
                     AppButton(title: "Select all", kind: .secondary) { ticked.formUnion(shown.map(\.id)) }
                 }
@@ -184,11 +187,22 @@ struct TranscriptionsPage: View {
         } else if let deleted = store.lastDeleted {
             let count = deleted.runs.count
             CardFooter(hint: "\(count.formatted()) transcription\(count == 1 ? "" : "s") deleted") {
+                folderPath
+            } actions: {
                 AppButton(title: "Undo", kind: .secondary) { store.undoDelete() }
             }
         } else if !store.runs.isEmpty {
-            FaintDelete(title: "Delete transcriptions") { isPicking = true }
+            FaintDelete(title: "Delete transcriptions") {
+                folderPath
+            } action: {
+                isPicking = true
+            }
         }
+    }
+
+    @ViewBuilder
+    private var folderPath: some View {
+        if let folder = RunLog.dictationsFolder { PathBar(folder: folder) }
     }
 
     private static let dayFormatter: DateFormatter = {

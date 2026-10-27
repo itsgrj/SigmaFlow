@@ -298,6 +298,13 @@ MeetingLibrary.file ─► MeetingLibrary.transcribe (one at a time) ─► Meet
   2,000-word pieces, one topic line each, then titled from the topics (Gokul asked for 30
   minute pieces; that is past the model's window). About 1 s per 1,000 words. No model,
   no title. `meeting(_:)` follows the rename so an open transcript stays open.
+- **The list's footer shows where the files are** (27 Oct 2026, [docs/mockups/meetings-folder-path.html](docs/mockups/meetings-folder-path.html),
+  picks 1B 2C 3C 4B; Figma component Path bar): `PathBar` (UI/Equipment.swift), Home › SigmaFlow ›
+  Meetings at the left, as faint as Delete, on Conversations too. Each part shows that folder
+  selected in the one around it (`activateFileViewerSelecting`), so the last part opens the
+  SigmaFlow folder with Meetings selected; Home opens Home. It stays while ticking and after a
+  delete, the count moving beside the buttons; none while the folder can't be found.
+  Transcriptions has the same, Home › SigmaFlow › Dictations (`RunLog.dictationsFolder`).
 - **Progress and failures live only in memory.** After a relaunch, an .m4a with no .md beside
   it shows Try again.
 - `--snapshot-dir … --pages meetings/transcript` draws the newest meeting's transcript.

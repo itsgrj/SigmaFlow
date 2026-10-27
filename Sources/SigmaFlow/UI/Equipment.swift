@@ -439,23 +439,41 @@ struct Card<Content: View, Footer: View>: View {
     }
 }
 
-/// The footer bar of a card.
-struct CardFooter<Actions: View>: View {
+/// The footer bar of a card. With something at its leading edge (a list's `PathBar`), the
+/// hint moves over beside the buttons.
+struct CardFooter<Leading: View, Actions: View>: View {
     let hint: String
+    @ViewBuilder var leading: Leading
     @ViewBuilder var actions: Actions
 
     var body: some View {
         HStack {
-            Text(hint)
-                .font(DS.Font.caption)
-                .foregroundStyle(DS.Color.inkSecondary)
-            Spacer()
+            if Leading.self == EmptyView.self {
+                hintText
+                Spacer()
+            } else {
+                leading
+                Spacer()
+                hintText
+            }
             HStack(spacing: DS.Space.snug) { actions }
         }
         .padding(.horizontal, DS.Space.rowPadX)
         .padding(.vertical, DS.Space.rowPadY)
         .background(DS.Color.footer)
         .overlay(alignment: .top) { CardDivider() }
+    }
+
+    private var hintText: some View {
+        Text(hint)
+            .font(DS.Font.caption)
+            .foregroundStyle(DS.Color.inkSecondary)
+    }
+}
+
+extension CardFooter where Leading == EmptyView {
+    init(hint: String, @ViewBuilder actions: () -> Actions) {
+        self.init(hint: hint, leading: { EmptyView() }, actions: actions)
     }
 }
 
@@ -1253,14 +1271,16 @@ struct CopyButton: View {
 /// The way in to deleting: faint text with a small bin, at the very end of a list or a
 /// transcript, never on a row (Gokul, 16 Oct 2026: "the user has to search for the delete").
 /// Every press of it goes on to `DeleteQuestionView`.
-struct FaintDelete: View {
+struct FaintDelete<Leading: View>: View {
     let title: String
+    @ViewBuilder var leading: Leading
     let action: () -> Void
 
     @State private var isHovering = false
 
     var body: some View {
         HStack {
+            leading
             Spacer(minLength: 0)
             Button(action: action) {
                 HStack(spacing: DS.Space.tight + DS.Space.hair) {
@@ -1278,6 +1298,85 @@ struct FaintDelete: View {
         .padding(.horizontal, DS.Space.rowPadX)
         .padding(.vertical, DS.Space.roomy)
         .overlay(alignment: .top) { CardDivider() }
+    }
+}
+
+extension FaintDelete where Leading == EmptyView {
+    init(title: String, action: @escaping () -> Void) {
+        self.init(title: title, leading: { EmptyView() }, action: action)
+    }
+}
+
+/// Where a list's files are, as Home › SigmaFlow › Meetings, at the left of its footer
+/// (27 Oct 2026, docs/mockups/meetings-folder-path.html, picks 1B 2C 3C 4B). Each part is a
+/// button that shows that folder selected in the one around it, so the last part opens the
+/// SigmaFlow folder with Meetings selected; Home opens Home. As faint as `FaintDelete`.
+struct PathBar: View {
+    let folder: URL
+
+    private var parts: [(name: String, url: URL)] {
+        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
+        let target = folder.standardizedFileURL
+        var url: URL
+        var names: [String]
+        var result: [(name: String, url: URL)] = []
+        if target.path.hasPrefix(home.path + "/") {
+            url = home
+            names = Array(target.pathComponents.dropFirst(home.pathComponents.count))
+            result.append((name: "Home", url: home))
+        } else {
+            url = URL(fileURLWithPath: "/", isDirectory: true)
+            names = Array(target.pathComponents.dropFirst())
+        }
+        for name in names {
+            url = url.appendingPathComponent(name, isDirectory: true)
+            result.append((name: name, url: url))
+        }
+        return result
+    }
+
+    var body: some View {
+        let parts = parts
+        HStack(spacing: DS.Space.hair) {
+            ForEach(Array(parts.enumerated()), id: \.offset) { index, part in
+                if index > 0 {
+                    Text("›").font(DS.Font.monoSmall).foregroundStyle(DS.Color.dim)
+                }
+                PathPart(name: part.name) {
+                    if index == 0 && part.name == "Home" {
+                        NSWorkspace.shared.open(part.url)
+                    } else {
+                        NSWorkspace.shared.activateFileViewerSelecting([part.url])
+                    }
+                }
+            }
+        }
+        .opacity(DS.Material.faintDeleteOpacity)
+    }
+}
+
+private struct PathPart: View {
+    let name: String
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DS.Space.tight + DS.Space.hair) {
+                CarbonIcon(name: "folder", size: DS.Control.iconSizeTiny)
+                Text(name).font(DS.Font.monoSmall).lineLimit(1).truncationMode(.middle)
+            }
+            .foregroundStyle(isHovering ? DS.Color.ink : DS.Color.dim)
+            .padding(.horizontal, DS.Space.tight)
+            .padding(.vertical, DS.Space.hair)
+            .background(isHovering ? DS.Color.selectedFill : .clear, in: RoundedRectangle(cornerRadius: DS.Radius.control))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Open in Finder")
+        .onHover { isHovering = $0 }
+        .handCursor()
     }
 }
 
