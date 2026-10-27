@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/itsgrj/SigmaFlow/releases/latest"><img src="https://img.shields.io/badge/Download_for_Mac-007ec6?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac" height="40"></a>
+  <a href="https://github.com/itsgrj/SigmaFlow/releases/latest/download/SigmaFlow.dmg"><img src="https://img.shields.io/badge/Download_for_Mac-007ec6?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac" height="40"></a>
 </p>
 
 <p align="center">

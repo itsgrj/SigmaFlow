@@ -825,6 +825,8 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - README was rewritten for going public on 21 Oct 2026
   ([docs/mockups/readme-public.html](docs/mockups/readme-public.html), picks 1A 2B 3B 4A 5B):
   centred icon and name, coloured shields.io badges, one Download for Mac button, GPL v3. The
+  button downloads `releases/latest/download/SigmaFlow.dmg` directly (27 Oct 2026), so every
+  release must carry the installer under exactly that name, as `make dmg` writes it. The
   Homebrew line came out on 27 Oct 2026: the tap `itsgrj/homebrew-tap` was never made, so the
   command failed; put it back with the tap.
 - **Public since 27 Oct 2026, from a fresh start** (Gokul's pick). The 190 commits before it
