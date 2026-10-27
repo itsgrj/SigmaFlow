@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SigmaFlow}",
+            "name": "Debug SigmaFlowMCP",
+            "target": "SigmaFlowMCP",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug SigmaFlowMCP"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SigmaFlow}",
+            "name": "Release SigmaFlowMCP",
+            "target": "SigmaFlowMCP",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release SigmaFlowMCP"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SigmaFlow}",
+            "name": "Debug SigmaFlow",
+            "target": "SigmaFlow",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug SigmaFlow"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SigmaFlow}",
+            "name": "Release SigmaFlow",
+            "target": "SigmaFlow",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release SigmaFlow"
+        }
+    ]
+}

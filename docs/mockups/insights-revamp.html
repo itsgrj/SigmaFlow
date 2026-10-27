@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Insights revamp</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px}
+.review{max-width:1240px;margin:auto;padding:34px 30px 80px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1000px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+.asks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 30px}
+.asks div{border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:#161616;font-size:12.5px;line-height:1.5;color:var(--ink2)}
+.asks b{display:block;font:11px var(--mono);letter-spacing:.08em;color:var(--ink);font-weight:400;margin-bottom:4px}
+.opt{margin:0 0 46px}
+.opt .oh{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.opt .oh h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin:0;font-weight:400}
+.opt .oh .src{font-size:12px;color:var(--dim)}.opt .oh .src a{color:var(--ink2)}
+.opt .oh .tag{margin-left:auto;font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--strong);padding:2px 6px}
+.opt>p{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 12px;max-width:1000px}
+
+/* the window, 1160 x 760 like the snapshot */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;position:relative;background:#000;user-select:none}
+.rail{width:219px;flex:0 0 219px;background:#000;border-right:1px solid var(--border);padding:58px 10px 16px;display:flex;flex-direction:column}
+.word{font:28px var(--pixel);padding:0 11px;margin-bottom:34px;display:flex;align-items:center}.word span{font-family:PixelCircle,var(--pixel)}
+.word .logo{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,.2);margin-right:10px}
+.nav div{display:flex;align-items:center;gap:13px;height:37px;padding:0 11px;border-radius:6px;font:14px var(--pixel);margin-bottom:9px}
+.nav div.on{background:var(--sel)}
+.nav img{width:15px;height:15px;filter:invert(1);opacity:.75}
+.ver{margin-top:auto;padding:0 11px;font:11px var(--pixel);color:var(--dim)}
+.stage{flex:1;position:relative;overflow:hidden}
+.paint{position:absolute;inset:0;background:url("../../Resources/background-colour.jpg") center/cover}
+.paint:after{content:"";position:absolute;inset:0;background:var(--scrim)}
+.page{position:relative;height:100%;padding:30px 29px 0;display:flex;flex-direction:column}
+.head h1{font:22px var(--pixel);font-weight:400;margin:0 0 12px}
+.head p{font:14px/1.45 var(--pixel);color:var(--ink2);margin:0 0 18px;max-width:560px}
+.tabs{flex:0 0 auto;margin-bottom:16px;border-bottom:1px solid var(--border);display:flex;gap:26px}
+.tabs span{padding:0 0 9px;font:14px var(--pixel);color:var(--ink2);position:relative}
+.tabs span.on{color:var(--ink)}
+.tabs span.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink)}
+.scroll{overflow:auto;min-height:0;flex:1;padding-bottom:28px;-webkit-mask-image:linear-gradient(#000 calc(100% - 28px),transparent)}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:4px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--glass);padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.k{font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.sub{font:13px/1.5 var(--pixel);color:var(--dim)}
+.say{font:18px/1.45 var(--pixel);max-width:820px}
+.explain{font:13px/1.55 var(--pixel);color:var(--dim);max-width:760px}
+.explain em{font-style:normal;color:var(--ink2)}
+.top{display:flex;align-items:baseline;gap:12px}.top .sub{margin-left:auto}
+.huge{font:56px/1 var(--pixel);letter-spacing:-.01em}
+.big{font:40px/1 var(--pixel)}
+.mid{font:32px/1 var(--pixel)}
+.dimmed{color:var(--ink2)}
+.cap{font:11px/1.45 var(--pixel);color:var(--dim)}
+
+/* A: the sum */
+.sum{display:flex;align-items:flex-start;gap:22px;margin-top:4px}
+.sum .op{font:40px/1 var(--pixel);color:var(--dim);padding-top:4px}
+.sum .t{display:flex;flex-direction:column;gap:8px}
+/* B: without and with */
+.halves{display:grid;grid-template-columns:1fr 1px 1fr;gap:26px}
+.halves .rule{background:var(--border)}
+.halves>div:not(.rule){display:flex;flex-direction:column;gap:10px}
+.ledger{display:flex;flex-direction:column;gap:9px;max-width:620px}
+.ledger div{display:flex;font:15px var(--pixel);color:var(--ink2)}.ledger div b{font-weight:400;margin-left:auto}
+.ledger div.total{border-top:1px solid var(--border);padding-top:10px;color:var(--ink)}
+.ledger div small{color:var(--dim);margin-left:10px;font-size:12px}
+/* C: one sentence */
+.hero{padding:34px 20px 30px;align-items:flex-start}
+.hero .headline{font:34px/1.25 var(--pixel);max-width:780px}
+/* D: today and this week */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rows3{display:flex;gap:28px;align-items:flex-start}
+.rows3>div{display:flex;flex-direction:column;gap:6px}
+/* E: a hundred squares */
+.hund{display:flex;gap:30px;align-items:center}
+.grid100{display:grid;grid-template-columns:repeat(20,14px);grid-auto-rows:14px;gap:3px}
+.grid100 i{display:block;background:var(--ink);border-radius:2px}
+.grid100 i.t{background:rgba(255,255,255,.18)}
+.eq{display:flex;align-items:baseline;gap:12px;font:15px var(--pixel);color:var(--ink2)}
+.eq b{font:26px var(--pixel);color:var(--ink);font-weight:400}
+.eq span.op{color:var(--dim)}
+
+/* the squares */
+.gh{display:flex;flex-direction:column;gap:10px}
+.gh .wrap{display:flex;gap:6px}
+.gh .wd{display:grid;grid-template-rows:15px repeat(7,12px);gap:3px;font:10px var(--mono);color:var(--dim);width:26px}
+.gh .wd span{line-height:12px}
+.gh .cols{display:flex;gap:3px}
+.gh .col{display:grid;grid-template-rows:15px repeat(7,12px);gap:3px;width:12px}
+.gh .mo{font:10px var(--mono);color:var(--dim);white-space:nowrap;line-height:12px}
+.sq{display:block;width:12px;height:12px;border-radius:2px;background:#161b22;outline:1px solid rgba(255,255,255,.05);outline-offset:-1px}
+.sq.l1{background:#0e4429}.sq.l2{background:#006d32}.sq.l3{background:#26a641}.sq.l4{background:#39d353}
+.sq.none{background:none;outline:0}
+.legend{display:flex;align-items:center;gap:3px;font:11px var(--mono);color:var(--dim);justify-content:flex-end}
+.legend span:first-child{margin-right:4px}.legend span:last-child{margin-left:4px}
+/* the books, flat here; the app keeps its 3D shelf */
+.books{display:flex;gap:22px;align-items:flex-end;padding:8px 4px 0;border-bottom:12px solid #2b2724}
+.books img{width:62px;height:94px;object-fit:cover;filter:grayscale(1) contrast(1.05)}
+.books img.ahead{filter:grayscale(1) brightness(.38)}
+.equal{display:flex;flex-direction:column;gap:0}
+.equal div{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-top:1px solid var(--border);font:15px var(--pixel);color:var(--ink2)}
+.equal div:first-child{border-top:0}
+.equal div b{font:24px var(--pixel);color:var(--ink);font-weight:400;min-width:130px}
+</style>
+</head>
+<body><main class="review">
+<h1>Insights, rethought</h1>
+<p class="lead"><b>Built, 23 Oct 2026: A1 Plain</b>, with one more line under the sum: "That would have taken you about 59 minutes." Figma 2.10 and 2.11.</p>
+<p class="lead"><b>Round 2, 21 Oct 2026.</b> A, written by four different writers. The layout is A's exactly, with one addition you asked for: C's line, "SigmaFlow wrote 97% of your words today", word for word, as the sentence above the sum. Everything else is each writer's own: the three labels under the numbers, the line under the sum, the squares' heading and how the time is worked out, and the book's sentence. Pick a writer, or take lines from several (say, 3's labels with 2's closing line).</p>
+<div id="writers"></div>
+<p class="lead" style="margin-top:20px"><b>Round 1.</b> Five ways to lay out the whole Insights tab around your five pointers. The four tiles are gone in all five: today leads, the year of squares carries the time saved, and the book carries the all-time numbers. Every number is yours: today so far (2,276 words dictated, 80 typed since typing started being counted this morning), and the all-time ones from your screenshot. Each window scrolls.</p>
+<div class="asks">
+ <div><b>01</b>All-time words move into the book card.</div>
+ <div><b>02</b>Time saved a day moves into the squares card.</div>
+ <div><b>03</b>Leads with today: the words your work needed, how many SigmaFlow wrote, how many you typed.</div>
+ <div><b>04</b>All-time dictations move into the book card too.</div>
+ <div><b>05</b>A line or two on how the time saved is worked out, in plain words.</div>
+</div>
+<div id="opts"></div>
+</main>
+<script>
+const f=n=>n.toLocaleString('en-IN');
+const SF=2276, TY=80, ALL=SF+TY, PCT=Math.round(SF/ALL*100);
+const TYPE_MIN=Math.round(SF/40), TALK_MIN=22, BACK=TYPE_MIN-TALK_MIN;
+const ALLWORDS=106666, RUNS=3574, PAGES=356, AVG=27, AVGWORDS=1975, AVGTYPE=Math.round(AVGWORDS/40), AVGTALK=AVGTYPE-AVG;
+const WEEK_SF=7231, WEEK_TY=80;
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const M=id=>`https://mobbin.com/screens/${id}`;
+const SRC={clue:['Clue','207278ad-89be-4c64-926d-55259471a0d5'],wise:['Wise','424f922b-dd1b-4120-9e67-32fe714d5a0f'],opal:['Opal','aa59fc65-fff7-4fa0-8d67-32ede1ed2d85'],mfp:['MyFitnessPal','7f3e52ce-6079-4199-822c-880422b0b299'],gentler:['Gentler Streak','06f36f85-e29b-4400-ba7d-90dde3d598b0'],threads:['Threads','8d2857fc-e9b0-4baf-a6d8-7354806f8b47'],uxcel:['Uxcel','6986547e-312c-4cbe-8b86-2624e94cddc4'],uber:['Uber','993e05ee-d7b0-48c6-ae07-94a086a5e736'],fresha:['Fresha','510e25d1-0df7-4fbe-aaae-cdd959473efb'],tonal:['Tonal','fc400513-e1be-49cc-9f5b-8cd6fd55f259']};
+const src=ks=>'From '+ks.map(k=>`<a href="${M(SRC[k][1])}" target="_blank">${SRC[k][0]}</a>`).join(', ');
+
+// Gokul's dictations per day, 30 Aug to 21 Oct 2026 (today so far), for the squares.
+const DAYS=[1536,725,274,1902,3119,2837,1093,1783,2420,2761,1661,988,895,1542,3596,920,1875,2303,1678,650,607,748,4593,3809,3667,2906,3040,1117,3476,1134,1862,2393,1333,3430,3206,1493,461,2191,937,674,2051,3264,3693,818,3405,2727,692,4962,781,1652,1531,1772,SF];
+const START=new Date(2026,7,30), N=DAYS.length, TODAY=N-1, MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const day=i=>{const d=new Date(START);d.setDate(d.getDate()+i);return d};
+const level=w=>w<=0?0:w<1000?1:w<2000?2:w<3000?3:4;
+function grid(){
+ const end=day(TODAY), first=new Date(end); first.setDate(first.getDate()-end.getDay()-52*7);
+ let cols='';
+ for(let w=0;w<53;w++){const sun=new Date(first);sun.setDate(sun.getDate()+w*7);const mo=sun.getDate()<=7&&w<52?MON[sun.getMonth()]:'';let c='';
+  for(let r=0;r<7;r++){const d=new Date(sun);d.setDate(d.getDate()+r);const i=Math.round((d-START)/864e5);
+   c+=d>end?'<span class="sq none"></span>':`<span class="sq l${level(i>=0&&i<N?DAYS[i]:0)}"></span>`}
+  cols+=`<div class="col"><span class="mo">${mo}</span>${c}</div>`}
+ return `<div class="gh"><div class="wrap"><div class="wd"><span></span>${['','Mon','','Wed','','Fri',''].map(x=>`<span>${x}</span>`).join('')}</div><div class="cols">${cols}</div></div>
+  <div class="legend"><span>Less</span>${[0,1,2,3,4].map(l=>`<i class="sq l${l}"></i>`).join('')}<span>More</span></div></div>`}
+
+const BOOKS=[['cat-in-the-hat',1626],['little-prince',17000],['old-man-and-the-sea',26601],['christmas-carol',28944],['of-mice-and-men',29160],['animal-farm',29966],['charlie-chocolate-factory',30644],['alchemist',39000],['fahrenheit-451',46118],['great-gatsby',47094],['catcher-in-the-rye',73404],['frankenstein',74800],['harry-potter-1',76944],['nineteen-eighty-four',88942],['hobbit',95356],['to-kill-a-mockingbird',100388],['pride-and-prejudice',122189]];
+const books=()=>`<div class="books">${BOOKS.slice(0,13).map(([c,w])=>`<img src="../../Resources/BookCovers/${c}.jpg" class="${w>ALLWORDS?'ahead':''}">`).join('')}</div>`;
+
+// ---- the shared cards, with their wording varied per option ----
+const squares=(head,explain)=>`<div class="card"><div class="top"><span class="say">${head}</span><span class="sub">${f(WEEK_SF)} words this week</span></div>${explain?`<div class="explain">${explain}</div>`:''}${grid()}</div>`;
+const AVG_LINE=`Typing the ${f(AVGWORDS)} words SigmaFlow writes on an average day would take you about ${AVGTYPE} minutes. Saying them and waiting for them takes about ${AVGTALK}. The other ${AVG} minutes are yours.`;
+const bookCard=(body)=>`<div class="card"><span class="k">Your words, written down</span>${body}${books()}</div>`;
+const BOOK_SAY=`<div class="say">SigmaFlow has written ${f(ALLWORDS)} words for you, in ${f(RUNS)} dictations. Written down, they would fill a ${PAGES}-page book, as long as To Kill a Mockingbird.</div>`;
+
+const win=content=>{
+ const items=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Settings','settings']];
+ return `<div class="win"><aside class="rail"><div class="word"><img class="logo" src="icons/appicon.png">Sigma<span>flow</span></div><div class="nav">${items.map(([t,i])=>`<div class="${t==='Transcriptions'?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div><div class="ver">1.0.0</div></aside>
+ <section class="stage"><div class="paint"></div><div class="page"><div class="head"><h1>Transcriptions</h1><p>Everything you have dictated, newest first. Search it, copy a line back out, or delete what you no longer need.</p></div>
+ <div class="tabs"><span>History</span><span class="on">Insights</span></div><div class="scroll"><div class="stack">${content}</div></div></div></section></div>`};
+
+const OPTS=[
+ ['A','Today, as a sum',['clue'],true,
+  `Clue writes its answer as a sum with a label under every number. Here the day is a sum: what SigmaFlow wrote, plus what you typed, equals what your work needed. The line under it is the "would I have typed all that?" moment. Time saved heads the squares, with the plain-words working under it.`,
+  `<div class="card"><span class="k">Today</span>
+    <div class="sum"><div class="t"><span class="big">${f(SF)}</span><span class="cap">Dictated using<br>SigmaFlow</span></div><span class="op">+</span>
+     <div class="t"><span class="big dimmed">${f(TY)}</span><span class="cap">Typed using<br>your fingers</span></div><span class="op">=</span>
+     <div class="t"><span class="big">${f(ALL)}</span><span class="cap">Words your work<br>needed today</span></div></div>
+    <div class="explain">Without SigmaFlow, all ${f(ALL)} would have been typed by hand.</div></div>
+   ${squares(`Every day, SigmaFlow gives you about ${AVG} minutes back`,AVG_LINE)}${bookCard(BOOK_SAY)}`],
+ ['B','Without and with',['opal','wise'],false,
+  `Opal's before and after: the same day, two ways. Left is what your fingers would have typed without SigmaFlow; right is what they did. Under it, Wise's "you saved" sum, for today, in rows. The squares then only say the daily average.`,
+  `<div class="card"><span class="k">Today</span><div class="halves">
+    <div><span class="k" style="color:var(--dim)">Without SigmaFlow</span><span class="huge dimmed">${f(ALL)}</span><span class="sub">words typed by hand</span></div><div class="rule"></div>
+    <div><span class="k" style="color:var(--dim)">With SigmaFlow</span><span class="huge">${f(TY)}</span><span class="sub">words typed by hand. SigmaFlow wrote the other ${f(SF)}.</span></div></div></div>
+   <div class="card"><span class="k">Today's time</span><div class="ledger">
+    <div>Typing the ${f(SF)} words SigmaFlow wrote<b>${TYPE_MIN} min</b></div>
+    <div>Saying them, and waiting for them<b>${TALK_MIN} min</b></div>
+    <div class="total">Yours back today<b>${BACK} min</b></div></div>
+    <div class="explain">Typing is worked out at 40 words a minute, about how fast most people type.</div></div>
+   ${squares(`Every day, SigmaFlow gives you about ${AVG} minutes back`,'')}${bookCard(BOOK_SAY)}`],
+ ['C','One sentence',['mfp','gentler'],false,
+  `MyFitnessPal and Gentler Streak lead with one big line and the detail under it. The share is the headline; the counts and the "typed by hand" thought sit below. Time saved works the same way on the squares.`,
+  `<div class="card hero"><span class="k">Today</span><div class="headline">SigmaFlow wrote ${PCT}% of your words today.</div>
+    <div class="explain" style="font-size:15px"><em>${f(SF)}</em> dictated using SigmaFlow, <em>${f(TY)}</em> typed using your fingers. Without it, all <em>${f(ALL)}</em> would have been typed by hand.</div></div>
+   ${squares(`Every day you save about ${AVG} minutes`,AVG_LINE)}${bookCard(BOOK_SAY)}`],
+ ['D','Today and this week',['threads','uxcel'],false,
+  `Your point about how far back people can hold numbers: Threads' weekly recap and Uxcel's this period beside the last. Today and this week sit side by side, the same three numbers each. This week's typed number fills in from today, the day counting started.`,
+  `<div class="two">${[['Today',SF,TY],['This week',WEEK_SF,WEEK_TY]].map(([k,s,t])=>`<div class="card"><span class="k">${k}</span>
+    <div class="rows3"><div><span class="mid">${f(s+t)}</span><span class="cap">Words your work<br>needed</span></div>
+     <div><span class="mid">${f(s)}</span><span class="cap">Dictated using<br>SigmaFlow</span></div>
+     <div><span class="mid dimmed">${f(t)}</span><span class="cap">Typed using<br>your fingers</span></div></div></div>`).join('')}</div>
+   ${squares(`Every day, SigmaFlow gives you about ${AVG} minutes back`,`Today: typing the ${f(SF)} words SigmaFlow wrote would take you about ${TYPE_MIN} minutes. Saying them and waiting for them took ${TALK_MIN}. The other ${BACK} are yours.`)}
+   ${bookCard(BOOK_SAY)}`],
+ ['E','A hundred squares',['fresha','uber'],false,
+  `The squares SigmaFlow already uses, turned on today: a hundred of them, one for every hundredth of your words, bright for SigmaFlow, dim for your fingers. Uber's "is equal to" list turns the all-time numbers into things. This brings a picture back to the top.`,
+  `<div class="card"><span class="k">Today</span><div class="hund">
+    <div class="grid100">${Array.from({length:100},(_,i)=>`<i class="${i>=PCT?'t':''}"></i>`).join('')}</div>
+    <div style="display:flex;flex-direction:column;gap:12px"><div class="say">Of every 100 words you wrote today, ${PCT} were dictated using SigmaFlow.</div>
+     <div class="eq"><b>${f(SF)}</b>dictated<span class="op">+</span><b style="color:var(--ink2)">${f(TY)}</b>typed<span class="op">=</span><b>${f(ALL)}</b>words</div></div></div></div>
+   ${squares(`Every day, SigmaFlow gives you about ${AVG} minutes back`,AVG_LINE)}
+   <div class="card"><span class="k">Your words, written down</span><div class="equal">
+    <div><b>${f(ALLWORDS)}</b>words SigmaFlow has written for you</div>
+    <div><b>${f(RUNS)}</b>dictations</div>
+    <div><b>${PAGES} pages</b>written down, as long as To Kill a Mockingbird</div></div>${books()}</div>`]];
+// ---- round 2: A, four writers ----
+const WRITERS=[
+ ['1','Plain','Says exactly what happened, in the fewest everyday words.',{
+  eye:'Today', l1:'Written with<br>SigmaFlow', l2:'Typed<br>by you', l3:'Your words<br>today',
+  close:`Without SigmaFlow, you’d have typed all ${f(ALL)}.`,
+  sqHead:`Every day, SigmaFlow gives you about ${AVG} minutes back`,
+  sqLine:`Typing the ${f(AVGWORDS)} words SigmaFlow writes on an average day takes about ${AVGTYPE} minutes. Saying them takes about ${AVGTALK}. The other ${AVG} are yours.`,
+  book:`SigmaFlow has written ${f(ALLWORDS)} words for you, in ${f(RUNS)} dictations. That’s a ${PAGES}-page book, as long as To Kill a Mockingbird.`}],
+ ['2','You talk, SigmaFlow writes','The voice of the first open and docs/copy-voice.md: you do this, SigmaFlow does that.',{
+  eye:'Today so far', l1:'SigmaFlow<br>wrote', l2:'You<br>typed', l3:'Words you<br>needed today',
+  close:`That’s ${f(SF)} words your fingers didn’t have to type.`,
+  sqHead:`You get about ${AVG} minutes back, every day`,
+  sqLine:`You talk. SigmaFlow writes. Typing what it writes for you would take about ${AVGTYPE} minutes a day; talking takes ${AVGTALK}. The rest is yours.`,
+  book:`You talked, and SigmaFlow wrote ${f(ALLWORDS)} words, over ${f(RUNS)} dictations. On paper, that’s To Kill a Mockingbird, all ${PAGES} pages.`}],
+ ['3','The question','Ends on a question, so the reader does the sum in their head: would I really have typed all that?',{
+  eye:'Today’s writing', l1:'Dictated using<br>SigmaFlow', l2:'Typed using<br>your fingers', l3:'Words your day<br>asked for',
+  close:`Would you have typed all ${f(ALL)} by hand?`,
+  sqHead:`About ${AVG} minutes a day, handed back`,
+  sqLine:`By hand, the ${f(AVGWORDS)} words SigmaFlow writes on a usual day take ${AVGTYPE} minutes to type. Saying them takes ${AVGTALK}. SigmaFlow gives you the ${AVG} in between.`,
+  book:`${f(RUNS)} dictations, ${f(ALLWORDS)} words. Printed, they’d make a ${PAGES}-page book, as long as To Kill a Mockingbird.`}],
+ ['4','Short','Badge-length labels and lines, nothing to read twice.',{
+  eye:'Today', l1:'By<br>SigmaFlow', l2:'By<br>hand', l3:'In<br>all',
+  close:`${f(SF)} words you didn’t type.`,
+  sqHead:`${AVG} minutes back, every day`,
+  sqLine:`${AVGTYPE} minutes of typing a day, done in ${AVGTALK} by talking.`,
+  book:`${f(ALLWORDS)} words. ${f(RUNS)} dictations. One ${PAGES}-page book, as long as To Kill a Mockingbird.`}]];
+const LINE97=`SigmaFlow wrote ${PCT}% of your words today.`;
+const heroA=c=>`<div class="card"><span class="k">${c.eye}</span><div class="say">${LINE97}</div>
+    <div class="sum"><div class="t"><span class="big">${f(SF)}</span><span class="cap">${c.l1}</span></div><span class="op">+</span>
+     <div class="t"><span class="big dimmed">${f(TY)}</span><span class="cap">${c.l2}</span></div><span class="op">=</span>
+     <div class="t"><span class="big">${f(ALL)}</span><span class="cap">${c.l3}</span></div></div>
+    <div class="explain">${c.close}</div></div>
+   ${squares(c.sqHead,c.sqLine)}${bookCard(`<div class="say">${c.book}</div>`)}`;
+document.getElementById('writers').innerHTML=WRITERS.map(([n,h,p,c])=>`<section class="opt"><div class="oh"><h2>A${n} ${h}</h2></div><p>${p}</p>${win(heroA(c))}</section>`).join('');
+
+document.getElementById('opts').innerHTML=OPTS.map(([k,h,s,rec,p,content])=>`<section class="opt"><div class="oh"><h2>${k} ${h}</h2><span class="src">${src(s)}</span>${rec?'<span class="tag">My pick</span>':''}</div><p>${p}</p>${win(content)}</section>`).join('');
+</script>
+</body></html>

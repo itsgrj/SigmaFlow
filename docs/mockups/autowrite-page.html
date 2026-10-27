@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Autowrite page</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:44px 0 6px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 16px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.done{font-size:13px;line-height:1.6;color:var(--ink2);margin:0;padding-left:18px;max-width:1080px}
+.done li{margin-bottom:4px}.done b{color:var(--ink);font-weight:500}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;max-width:1180px;font-size:13px;line-height:1.5}
+th{font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:400;text-align:left;padding:8px 12px;border-bottom:1px solid var(--strong)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+td:first-child{color:var(--dim);font:11px var(--mono);letter-spacing:.04em;text-transform:uppercase;width:150px;padding-top:12px}
+td.was{color:var(--ph);width:330px}
+td.now{color:var(--ink)}
+td.now i{display:block;font-style:normal;color:var(--ink2);margin-top:3px}
+
+/* the window at its real size */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:210px;flex:0 0 210px;background:#000;border-right:1px solid var(--border);padding:22px 10px}
+.rail .wm{font:22px var(--pixel);padding:0 10px 18px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:5px;font-size:14px}
+.rail .it.on{background:var(--sel)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.pg{flex:1;padding:30px 34px;min-width:0;display:flex;flex-direction:column;gap:26px}
+.pg h4{font-size:22px;font-weight:400;margin:0 0 8px}
+.pg .sub{font-size:14px;color:var(--ink2);line-height:1.5;max-width:760px}
+.cols{display:flex;gap:34px;flex:1;min-height:0}
+.steps{flex:0 0 360px;display:flex;flex-direction:column}
+.step{display:flex;gap:16px;position:relative;padding-bottom:28px}
+.step:not(:last-child):after{content:"";position:absolute;left:12px;top:28px;bottom:2px;width:1px;background:var(--strong)}
+.dot{width:25px;height:25px;border-radius:50%;border:1px solid var(--strong);display:flex;align-items:center;justify-content:center;font:12px var(--mono);flex:0 0 25px}
+.step .t{font-size:15px;line-height:1.4;padding-top:2px}
+.step .c{font-size:13px;color:var(--ink2);line-height:1.55;margin-top:5px}
+.kc{border:1px solid var(--border);border-radius:4px;padding:0 7px;font:13px var(--mono);background:var(--fill);white-space:nowrap;display:inline-block;line-height:21px}
+.right{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0}
+.cd{border:1px solid var(--border);border-radius:6px;background:var(--glass);min-width:0}
+.cd.grow{flex:1;display:flex;flex-direction:column;min-height:0}
+.r{display:flex;align-items:center;gap:16px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.r:last-child{border-bottom:0}
+.r .l{flex:1;min-width:0;font-size:14px}
+.r .c{color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.5}
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:6px 12px;background:var(--fill);white-space:nowrap}
+.pad{padding:12px 16px 16px;flex:1;display:flex}
+.ta{flex:1;border:1px solid var(--border);border-radius:5px;background:rgba(0,0,0,.35);padding:12px 14px;font-size:13.5px;line-height:1.65;white-space:pre-line}
+</style>
+</head>
+<body><main class="review">
+
+<h1>The Autowrite page, round 3</h1>
+<p class="lead"><b>Round 2 pick, 27 Oct 2026: B, with the steps running down the page.</b> The steps take the left column; Key, the AI model and Custom instructions stack in the right. Gokul also asked for better words: plain, but complete. “Writes it where you type” didn’t say where; “Writes with” wasn’t a name for anything. Every line on the page is rewritten below, with the old words beside the new.</p>
+
+<h2>The page, at its real size</h2>
+<p class="note">1160 by 760, the window’s size. The steps sit on the painting with no card; only what you can change has a card.</p>
+<div class="scroll"><div class="win" id="win"></div></div>
+
+<h2>What changed, line by line</h2>
+<div class="scroll"><table>
+ <tr><th>Where</th><th>Before</th><th>Now</th></tr>
+ <tr><td>Under the title</td><td class="was">Say what you want written. SigmaFlow reads your screen and writes it where you type.</td><td class="now">Tell SigmaFlow what to write, out loud. It reads your screen to understand what you’re replying to, then types the text into the app you’re using.</td></tr>
+ <tr><td>Step 1</td><td class="was">(none)</td><td class="now">Click where the text should go<i>A reply box, an email, a chat, a document. Any app works.</i></td></tr>
+ <tr><td>Step 2</td><td class="was">Hold Right ⌥</td><td class="now">Hold Right ⌥ and say what you want SigmaFlow to write<i>For example: “Reply to John. Thursday works, but not before 11.”</i></td></tr>
+ <tr><td>Step 3</td><td class="was">Say what to write</td><td class="now">Let go of the key<i>SigmaFlow reads what’s on your screen, understands the context, like the email you’re answering, and writes the response.</i></td></tr>
+ <tr><td>Step 4</td><td class="was">SigmaFlow writes it where you type</td><td class="now">Check it, then send it yourself<i>The text appears where you clicked. SigmaFlow never sends anything. If you didn’t click into a text box, the text is copied so you can paste it.</i></td></tr>
+ <tr><td>Key row</td><td class="was">Key<br>Hold it and say what you want written.</td><td class="now">Key<i>Hold it while you talk. Dictation uses Right ⌘, so Autowrite uses Right ⌥.</i></td></tr>
+ <tr><td>Model row</td><td class="was">Writes with<br>Claude, the same as your styles.<br>[Change on Styles]</td><td class="now">AI model<i>Claude writes your text. Your styles use the same model, so you change it on the Styles page.</i>[Open Styles]</td></tr>
+ <tr><td>Model row, no key</td><td class="was">Add your Claude key on the Styles page.</td><td class="now">AI model<i>Claude needs your Anthropic key before it can write. Add it on the Styles page.</i>[Open Styles]</td></tr>
+ <tr><td>Instructions</td><td class="was">About you<br>SigmaFlow reads this every time it writes for you.</td><td class="now">Custom instructions<i>SigmaFlow follows these every time it writes for you: how you like to sound, how you sign off, who people are.</i></td></tr>
+ <tr><td>Empty box</td><td class="was">(none)</td><td class="now">For example: Keep replies short. Sign emails with my first name. Use British spelling.</td></tr>
+ <tr><td>Long, on Apple</td><td class="was">Apple reads the first 300 words. Claude reads it all.</td><td class="now">Apple Intelligence reads only the first 300 words. Put what matters most first, or switch to Claude on the Styles page.<i>Shows under the box only past 300 words, and only while Apple Intelligence writes.</i></td></tr>
+</table></div>
+
+<h2>Decided so far</h2>
+<ul class="done">
+ <li><b>Round 1: 1-03 2A 3A.</b> Steps in one column, settings in the other; one box you type or paste into, named Custom instructions; Autowrite only.</li>
+ <li><b>Round 2: B, vertical.</b> Numbered dots joined by a line, down the left, on the painting with no card.</li>
+ <li><b>Four steps, not three.</b> “Click where the text should go” comes first, because that is what decides where the text lands; and the last step says SigmaFlow never sends.</li>
+</ul>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const kc=(t='Right ⌥')=>`<span class="kc">${t}</span>`;
+const rail=()=>`<div class="rail"><div class="wm">Sigma<span>flow</span></div>${[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']].map(([t,i])=>`<div class="it ${t==='Autowrite'?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div>`;
+const STEPS=[
+ ['Click where the text should go','A reply box, an email, a chat, a document. Any app works.'],
+ [`Hold ${kc()} and say what you want SigmaFlow to write`,'For example: “Reply to John. Thursday works, but not before 11.”'],
+ ['Let go of the key','SigmaFlow reads what’s on your screen, understands the context, like the email you’re answering, and writes the response.'],
+ ['Check it, then send it yourself','The text appears where you clicked. SigmaFlow never sends anything. If you didn’t click into a text box, the text is copied so you can paste it.'],
+];
+const INSTR='Keep replies short and friendly. No emoji.\nUse British spelling.\nSign emails with my first name.\nMatch the tone of the message I’m replying to.';
+document.getElementById('win').innerHTML=rail()+`<div class="pg">
+ <div><h4>Autowrite</h4><div class="sub">Tell SigmaFlow what to write, out loud. It reads your screen to understand what you’re replying to, then types the text into the app you’re using.</div></div>
+ <div class="cols">
+  <div class="steps">${STEPS.map(([t,c],i)=>`<div class="step"><span class="dot">${i+1}</span><div><div class="t">${t}</div><div class="c">${c}</div></div></div>`).join('')}</div>
+  <div class="right">
+   <div class="cd">
+    <div class="r"><div class="l">Key<div class="c">Hold it while you talk. Dictation uses Right ⌘, so Autowrite uses Right ⌥.</div></div>${kc()}</div>
+    <div class="r"><div class="l">AI model<div class="c">Claude writes your text. Your styles use the same model, so you change it on the Styles page.</div></div><span class="btn">Open Styles</span></div>
+   </div>
+   <div class="cd grow">
+    <div class="r"><div class="l">Custom instructions<div class="c">SigmaFlow follows these every time it writes for you: how you like to sound, how you sign off, who people are.</div></div></div>
+    <div class="pad"><div class="ta">${INSTR}</div></div>
+   </div>
+  </div>
+ </div>
+</div>`;
+</script>
+</body></html>

@@ -1,0 +1,27 @@
+# macOS build
+.build/
+*.xcuserdatad
+.DS_Store
+
+# Built .app bundles at the repo root.
+/*.app/
+
+# Local ASR model weights. Large, redistributed under their own license, fetched by the app.
+models/
+
+_to_delete/
+
+# Build outputs and ad-hoc source snapshots. Regenerable; never commit.
+*.dmg
+*.tar.gz
+*.tgz
+
+# Claude tooling beside the repo, not part of the app.
+.agents/
+.claude/
+Claude outputs/
+skills-lock.json
+
+# Launch video project, kept on this Mac only.
+brag-output/
+_backup/

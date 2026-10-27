@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow, while Tamil is heard</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --hud:rgba(22,22,24,.92);--green:#30d158;
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+ --tamil:"Tamil Sangam MN","Tamil MN",Pixel,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+.review{max-width:1300px;margin:auto;padding:34px 30px 60px}
+.review h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:940px;margin:0 0 26px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 22px}
+.grid.three{grid-template-columns:repeat(3,1fr);gap:18px}
+.grid.three .desk{padding:12px}
+.grid.three .panel{width:100%;max-width:400px}
+.switch{display:flex;align-items:center;gap:8px;margin:0 0 20px;font-size:12px;color:var(--dim)}
+.switch button{border:1px solid var(--border);background:none;border-radius:6px;padding:5px 10px;color:var(--ink2);font-size:13px}
+.switch button.on{background:var(--sel);color:var(--ink);border-color:var(--strong)}
+.lang{font:11px var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.lang.ta{font-family:var(--tamil);letter-spacing:0;text-transform:none;font-size:12px}
+.t .lang{display:block;margin-top:2px;line-height:1.2}
+.waitrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.waitrow{flex-wrap:nowrap;align-items:flex-start}
+.waitrow .lang{line-height:1.5;flex:0 0 auto}
+.waitrow .blocks{padding-top:5px;flex:1;min-width:0}
+.fade{transition:opacity .3s}
+.opt h3{font-size:14px;font-weight:500;margin:0 0 4px}
+.opt h3 b{font:500 11px var(--mono);color:var(--dim);margin-right:8px}
+.opt p{font-size:13px;line-height:1.5;color:var(--ink2);margin:0 0 12px;min-height:40px}
+.desk{background:#2a2d33;border-radius:10px;padding:18px;border:1px solid var(--border)}
+
+/* the card */
+.panel{width:400px;height:300px;margin:auto;background:var(--hud);border:1px solid var(--strong);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+.prow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.eyebrow{font:11px var(--pixel);letter-spacing:.08em;text-transform:uppercase}
+.eyebrow.dim{color:var(--ink2)}
+.timer{font:12px var(--mono);color:var(--ink2)}
+.meter{display:flex;gap:3px}
+.meter i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18)}
+.meter i.on{background:var(--green)}
+.pb{margin-left:auto;display:flex;gap:6px}
+.pb span{height:26px;padding:0 9px;border-radius:5px;border:1px solid var(--strong);background:var(--fill);font:12px var(--pixel);display:inline-flex;align-items:center}
+.lines{flex:1;padding:10px 14px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.line{display:flex;gap:12px;padding:6px 0;font:14px/1.5 var(--pixel)}
+.line .t{width:46px;flex:0 0 46px;font:11px/2 var(--mono);color:var(--dim)}
+.line .w{flex:1}
+.line .ta{font-family:var(--tamil);line-height:1.65}
+.word{display:inline-block;margin-right:.3em;transition:opacity .34s ease-out,filter .34s ease-out,transform .34s ease-out}
+.word.in{opacity:0;filter:blur(3px);transform:translateY(3px)}
+
+/* A: the language, and the voice still moving */
+.heard{display:inline-flex;align-items:center;gap:10px;color:var(--ink2)}
+/* B: a line that grows as long as the talking */
+.grow{display:flex;align-items:center;gap:10px;color:var(--ink2)}
+.grow .bar{height:2px;background:var(--ink2);border-radius:1px;transition:width .25s linear}
+/* C: blocks for the words still to come */
+.blocks{display:flex;flex-wrap:wrap;gap:6px;padding-top:6px}
+.blocks i{display:block;height:9px;border-radius:2px;background:rgba(255,255,255,.16);transition:opacity .3s}
+/* D: Tamil in the status row, and the line's own clock */
+.tag{font:11px var(--pixel);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--strong);border-radius:4px;padding:2px 6px}
+.since{font:12px var(--mono);color:var(--ink2)}
+</style>
+</head>
+<body><main class="review">
+
+<h1>While Tamil is being heard, round 2</h1>
+<p class="lead"><b>Picked, 16 Oct 2026:</b> round 1 C, plain blocks, no word. The quiet word below was tried and dropped.</p>
+<p class="lead">C picked: grey blocks fill in for the words still to come. Each card adds one quiet sign that SigmaFlow heard Tamil, and nothing more: no message, nothing that says English is wrong. Switch the word between Tamil and தமிழ் at the top; every card follows.</p>
+<div class="switch"><span>The word</span><button data-l="en" class="on">Tamil</button><button data-l="ta">தமிழ்</button></div>
+
+<section class="grid three">
+ <div class="opt"><h3><b>1</b>Before the blocks, while they fill</h3><p>The word sits where the line starts and leaves when the Tamil lands; the Tamil itself says the rest.</p><div class="desk"><div class="panel" id="1"></div></div></div>
+ <div class="opt"><h3><b>2</b>Under the time, and it stays</h3><p>The word sits small under the line's time, and stays on every Tamil line, like a margin note.</p><div class="desk"><div class="panel" id="2"></div></div></div>
+ <div class="opt"><h3><b>3</b>In the top row, only while heard</h3><p>The word appears beside REC while a Tamil line is being heard, and goes when it lands. The lines stay as they are.</p><div class="desk"><div class="panel" id="3"></div></div></div>
+</section>
+</main>
+
+<script>
+const ENGLISH='So everything should be ready by Friday, the deck and the list.';
+const TAMIL='சரி, நான் ஸ்லைட்ஸ் எல்லாம் செவ்வாய்க்குள்ள அனுப்பிடறேன்.';
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+// One timeline for all four: English words drip in, Tamil is spoken for 4.5 s, a second's
+// pause, the Tamil lands, a rest, again.
+const T={englishEnd:3.2,tamilStart:3.6,tamilEnd:8.1,land:9.3,loop:12.5};
+let t0=performance.now();
+
+function meter(level){return `<span class="meter">${Array.from({length:14},(_,i)=>`<i class="${i<level?'on':''}"></i>`).join('')}</span>`}
+function englishWords(t){
+ const words=ENGLISH.split(' ');const n=Math.min(words.length,Math.floor(t/0.2)+1);
+ return words.slice(0,n).map((w,i)=>`<span class="word" data-k="e${i}">${esc(w)}</span>`).join('')}
+
+let LANG='en';
+function word(){return LANG==='en'?'<span class="lang">Tamil</span>':'<span class="lang ta">தமிழ்</span>'}
+function blocks(spoken){const n=Math.floor(spoken/0.55)+1;const widths=[38,52,30,64,44,58,36,70,48];
+ return `<span class="blocks">${widths.slice(0,n).map(w=>`<i style="width:${w}px"></i>`).join('')}</span>`}
+
+function render(id,t){
+ const speaking=t>=T.tamilStart&&t<T.tamilEnd;
+ const waiting=t>=T.tamilStart&&t<T.land;
+ const level=speaking?4+Math.floor(Math.random()*8):(t<T.englishEnd?5+Math.floor(Math.random()*6):1);
+ const spoken=Math.min(t,T.tamilEnd)-T.tamilStart;
+ let tamilLine='',timeExtra='';
+ if(t>=T.land){
+  tamilLine=`<span class="w ta">${TAMIL.split(' ').map((w,i)=>`<span class="word" data-k="t${i}">${esc(w)}</span>`).join('')}</span>`;
+  if(id==='2')timeExtra=word();
+ }else if(waiting){
+  tamilLine=id==='1'?`<span class="w"><span class="waitrow">${word()}${blocks(spoken)}</span></span>`:`<span class="w">${blocks(spoken)}</span>`;
+  if(id==='2')timeExtra=word();
+ }
+ const top=id==='3'&&waiting?word():'';
+ const lines=`<div class="line"><span class="t">00:59</span><span class="w">${englishWords(t)}</span></div>`+
+  (t>=T.tamilStart?`<div class="line"><span class="t">01:06${timeExtra}</span>${tamilLine}</div>`:'');
+ const el=document.getElementById(id);
+ const seen=new Set([...el.querySelectorAll('.word')].map(w=>w.dataset.k));
+ el.innerHTML=`<div class="prow"><span class="dot"></span><span class="eyebrow">Rec</span>${top}<span class="timer">${clock(52+t)}</span>${meter(level)}<span class="pb"><span>❙❙</span><span>Stop</span></span></div><div class="lines">${lines}</div>`;
+ el.querySelectorAll('.word').forEach(w=>{if(!seen.has(w.dataset.k)){w.classList.add('in');requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.remove('in')))}});
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;LANG=b.dataset.l;document.querySelectorAll('[data-l]').forEach(x=>x.classList.toggle('on',x===b))});
+function tick(){
+ const t=((performance.now()-t0)/1000)%T.loop;
+ for(const id of ['1','2','3'])render(id,t);
+}
+setInterval(tick,200);tick();
+</script>
+</body></html>

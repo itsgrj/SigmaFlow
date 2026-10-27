@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HUD Grow Options</title>
+<style>
+  @font-face{font-family:"Pixel";src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+  @font-face{font-family:"GMono";src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+  :root{
+    --ink:#EDEDED; --ink2:#A1A1A1; --dim:#8F8F8F;
+    --border:rgba(255,255,255,.145); --borderStrong:rgba(255,255,255,.20);
+    --hudGlass:rgba(16,16,16,.62); --green:#32D74B; --meterOff:rgba(255,255,255,.18);
+    --pixel:"Pixel","GMono",Menlo,monospace; --mono:"GMono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0A0A0A;color:var(--ink);font-family:var(--pixel);font-size:14px;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* ---------- review chrome, outside the app ---------- */
+  .review{max-width:1240px;margin:0 auto;padding:40px 24px 64px}
+  .review h1{font-size:22px;font-weight:400;margin-bottom:8px}
+  .lead{color:var(--ink2);max-width:780px;line-height:1.55;margin-bottom:24px;font-size:14px}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+  .btn{height:32px;padding:0 14px;border:1px solid var(--borderStrong);border-radius:6px;font-size:13px}
+  .btn:hover{background:rgba(255,255,255,.06)}
+  .btn.on{background:#EDEDED;color:#0A0A0A;border-color:#EDEDED}
+  .bar .hint{color:var(--dim);font-size:12px;margin-left:6px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:20px}
+  .cell{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#141414}
+  .cell header{padding:16px 18px 14px;border-bottom:1px solid var(--border)}
+  .cell h2{font-size:14px;font-weight:400;text-transform:uppercase;letter-spacing:.72px;margin-bottom:6px}
+  .cell h2 .k{font-family:var(--mono);font-size:11px;color:var(--dim);margin-right:8px;letter-spacing:.06em}
+  .cell p{color:var(--ink2);font-size:13px;line-height:1.6}
+  .cell .build{color:var(--dim);font-size:12px;margin-top:6px}
+  .cell .build::before{content:"↳ "}
+
+  /* the desktop the overlay floats over: the grey from Gokul's screenshots */
+  .stage{position:relative;height:300px;background:#474747;overflow:hidden}
+
+  /* ---------- the overlay, to HUDView / GlassCard ---------- */
+  .hud{position:absolute;left:50%;bottom:28px;width:440px;margin-left:-220px;
+       border-radius:12px;overflow:hidden;
+       background:var(--hudGlass);
+       -webkit-backdrop-filter:blur(30px) saturate(1.3);backdrop-filter:blur(30px) saturate(1.3);
+       border:1px solid var(--borderStrong);
+       box-shadow:0 12px 32px rgba(0,0,0,.55);
+       will-change:height}
+  .hud .in{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;align-items:center;gap:15px}
+  .rec{display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink);margin:2px}
+  .eyebrow{font-size:12px;letter-spacing:.72px;text-transform:uppercase}
+  .timer{font-size:12px;color:var(--ink2)}
+  .meter{display:flex;gap:3px}
+  .meter i{width:5px;height:5px;border-radius:50%;background:var(--meterOff)}
+  .meter i.lit{background:var(--green)}
+  .words{display:flex;flex-wrap:wrap;column-gap:4px;row-gap:3px;font-size:14px;line-height:18px;min-height:18px}
+  .words span{display:inline-block}
+  .words span.flow{animation:wordFlow var(--wf,340ms) ease-out both}
+  .words span.wait{opacity:0}
+  .words .placeholder{color:var(--ink2)}
+  @keyframes wordFlow{
+    from{opacity:0;filter:blur(3px);transform:translateY(3px)}
+    to{opacity:1;filter:blur(0);transform:none}
+  }
+  /* C: the edge catches the light once while it moves, then settles back */
+  @keyframes catch{
+    0%{border-color:rgba(255,255,255,.20)}
+    35%{border-color:rgba(255,255,255,.38)}
+    100%{border-color:rgba(255,255,255,.20)}
+  }
+  .hud.catching{animation:catch var(--cl,620ms) ease-out}
+
+  @media (max-width:600px){
+    .grid{grid-template-columns:1fr}
+    .hud{width:calc(100% - 24px);left:12px;margin-left:0}
+  }
+</style>
+</head>
+<body>
+<div class="review">
+  <h1>How the overlay grows</h1>
+  <p class="lead">Every time a sentence wraps onto a new line, the overlay gets one line taller. Right now that happens in a single frame. Below are four ways for it to grow, each fed the same sentence at the real speed, with today's behaviour first for comparison. Turn on slow motion to see the difference, then turn it off to judge how they actually feel.</p>
+
+  <div class="bar">
+    <button class="btn" id="replay">Replay</button>
+    <button class="btn" id="slow">Slow motion ×4</button>
+    <span class="hint">All five restart together</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const SENTENCE = "So when the overlay is being used and a new line comes in, the card should make room for it quietly, without drawing attention to itself, the way a good assistant steps aside.";
+
+const OPTIONS = [
+  { key:"00", id:"now",    name:"Now",
+    text:"Today's build. The card jumps to the new height in one frame. Clean, but the jump is the one abrupt thing on screen.",
+    build:"Reference only" },
+  { key:"A",  id:"glide",  name:"Glide",
+    text:"The top edge eases up over a quarter second, fast at first and slowing into place. The status row rides the edge; the new line opens beneath it. The quietest option.",
+    build:"Simple. One timing curve on the window" },
+  { key:"B",  id:"breath", name:"Breath",
+    text:"A soft spring. The edge rises and settles with about one pixel of give before it rests, so the card feels like it breathes in. Slightly more alive than Glide.",
+    build:"Medium. The window is stepped frame by frame" },
+  { key:"C",  id:"catch",  name:"Catch light",
+    text:"Glide, plus the thin edge brightens a touch while it moves and settles back as the card lands. One soft pass, never repeated, white only.",
+    build:"Simple. Glide plus one fade on the edge" },
+  { key:"D",  id:"room",   name:"Make room",
+    text:"Glide, sequenced. The card opens the new line first, and the next word only drifts in once the space is there. Feels deliberate: room, then words.",
+    build:"Medium. Words on a new line wait for the card" },
+];
+
+let speed = 1;            // 4 in slow motion
+let runId = 0;
+const cards = [];
+
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+
+// Build the cells
+const grid = document.getElementById("grid");
+for (const opt of OPTIONS){
+  const cell = el("section","cell");
+  const head = el("header");
+  head.append(el("h2",null,`<span class="k">[ ${opt.key} ]</span>${opt.name}`), el("p",null,opt.text), el("div","build",opt.build));
+  const stage = el("div","stage");
+  const hud = el("div","hud");
+  const inner = el("div","in");
+  const row = el("div","row");
+  const rec = el("div","rec"); rec.append(el("div","dot"), el("span","eyebrow","Rec"));
+  const timer = el("span","timer","00:00");
+  const meter = el("div","meter"); for(let i=0;i<14;i++) meter.append(el("i"));
+  row.append(rec, timer, meter);
+  const words = el("div","words");
+  inner.append(row, words);
+  hud.append(inner);
+  stage.append(hud);
+  cell.append(head, stage);
+  grid.append(cell);
+  cards.push({opt, hud, inner, words, timer, meter, height:0, spring:null, raf:0});
+}
+
+/* ---------- height motion, per option ---------- */
+const GLIDE_MS = 260;
+const GLIDE_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+function setHeightInstant(c, h){
+  cancelAnimationFrame(c.raf); c.spring=null;
+  c.hud.style.transition = "none";
+  c.hud.style.height = h + "px";
+  c.height = h;
+}
+
+function glideTo(c, h){
+  c.hud.style.transition = `height ${GLIDE_MS*speed}ms ${GLIDE_EASE}`;
+  c.hud.style.height = h + "px";
+  c.height = h;
+}
+
+// Critically-near spring: response ~0.42s, damping 0.78 → about 1px of overshoot on an 21px step
+function springTo(c, h){
+  c.hud.style.transition = "none";
+  const from = c.spring ? c.spring.x : c.height;
+  const v0 = c.spring ? c.spring.v : 0;
+  c.height = h;
+  const response = 0.42, damping = 0.78;
+  const k = Math.pow(2*Math.PI/response, 2), b = 4*Math.PI*damping/response;
+  c.spring = { x:from, v:v0, target:h };
+  let last = performance.now();
+  cancelAnimationFrame(c.raf);
+  const step = now => {
+    const s = c.spring; if(!s) return;
+    let dt = Math.min(0.032, (now-last)/1000) / speed; last = now;
+    // a few substeps keep it stable
+    for(let i=0;i<4;i++){ const a = -k*(s.x-s.target) - b*s.v; s.v += a*dt/4; s.x += s.v*dt/4; }
+    c.hud.style.height = s.x + "px";
+    if (Math.abs(s.x-s.target) < 0.05 && Math.abs(s.v) < 0.5){ c.hud.style.height = s.target+"px"; c.spring=null; return; }
+    c.raf = requestAnimationFrame(step);
+  };
+  c.raf = requestAnimationFrame(step);
+}
+
+function catchLight(c){
+  c.hud.classList.remove("catching");
+  void c.hud.offsetWidth;
+  c.hud.style.setProperty("--cl", (620*speed)+"ms");
+  c.hud.classList.add("catching");
+}
+
+function natural(c){ return c.inner.offsetHeight + 2; } // + the 1px border top and bottom
+
+function growTo(c, h, first){
+  if (first || c.opt.id === "now"){ setHeightInstant(c, h); return; }
+  if (h === c.height) return;
+  switch (c.opt.id){
+    case "glide": glideTo(c,h); break;
+    case "breath": springTo(c,h); break;
+    case "catch": glideTo(c,h); catchLight(c); break;
+    case "room": glideTo(c,h); break;
+  }
+}
+
+/* ---------- the script: words at 130ms, as WordFlowText drips them ---------- */
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function addWord(c, text, delayReveal){
+  const s = el("span", delayReveal ? "wait" : "flow", text);
+  s.style.setProperty("--wf", (340*speed)+"ms");
+  c.words.append(s);
+  return s;
+}
+
+function reveal(span){ span.classList.remove("wait"); span.classList.add("flow"); }
+
+async function run(){
+  const id = ++runId;
+  const list = SENTENCE.split(" ");
+  for (const c of cards){
+    c.words.innerHTML = '<span class="placeholder">Listening</span>';
+    c.timer.textContent = "00:00";
+    c.hud.style.opacity = 1;
+    growTo(c, natural(c), true);
+  }
+  const t0 = performance.now();
+  const tick = setInterval(() => {
+    if (id !== runId) return clearInterval(tick);
+    const s = Math.floor((performance.now()-t0)/1000/speed);
+    for (const c of cards){
+      c.timer.textContent = "00:" + String(s).padStart(2,"0");
+      const lvl = 2 + Math.round(Math.random()*4);
+      [...c.meter.children].forEach((d,i) => d.classList.toggle("lit", i < lvl));
+    }
+  }, 120);
+
+  await sleep(700*speed); if (id !== runId) return;
+  for (const c of cards){ c.words.innerHTML = ""; }
+
+  for (let i=0; i<list.length; i++){
+    if (id !== runId) return;
+    for (const c of cards){
+      const before = c.height;
+      const span = addWord(c, list[i], c.opt.id === "room");
+      const h = natural(c);
+      if (c.opt.id === "room"){
+        if (h > before){
+          growTo(c, h);
+          // the word waits until most of the glide has landed
+          setTimeout(() => reveal(span), GLIDE_MS*0.7*speed);
+        } else reveal(span);
+      } else {
+        growTo(c, h, i === 0);
+      }
+    }
+    await sleep(130*speed);
+  }
+
+  await sleep(2200*speed); if (id !== runId) return;
+  clearInterval(tick);
+  for (const c of cards){ c.hud.style.transition = `opacity ${300*speed}ms ease-out`; c.hud.style.opacity = 0; }
+  await sleep(900*speed); if (id !== runId) return;
+  run();
+}
+
+document.getElementById("replay").onclick = () => run();
+document.getElementById("slow").onclick = e => {
+  speed = speed === 1 ? 4 : 1;
+  e.currentTarget.classList.toggle("on", speed !== 1);
+  run();
+};
+document.fonts.ready.then(run);
+</script>
+</body>
+</html>

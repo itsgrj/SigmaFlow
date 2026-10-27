@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "SigmaFlow dictation states",
+    "output": "docs/diagrams/sigmaflow-states.html",
+    "viewBox": [
+      980,
+      566
+    ],
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "hold",
+        "label": "Hold and release",
+        "focus": [
+          "idle",
+          "starting",
+          "listening",
+          "finishing",
+          "typed"
+        ],
+        "note": "The ordinary push-to-talk round trip, from key down to text in the focused app."
+      },
+      {
+        "id": "latch",
+        "label": "Hands-free latch",
+        "focus": [
+          "idle",
+          "listening",
+          "finishing"
+        ],
+        "note": "A double tap in Idle sets a latch flag: Listening continues with no key held until the next tap or any ordinary key."
+      },
+      {
+        "id": "abandon",
+        "label": "Ways out",
+        "focus": [
+          "listening",
+          "finishing",
+          "abandoned",
+          "idle"
+        ],
+        "note": "Esc, a sub-300 ms tap, the watchdog, or an error throw the recording away. Nothing is typed."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Push-to-talk"
+    },
+    {
+      "id": "exits",
+      "label": "Abandoned"
+    }
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "type": "start",
+      "label": "Idle",
+      "sublabel": "waiting for key",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "starting",
+      "type": "active",
+      "label": "Starting",
+      "sublabel": "key down: warm-up",
+      "lane": "main",
+      "col": 1,
+      "step": "02"
+    },
+    {
+      "id": "listening",
+      "type": "active",
+      "label": "Listening",
+      "sublabel": "audio → engine",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "held or latched"
+    },
+    {
+      "id": "finishing",
+      "type": "waiting",
+      "label": "Finishing",
+      "sublabel": "key up: process",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "watchdog"
+    },
+    {
+      "id": "typed",
+      "type": "success",
+      "label": "Typed",
+      "sublabel": "text injected",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "back to idle"
+    },
+    {
+      "id": "abandoned",
+      "type": "failure",
+      "label": "Abandoned",
+      "sublabel": "nothing is typed",
+      "lane": "exits",
+      "col": 0,
+      "tag": "error shown"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "hold",
+      "from": "idle",
+      "to": "starting",
+      "variant": "emphasis"
+    },
+    {
+      "id": "mic-open",
+      "from": "starting",
+      "to": "listening",
+      "variant": "emphasis"
+    },
+    {
+      "id": "release",
+      "from": "listening",
+      "to": "finishing",
+      "variant": "emphasis"
+    },
+    {
+      "id": "inject",
+      "from": "finishing",
+      "to": "typed",
+      "variant": "emphasis"
+    },
+    {
+      "id": "back-to-idle",
+      "from": "typed",
+      "to": "idle",
+      "route": "top-channel"
+    },
+    {
+      "id": "esc-listening",
+      "from": "listening",
+      "to": "abandoned",
+      "label": "Esc · tap < 300 ms",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelDy": 30
+    },
+    {
+      "id": "watchdog",
+      "from": "finishing",
+      "to": "abandoned",
+      "label": "Esc · watchdog",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "right"
+    },
+    {
+      "id": "recover",
+      "from": "abandoned",
+      "to": "idle",
+      "label": "after 3–4 s",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Main path",
+      "items": [
+        "Hold = push-to-talk; release ends the utterance",
+        "Finishing drains the audio stream, then transcribes, cleans, corrects, expands and injects",
+        "A second key press during Finishing is ignored, so nothing pastes twice"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Hands-free",
+      "items": [
+        "A sub-300 ms tap is discarded and arms a 350 ms double-tap window",
+        "The second tap sets isLatched and starts recording; no key needs holding",
+        "Latched is a flag on Listening, not a state: the next tap or any ordinary key ends it like a release"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Abandon",
+      "items": [
+        "Esc abandons anything active; the keystroke is swallowed",
+        "Watchdog: 30–180 s scaled to speech length, then a visible reason",
+        "runGeneration invalidates every async tail of the abandoned run"
+      ]
+    }
+  ]
+}

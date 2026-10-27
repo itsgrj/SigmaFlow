@@ -1,0 +1,42 @@
+name: macOS
+
+# Runs the dictionary test vectors against the Swift implementation.
+
+on:
+  push:
+    branches: [main]
+    paths: ['Sources/**', 'Tests/**', 'Package.swift', '.github/workflows/macos.yml']
+  pull_request:
+    paths: ['Sources/**', 'Tests/**', 'Package.swift', '.github/workflows/macos.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dictionary-contract:
+    name: Dictionary contract
+    runs-on: macos-26
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # mlx-swift (search) declares swift-tools-version 6.3, which macos-15's newest Xcode
+      # (Swift 6.2.4) can't even resolve; hence macos-26. Select the newest Xcode present
+      # rather than pinning a version that will age out of the image.
+      - name: Select the newest Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "Using $latest"
+          sudo xcode-select -s "$latest/Contents/Developer"
+
+      - name: Swift version
+        run: swift --version
+
+      # The app target needs macOS 26 and the Speech framework, which the runner image
+      # does not have. The dictionary target is deliberately platform-neutral, so it — and
+      # the contract that matters here — builds and tests anywhere.
+      - name: Test the dictionary target
+        run: swift test --filter VectorTests
+

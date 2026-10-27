@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SigmaFlow · Voice Profile</title>
+<style>
+  @font-face{font-family:"Plex Sans";font-weight:400;src:url("../../Resources/Fonts/IBMPlexSans-Regular.ttf")}
+  @font-face{font-family:"Plex Sans";font-weight:500;src:url("../../Resources/Fonts/IBMPlexSans-Medium.ttf")}
+  @font-face{font-family:"Plex Sans";font-weight:600;src:url("../../Resources/Fonts/IBMPlexSans-SemiBold.ttf")}
+  @font-face{font-family:"Plex Mono";font-weight:400;src:url("../../Resources/Fonts/IBMPlexMono-Regular.ttf")}
+  @font-face{font-family:"Plex Mono";font-weight:500;src:url("../../Resources/Fonts/IBMPlexMono-Medium.ttf")}
+  @font-face{font-family:"Plex Mono";font-weight:600;src:url("../../Resources/Fonts/IBMPlexMono-SemiBold.ttf")}
+  :root{--ink:#f4f4f4;--ink2:#bebebe;--dim:#707070;--seam:rgba(255,255,255,.18);--hover:rgba(255,255,255,.13);--sans:"Plex Sans",-apple-system,Helvetica,Arial,sans-serif;--mono:"Plex Mono",Menlo,monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#161616;color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+  .review{max-width:1440px;margin:0 auto;padding:40px 32px 48px}.review>h1{font-size:20px;font-weight:600;margin-bottom:6px}.lead{color:var(--ink2);max-width:850px;line-height:1.55;margin-bottom:26px}.sechead{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:34px 0 14px}.legend{width:1180px;color:var(--ink2);line-height:1.65;font-size:13px;margin-top:14px}.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}.decisions{display:grid;grid-template-columns:1fr 1fr;gap:42px;width:1180px;margin-top:34px;padding-top:22px;border-top:1px solid var(--seam)}.decisions h2{font-size:14px;margin-bottom:8px}.decisions p,.decisions li{font-size:13px;line-height:1.6;color:var(--ink2)}.decisions ul{list-style:none}.decisions li::before{content:"↳ ";color:var(--dim)}code{font:12px var(--mono)}
+  .app{width:1180px;height:780px;display:flex;position:relative;overflow:hidden;border:1px solid var(--seam);background:#080808}.rail{width:264px;flex:0 0 264px;background:#000;display:flex;flex-direction:column;padding:20px 0 24px;border-right:1px solid var(--seam)}.wordmark{font:600 15px var(--mono);letter-spacing:.16em;padding:8px 20px 6px}.tagline{font-size:12px;line-height:1.5;color:var(--ink2);padding:0 20px 22px}.nav a{display:flex;align-items:center;gap:12px;padding:11px 20px;color:var(--ink2);text-decoration:none;position:relative}.nav a.on{color:#fff;background:var(--hover);font-weight:500}.nav a.on::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;background:#fff}.nav img{width:16px;height:16px;filter:invert(1);opacity:.8}.foot{margin-top:auto;padding:14px 20px 0;border-top:1px solid var(--seam);font:10px/1.7 var(--mono);letter-spacing:.06em;color:var(--dim)}.stage{flex:1;position:relative;overflow:hidden}.bg{position:absolute;inset:0;background:url("../../Resources/background.jpg") right center/cover no-repeat}.scroll{position:relative;height:100%;overflow:auto;padding:34px 40px 58px}.page{max-width:830px}
+  .title{font-size:26px;font-weight:500;letter-spacing:-.01em}.sub{max-width:570px;color:var(--ink2);line-height:1.55;margin:8px 0 32px}.eyebrow{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:12px}.persona{font:600 31px var(--mono);letter-spacing:.06em;margin-bottom:8px}.personaDesc{font-size:15px;line-height:1.5;max-width:570px;color:var(--ink2)}.sampleNote{font:10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-top:12px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0 38px}.stat{border:1px solid var(--seam);padding:12px 14px 14px}.stat .k{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}.stat .v{font:500 20px var(--mono);margin-top:6px}
+  .why{border-top:1px solid var(--seam)}.reason{display:grid;grid-template-columns:210px 1fr;padding:15px 0;border-bottom:1px solid var(--seam);gap:24px}.reasonKey{font:500 12px var(--mono);letter-spacing:.03em}.reasonValue{font-size:14px;line-height:1.5;color:var(--ink2)}.reasonValue b{font-family:var(--mono);font-weight:500;color:var(--ink)}.bar{height:1px;background:var(--seam);margin-top:9px}.bar i{display:block;height:1px;background:#fff}.scale{display:flex;justify-content:space-between;font:9px var(--mono);color:var(--dim);margin-top:5px}
+  .quotes{margin-top:32px}.quote{display:grid;grid-template-columns:70px 1fr;gap:18px;padding:15px 0;border-top:1px solid var(--seam)}.quote:last-child{border-bottom:1px solid var(--seam)}.quoteNo{font:10px var(--mono);letter-spacing:.07em;color:var(--dim);padding-top:3px}blockquote{font-size:14px;line-height:1.55}.quoteMeta{font:10px var(--mono);color:var(--ink2);margin-top:7px}mark{color:var(--ink);background:none;border-bottom:1px solid rgba(255,255,255,.7);padding-bottom:1px}.method{margin-top:30px;padding:14px 16px;border-left:2px solid #fff;background:rgba(255,255,255,.055)}.method h3{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}.method p{font-size:13px;line-height:1.55;color:var(--ink2)}.chip{position:absolute;width:20px;height:20px;border-radius:50%;border:1px solid #fff;background:#000;color:#fff;font:11px/18px var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<main class="review">
+  <h1>Voice Profile — revised visual review</h1>
+  <p class="lead">Milestones and unlocking are removed completely. This page names one current voice profile and makes the decision inspectable: the measured signals, their observation window, and exact excerpts from the user's own recent transcriptions. No other profile names appear anywhere.</p>
+  <p class="sechead">The Profile page in SigmaFlow</p>
+  <section class="app">
+    <aside class="rail">
+      <div class="wordmark">SIGMAFLOW</div><div class="tagline">Push-to-talk dictation for your Mac. Hold a key, talk, and the words land where your cursor is.</div>
+      <nav class="nav">
+        <a href="#"><img src="../../Resources/Icons/text--align--left.svg" alt="">Transcriptions</a><a href="#" class="on"><img src="../../Resources/Icons/lightning.svg" alt="">Profile</a><a href="#"><img src="../../Resources/Icons/user--speaker.svg" alt="">Meetings</a><a href="#"><img src="../../Resources/Icons/book.svg" alt="">Dictionary</a><a href="#"><img src="../../Resources/Icons/text--short-paragraph.svg" alt="">Snippets</a><a href="#"><img src="../../Resources/Icons/magic-wand.svg" alt="">Styles</a><a href="#"><img src="../../Resources/Icons/chip.svg" alt="">Models</a><a href="#"><img src="../../Resources/Icons/settings.svg" alt="">Settings</a>
+      </nav><div class="foot">v0.7 · macOS · built by GRJ<br>model parakeet unified en · on-device</div>
+    </aside>
+    <div class="stage"><div class="bg"></div><div class="scroll"><div class="page">
+      <h1 class="title">Profile</h1><p class="sub">A portrait of how you speak to SigmaFlow, drawn from your recent transcriptions. It changes as your habits change.</p>
+      <div class="eyebrow">Your voice</div><div class="persona">THE PHILOSOPHER</div><p class="personaDesc">You build an idea before you let it go. Your dictations tend to be long, connected thoughts with context carried from one phrase into the next.</p><div class="sampleNote">Based on your latest 50 transcriptions · updated today at 9:57 pm</div>
+      <div class="stats"><div class="stat"><div class="k">Avg. utterance</div><div class="v">31 words</div></div><div class="stat"><div class="k">Connected thoughts</div><div class="v">72%</div></div><div class="stat"><div class="k">Avg. duration</div><div class="v">18.4 sec</div></div><div class="stat"><div class="k">Sample size</div><div class="v">50</div></div></div>
+      <div class="eyebrow">Why this profile</div>
+      <section class="why">
+        <div class="reason"><div class="reasonKey">LENGTH OF THOUGHT</div><div class="reasonValue"><b>31 words on average</b> — your recent dictations are long enough to develop an idea rather than capture a short command.<div class="bar"><i style="width:78%"></i></div><div class="scale"><span>brief</span><span>your voice</span><span>extended</span></div></div></div>
+        <div class="reason"><div class="reasonKey">CONNECTED LANGUAGE</div><div class="reasonValue"><b>36 of 50 transcriptions</b> join clauses using words such as “because”, “if”, “then”, “but”, “so”, and “which”.</div></div>
+        <div class="reason"><div class="reasonKey">CONTEXT GIVEN</div><div class="reasonValue"><b>29 of 50 transcriptions</b> introduce background before the request or conclusion — phrases like “before you go ahead”, “for example”, and “that said”.</div></div>
+      </section>
+      <section class="quotes"><div class="eyebrow">Words that shaped the decision</div>
+        <div class="quote"><div class="quoteNo">EXCERPT 01</div><div><blockquote>“<mark>Before you go ahead</mark> and create the skill, I want to tell you one small thing. You mentioned that we can have a few seed lanes and seed processes, right?”</blockquote><div class="quoteMeta">46 words · context before request · 9:51 pm</div></div></div>
+        <div class="quote"><div class="quoteNo">EXCERPT 02</div><div><blockquote>“<mark>For example</mark>, if somebody reaches their first hundred transcriptions, then we can have a way to let the user know that they've reached this much.”</blockquote><div class="quoteMeta">27 words · example used to develop an idea · 9:45 pm</div></div></div>
+        <div class="quote"><div class="quoteNo">EXCERPT 03</div><div><blockquote>“<mark>That said</mark>, I do have certain changes that need to be done for the voice profile, or rather, I have a few problems with it.”</blockquote><div class="quoteMeta">25 words · qualification and refinement · 10:17 pm</div></div></div>
+      </section>
+      <aside class="method"><h3>How this is decided</h3><p>SigmaFlow examines only the latest 50 transcriptions so the portrait can change with you. Analysis stays on this Mac. The examples above come directly from your history; they are not sent anywhere and no AI service is required.</p></aside>
+    </div></div></div>
+    <span class="chip" style="left:6px;top:118px">1</span><span class="chip" style="left:290px;top:34px">2</span><span class="chip" style="left:290px;top:150px">3</span><span class="chip" style="left:290px;top:300px">4</span><span class="chip" style="left:290px;top:418px">5</span><span class="chip" style="left:290px;top:670px">6</span>
+  </section>
+  <div class="legend"><b>①</b> Profile stays second in the sidebar, but it is not a game or progression surface.<br><b>②</b> The header says this is a changing portrait, not a permanent achievement.<br><b>③</b> Only the current profile is named; scope and update time are visible.<br><b>④</b> Four profile-relevant measurements explain this classification instead of celebrating lifetime volume.<br><b>⑤</b> “Why this profile” exposes aggregate signals; the excerpts quote representative phrases and underline the relevant language.<br><b>⑥</b> Method and privacy are stated plainly. There is no persona shelf, locked state, milestone, celebration slab, or toggle.</div>
+  <div class="decisions"><div><h2>Questions for visual approval</h2><ul><li>Keep Profile second in the sidebar?</li><li>Use the latest 50 transcriptions as the moving observation window?</li><li>Keep three exact excerpts, or show fewer?</li><li>Keep relevant words underlined inside each excerpt?</li></ul></div><div><h2>What will be built after approval</h2><p>A pure local analyzer over <code>runs.jsonl</code>, a single current Renaissance profile with an explainable evidence bundle, and this Profile page. Nothing is persisted beyond the transcription history that already exists.</p></div></div>
+</main>
+</body>
+</html>

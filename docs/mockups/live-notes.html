@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow, live notes</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#878787;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--hud:rgba(16,16,16,.62);--scrim:rgba(0,0,0,.58);--green:#30d158;
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+ --tamil:"Tamil Sangam MN","Tamil MN",Pixel,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+.review{max-width:1240px;margin:auto;padding:34px 30px 60px}
+.review h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:920px;margin:0 0 22px}
+.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 12px}
+.choice{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#1a1a1a}
+.choice h3{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:0 0 10px}
+.seg{display:flex;flex-direction:column;gap:4px}
+.seg button{text-align:left;border:1px solid transparent;background:none;border-radius:6px;padding:7px 9px;color:var(--ink2);font-size:13px;line-height:1.35}
+.seg button b{font:500 10px var(--mono);margin-right:8px;color:var(--dim)}
+.seg button.on{border-color:var(--strong);background:var(--sel);color:var(--ink)}
+.seg button.on b{color:var(--ink)}
+.seg button .ic{display:inline-flex;gap:7px;margin-left:8px;vertical-align:-3px}
+.seg button .ic img{width:15px;height:15px;filter:invert(1);opacity:.85}
+.seg button .ic img.off{opacity:.3}
+.fixed{border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:0 0 22px;color:var(--ink2);font-size:13px;line-height:1.6}
+.fixed b{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:400;display:block;margin-bottom:4px}
+.screens{display:flex;border-bottom:1px solid var(--border);margin:22px 0 16px}
+.screens button{border:0;background:none;padding:12px 0;margin-right:30px;color:var(--dim);position:relative}
+.screens button.on{color:var(--ink)}
+.screens button.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#fff}
+.screens .k{font:10px var(--mono);margin-right:8px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin:0 0 18px;max-width:1160px}
+.notes h2{font-size:14px;font-weight:500;margin:0 0 6px}
+.notes p{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 6px}
+.notes .p{font-size:13px;line-height:1.55;color:var(--ink2);margin:0}
+.notes .p:before{content:"↳ ";color:var(--dim)}
+.hide{display:none!important}
+.state{display:flex;gap:8px;margin:0 0 12px;align-items:center;flex-wrap:wrap}
+.state button{border:1px solid var(--border);background:none;border-radius:6px;padding:6px 10px;color:var(--ink2);font-size:12px}
+.state button.on{background:var(--sel);color:var(--ink);border-color:var(--strong)}
+.state span{font-size:12px;color:var(--dim);margin-left:6px}
+.stagewrap{position:relative}
+
+/* the desktop: someone's own work, the overlay on top */
+.desk{width:1160px;height:720px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#2a2d33}
+.menubar{position:absolute;left:0;right:0;top:0;height:26px;background:rgba(30,30,32,.85);display:flex;align-items:center;padding:0 14px;gap:18px;font:13px var(--geist);color:#ddd}
+.menubar .r{margin-left:auto;display:flex;gap:16px;color:#bbb;align-items:center}
+.menubar .r img{width:14px;filter:invert(1);opacity:.85}
+.app{position:absolute;left:60px;top:60px;width:640px;height:560px;border-radius:10px;background:#f4f4f2;overflow:hidden;color:#333}
+.app .bar{height:34px;background:#e2e2df;display:flex;align-items:center;gap:7px;padding:0 12px}
+.app .bar i{width:11px;height:11px;border-radius:50%;background:#bbb;display:inline-block}
+.app .bar span{margin-left:14px;font:12px var(--geist);color:#666}
+.app .doc{padding:30px 40px;font:14px/1.7 var(--geist)}
+.app .doc h2{font-size:18px;margin:0 0 10px}
+.app .doc p{margin:0 0 10px;color:#555}
+.dock{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:420px;height:52px;border-radius:14px;background:rgba(60,60,64,.55);border:1px solid rgba(255,255,255,.1)}
+
+/* the dictation overlay, as it is today */
+.hud{position:absolute;left:50%;bottom:72px;transform:translateX(-50%);width:420px;background:var(--hud);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--strong);border-radius:12px;padding:12px 14px}
+.hud .row{display:flex;align-items:center;gap:10px}
+.hud .words{font:14px/1.5 var(--pixel);margin-top:8px}
+
+/* the notes overlay: top right, fixed width, the height is yours */
+.panel{position:absolute;right:14px;top:40px;width:400px;background:var(--hud);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--strong);border-radius:12px;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.prow{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink);flex:0 0 auto}
+.dot.paused{background:none;border:1.5px solid var(--ink2)}
+.eyebrow{font:11px var(--pixel);letter-spacing:.08em;text-transform:uppercase}
+.timer{font:12px var(--mono);color:var(--ink2)}
+.meter{display:flex;gap:3px;align-items:center;min-width:0;overflow:hidden;flex:0 1 auto}
+.meter i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18);flex:0 0 auto}
+.meter i.on{background:var(--green)}
+.pbtns{margin-left:auto;display:flex;gap:6px;flex:0 0 auto}
+.pb{height:26px;padding:0 9px;border-radius:5px;border:1px solid var(--strong);background:var(--fill);font:12px var(--pixel);display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+.pb img{width:13px;filter:invert(1)}
+.pb.icon{padding:0 7px}
+.pb.icon.off img{opacity:.3}
+.lines{flex:1;overflow:auto;padding:10px 14px 6px;min-height:0}
+.line{display:flex;gap:12px;padding:7px 0;font:14px/1.5 var(--pixel)}
+.line .t{width:46px;flex:0 0 46px;display:flex;flex-direction:column;gap:6px}
+.line .t span{font:11px/2 var(--mono);color:var(--dim)}
+.line .w{flex:1;min-width:0}
+.line .w .live{color:var(--ink2)}
+.line .w.ta{font-family:var(--tamil);font-size:14px;line-height:1.65}
+.line .wait{color:var(--dim)}
+.grip{height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center}
+.grip i{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.22)}
+.grip:hover i{background:rgba(255,255,255,.45)}
+
+/* photos: crops of the painting stand in for the camera */
+.shot{display:block;width:46px;height:34px;border-radius:3px;border:1px solid var(--border);background:url("../../Resources/background-colour.jpg");background-size:800% auto;flex:0 0 auto}
+/* screenshots: a drawing of the screen stands in */
+.scr{display:block;width:46px;height:29px;border-radius:3px;border:1px solid var(--strong);background:#2a2d33;position:relative;overflow:hidden;flex:0 0 auto}
+.scr i{position:absolute;left:9%;top:14%;width:58%;height:72%;background:#f4f4f2;border-radius:1px}
+.scr b{position:absolute;left:15%;top:28%;width:30%;height:7%;background:#999}
+.scr u{position:absolute;left:15%;top:42%;width:42%;height:4%;background:#bbb}
+.scr.window i{left:0;top:0;width:100%;height:100%}
+.scr.window b{left:10%;width:48%}
+.scr.window u{left:10%;width:66%}
+.scr.wide{width:200px;height:125px}
+.peekable{cursor:zoom-in}
+.peeknone .peekable{cursor:default}
+
+/* the bigger view */
+.peek{position:absolute;z-index:20;border:1px solid var(--strong);border-radius:8px;background:#0c0c0c;padding:8px;box-shadow:0 18px 50px rgba(0,0,0,.6);pointer-events:none}
+.peek .shot,.peek .scr{border:0;border-radius:4px}
+.peek .when{font:11px var(--mono);color:var(--dim);margin-top:7px;display:flex;justify-content:space-between}
+.peek.center{pointer-events:auto;cursor:zoom-out}
+
+/* after stop: the transcript in the app */
+.win{width:1160px;height:640px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;position:relative;background:#000}
+.rail{width:219px;flex:0 0 219px;background:#000;border-right:1px solid var(--border);padding:58px 10px 16px;display:flex;flex-direction:column}
+.word{font:28px var(--pixel);padding:0 11px;margin-bottom:34px}.word span{font-family:PixelCircle,var(--pixel)}
+.nav div{display:flex;align-items:center;gap:13px;height:37px;padding:0 11px;border-radius:6px;font:14px var(--pixel);margin-bottom:9px}
+.nav div.on{background:var(--sel)}
+.nav img{width:15px;height:15px;filter:invert(1);opacity:.75}
+.stage{flex:1;position:relative;overflow:hidden}
+.paint{position:absolute;inset:0;background:url("../../Resources/background-colour.jpg") center/cover}
+.paint:after{content:"";position:absolute;inset:0;background:var(--scrim)}
+.page{position:relative;height:100%;overflow:auto;padding:30px 29px 40px}
+.back{display:inline-flex;align-items:center;gap:8px;font:13px var(--pixel);color:var(--ink2);margin-bottom:16px}
+.back img{width:13px;filter:invert(1);opacity:.7}
+.thead{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px}
+.thead .tt1{font:22px var(--pixel)}
+.facts{font:13px var(--pixel);color:var(--ink2);display:flex;gap:22px;margin-top:10px}
+.facts b{font-weight:400;color:var(--dim);margin-right:6px}
+.btn{height:32px;padding:0 13px;border-radius:6px;border:1px solid var(--strong);background:var(--fill);font:13px var(--pixel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--ink)}
+.btn img{width:14px;height:14px;filter:invert(1)}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--glass)}
+.tbar{display:flex;align-items:center;height:44px;padding:0 20px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.035)}
+.tbar .col{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.tbar .t1{width:96px}
+table.tt{width:100%;border-collapse:collapse}
+.tt td{vertical-align:top;padding:12px 20px;border-top:1px solid var(--border);font:14px/1.5 var(--pixel)}
+.tt tr:first-child td{border-top:0}
+.tt td.time{width:96px;padding-right:0;color:var(--dim);font:12px/1.9 var(--mono)}
+.tt td.time .shot,.tt td.time .scr{margin-top:6px}
+.tt .who{display:block;font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.tt .ta{font-family:var(--tamil);font-size:15px;line-height:1.6}
+
+/* the folder */
+.finder{width:1160px;border:1px solid var(--border);border-radius:10px;background:#1e1e1e;overflow:hidden}
+.fbar{height:38px;background:#2a2a2a;display:flex;align-items:center;padding:0 14px;font:13px var(--geist);color:#bbb;gap:8px}
+.fcols{display:flex;height:230px;border-bottom:1px solid #333}
+.fcol{border-right:1px solid #333;padding:6px 0;overflow:auto}
+.fcol div{padding:5px 14px;font:13px var(--geist);color:#ccc;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.fcol div.on{background:#2f5bd3;color:#fff}
+.fcol div i{width:14px;height:11px;border-radius:2px;background:#5b8de8;display:inline-block;flex:0 0 auto}
+.fcol div i.f{background:#888;width:11px;height:14px}
+.fcol div i.p{background:url("../../Resources/background-colour.jpg");background-size:800% auto;width:16px;height:12px}
+.fcol div i.s{background:#f4f4f2;width:16px;height:11px;border:2px solid #2a2d33}
+.fprev{padding:16px 22px;font:12px/1.6 var(--mono);color:#ccc;white-space:pre-wrap;max-height:330px;overflow:auto}
+.fprev .hl{color:#fff;background:rgba(255,255,255,.08)}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Live notes</h1>
+<p class="lead">For a conversation in a room, two or three people around the Mac. Press ⌃⌥N and the overlay opens in the top right corner and stays there. English appears word by word, Tamil a line at a time. The camera adds a photo every 30 seconds unless you turn it off. Screenshots are off until you turn them on, and the screenshot key takes one whenever you want. Press Start talking, then try the buttons on the overlay, the screenshot key, hovering or clicking a picture, and holding the dictation key.</p>
+
+<div class="fixed"><b>Picked, 16 Oct</b>The camera and laptop buttons. Hover a picture to see it bigger, beside the overlay, one size for photos and screenshots. Right ⌘ + S takes a screenshot (to revisit if the dictation overlay flashing gets in the way). The whole screen, SigmaFlow left out. Screenshots on a line of their own. What you dictate is left out of the notes.<br><br>The microphone only, never the call. Top right corner, fixed width, the height is yours. It becomes a meeting after Stop, transcribed again with speakers. A time beside each line. A photo every 30 seconds under the time, on until you turn it off. Screenshots every 15 seconds, off until you turn them on, plus a key for one now. Pictures are kept in Photos and Screens folders in the meeting's folder, named [ 16 Oct ] Fri 10.32 am - 00-30.jpg.</div>
+
+<section class="choices">
+ <div class="choice"><h3>01 The photo button</h3><div class="seg" data-k="camIcon">
+  <button data-v="camera"><b>A</b>Camera<span class="ic"><img src="icons/camera.svg"><img class="off" src="icons/camera.svg"></span></button>
+  <button data-v="aperture"><b>B</b>Lens<span class="ic"><img src="icons/aperture.svg"><img class="off" src="icons/aperture.svg"></span></button>
+  <button data-v="camera--action"><b>C</b>Camera, lens and flash<span class="ic"><img src="icons/camera--action.svg"><img class="off" src="icons/camera--action.svg"></span></button>
+  <button data-v="user--avatar"><b>D</b>A person<span class="ic"><img src="icons/user--avatar.svg"><img class="off" src="icons/user--avatar.svg"></span></button>
+  <button data-v="face--activated"><b>E</b>A face<span class="ic"><img src="icons/face--activated.svg"><img class="off" src="icons/face--activated.svg"></span></button>
+  <button data-v="video"><b>F</b>Video camera, struck through when off<span class="ic"><img src="icons/video.svg"><img src="icons/video--off.svg"></span></button></div></div>
+ <div class="choice"><h3>02 The screen button</h3><div class="seg" data-k="scrIcon">
+  <button data-v="screen"><b>A</b>A screen, struck through when off<span class="ic"><img src="icons/screen.svg"><img src="icons/screen--off.svg"></span></button>
+  <button data-v="laptop"><b>B</b>A laptop<span class="ic"><img src="icons/laptop.svg"><img class="off" src="icons/laptop.svg"></span></button>
+  <button data-v="center--square"><b>C</b>A frame with a crosshair<span class="ic"><img src="icons/center--square.svg"><img class="off" src="icons/center--square.svg"></span></button>
+  <button data-v="crop"><b>D</b>Crop marks<span class="ic"><img src="icons/crop.svg"><img class="off" src="icons/crop.svg"></span></button>
+  <button data-v="cut-out"><b>E</b>A screen cut out<span class="ic"><img src="icons/cut-out.svg"><img class="off" src="icons/cut-out.svg"></span></button>
+  <button data-v="application--web"><b>F</b>A window<span class="ic"><img src="icons/application--web.svg"><img class="off" src="icons/application--web.svg"></span></button></div></div>
+ <div class="choice"><h3>03 Seeing a picture bigger</h3><div class="seg" data-k="peek">
+  <button data-v="none"><b>A</b>Not at all; small only</button>
+  <button data-v="hover"><b>B</b>Hover: it opens beside the overlay, never cut off</button>
+  <button data-v="click"><b>C</b>Click: it opens large in the middle of the screen, click again to close</button></div></div>
+ <div class="choice"><h3>04 The screenshot key</h3><div class="seg" data-k="key">
+  <button data-v="rcmd"><b>A</b>Right ⌘ + S, as you asked</button>
+  <button data-v="ctrlopt"><b>B</b>⌃⌥S, beside ⌃⌥N and ⌃⌥M</button></div></div>
+ <div class="choice"><h3>05 What a screenshot captures</h3><div class="seg" data-k="shotWhat">
+  <button data-v="screen"><b>A</b>The whole screen, SigmaFlow left out</button>
+  <button data-v="window"><b>B</b>Only the window in front</button></div></div>
+ <div class="choice"><h3>06 Where a screenshot shows</h3><div class="seg" data-k="shotShow">
+  <button data-v="time"><b>A</b>Small, under the time, like a photo</button>
+  <button data-v="row"><b>B</b>Larger, on a line of its own</button></div></div>
+ <div class="choice" style="grid-column:span 2"><h3>07 Dictating while the notes are open</h3><div class="seg" data-k="dict">
+  <button data-v="both"><b>A</b>Dictation works as always, with its small overlay above the Dock; the notes keep listening, so what you dictate is in the notes too</button>
+  <button data-v="skip"><b>B</b>Dictation works as always, with its small overlay; what you dictate is left out of the notes, live and after Stop</button></div></div>
+</section>
+
+<nav class="screens">
+ <button data-s="live"><span class="k">01</span>While you talk</button>
+ <button data-s="after"><span class="k">02</span>The transcript in SigmaFlow</button>
+ <button data-s="folder"><span class="k">03</span>The meeting's folder</button>
+</nav>
+
+<section class="notes" data-note="live">
+ <div><h2>04 A collides with your dictation key</h2><p>You hold Right ⌘ to dictate. Pressing Right ⌘ starts a dictation, so with Right ⌘ + S the S has to cancel it and take the screenshot instead. It works, but the small dictation overlay can show for a split second first. Right ⌘ + S never reaches the app in front, so it doesn't save the document you have open.</p><div class="p">⌃⌥S touches nothing else</div></div>
+ <div><h2>07: while you dictate, the notes keep running</h2><p>Both use the microphone at once; SigmaFlow listens twice. The notes overlay stays where it is, and the dictation overlay opens above the Dock as always. Hold Right ⌘ here to try it.</p><div class="p">With B, the other person's words spoken while you hold the key are left out too</div></div>
+</section>
+<section class="notes hide" data-note="after">
+ <div><h2>The same pictures, in the transcript</h2><p>Photos and screenshots sit by their lines, and 03 works here the same way it does on the overlay.</p></div>
+ <div><h2>Speakers come from the voices</h2><p>As in every meeting. The photos don't decide who said what yet.</p></div>
+</section>
+<section class="notes hide" data-note="folder">
+ <div><h2>Pictures beside the .md, not inside it</h2><p>Each photo and screenshot is its own file in Photos and Screens inside the meeting's folder. The .md points at them, so any Markdown app shows each picture in its row, and the .md stays small.</p></div>
+ <div><h2>Names follow the meeting</h2><p>The meeting, then the time into it. Renaming the meeting changes none of them.</p></div>
+</section>
+
+<div class="state" id="states"></div>
+<div class="stagewrap" id="wrap"><div id="screen"></div><div id="peek"></div></div>
+</main>
+
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const OFF={video:'video--off',screen:'screen--off'};
+// Picks so far are fixed; the choices above are still open.
+// Gokul's picks, 16 Oct 2026: 1A 2B 3B (smaller, one size for both) 4A 5A 6B 7B.
+const S={camIcon:'camera',scrIcon:'laptop',peek:'hover',key:'rcmd',shotWhat:'screen',shotShow:'row',dict:'skip',
+ every:30,camOn:true,autoOn:false,lastAuto:-1,screen:'live',run:'idle',shown:[],partial:'',sec:0,level:0,height:470,dictating:false,dictWords:''};
+// A conversation in a room: who speaks, when the line starts, the language, the words.
+const SAID=[
+ [1,0,'en','Okay, so the plan for the webinar is mostly ready.'],
+ [1,5,'en','We have two hundred registrations and we want four hundred.'],
+ [2,12,'ta','சரி, ரிமைண்டர் மெயில் செவ்வாய்க்கிழமை காலையில அனுப்பலாம்.'],
+ [1,18,'en','Tuesday works. Monday emails get ignored anyway.'],
+ [2,23,'ta','கஸ்டமர் ஸ்டோரி வியாழக்கிழமைக்குள்ள நான் வாங்கிட்டு வரேன்.'],
+ [1,30,'en','Perfect, then the post goes up on Friday.'],
+ [2,35,'ta','லிங்க்டின்லயும் அதே நாள் போட்டுடலாம்.'],
+ [1,41,'en','Can you also check if the room is booked for the rehearsal?'],
+ [2,47,'ta','ஆமா, புதன்கிழமை மதியம் ரூம் புக் பண்ணிட்டேன்.'],
+ [1,53,'en','Great. Let us do a dry run on Wednesday at three.'],
+ [2,60,'ta','சரி, நான் ஸ்லைட்ஸ் எல்லாம் செவ்வாய்க்குள்ள அனுப்பிடறேன்.']];
+const CROPS=['66% 36%','80% 50%','23% 49%','37% 39%','91% 37%'];
+const DICTATED='Sending the deck to Priya now.';
+
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const fileTime=s=>`${String(Math.floor(s/60)).padStart(2,'0')}-${String(s%60).padStart(2,'0')}`;
+
+// The photo for a line: the first one taken while it was spoken.
+function photoFor(i,rows,upTo){
+ const start=rows[i].t,end=i+1<rows.length?rows[i+1].t:start+S.every;
+ const at=Math.ceil(start/S.every)*S.every;
+ if(at>=end||(upTo!==undefined&&at>upTo))return null;
+ return at}
+function shot(at,w,h){return `<span class="shot ${w?'':'peekable'}" data-peek="photo:${at}" style="background-position:${CROPS[(at/S.every)%CROPS.length]};${w?`width:${w}px;height:${h}px`:''}"></span>`}
+function scr(at,wide,w,h){return `<span class="scr ${S.shotWhat==='window'?'window':''} ${wide?'wide':''} ${w?'':'peekable'}" data-peek="screen:${at}" style="${w?`width:${w}px;height:${h}px`:''}"><i></i><b></b><u></u></span>`}
+// Screenshots for the transcript and folder: one from the key, one from every 15 seconds.
+const SHOTS=[15,45];
+function shotsFor(i,rows){const start=rows[i].t,end=i+1<rows.length?rows[i+1].t:start+99;return SHOTS.filter(t=>t>=start&&t<end)}
+
+function iconBtn(act,name,on,title){
+ const img=!on&&OFF[name]?OFF[name]:name;
+ return `<button class="pb icon ${!on&&!OFF[name]?'off':''}" data-act="${act}" title="${title}"><img src="icons/${img}.svg"></button>`}
+
+function panel(){
+ const paused=S.run==='paused';
+ const meter=Array.from({length:14},(_,i)=>`<i class="${!paused&&S.run==='talking'&&i<S.level?'on':''}"></i>`).join('');
+ const lines=S.shown.map((r,i)=>{
+  const last=i===S.shown.length-1;
+  const p=r.photos?photoFor(i,S.shown,S.sec):null;
+  let words;
+  if(r.lang==='ta')words=r.done?`<span class="w ta">${esc(r.done)}</span>`:`<span class="w wait">...</span>`;
+  else words=`<span class="w">${esc(r.done)}${last&&S.partial?` <span class="live">${esc(S.partial)}</span>`:''}</span>`;
+  const shots=r.screens||[];
+  const small=S.shotShow==='time'?shots.map(t=>scr(t)).join(''):'';
+  const left=`<span class="t"><span>${clock(r.t)}</span>${p!==null?shot(p):''}${small}</span>`;
+  const own=S.shotShow==='row'?shots.map(t=>`<div class="line"><span class="t"><span>${clock(t)}</span></span><span class="w">${scr(t,true)}</span></div>`).join(''):'';
+  return `<div class="line">${left}${words}</div>${own}`}).join('');
+ return `<div class="panel" style="height:${S.height}px"><div class="prow"><span class="${paused?'dot paused':'dot'}"></span><span class="eyebrow">${paused?'Paused':'Rec'}</span><span class="timer">${clock(S.sec)}</span><span class="meter">${meter}</span>
+  <span class="pbtns">${iconBtn('auto',S.scrIcon,S.autoOn,'Screenshots')}${iconBtn('cam',S.camIcon,S.camOn,'Photos')}<button class="pb icon" data-act="pause"><img src="${ICON(paused?'play':'pause')}"></button><button class="pb" data-act="stop"><img src="${ICON('stop')}">Stop</button></span></div>
+  <div class="lines" id="lines">${lines}</div><div class="grip" id="grip"><i></i></div></div>`}
+
+function hud(){
+ if(!S.dictating)return '';
+ return `<div class="hud"><div class="row"><span class="dot"></span><span class="eyebrow">Rec</span><span class="timer">00:02</span><span class="meter">${Array.from({length:14},(_,i)=>`<i class="${i<7?'on':''}"></i>`).join('')}</span></div><div class="words">${esc(S.dictWords)}</div></div>`}
+
+function desk(){
+ const icons=(S.camOn&&S.run!=='idle'?`<span style="width:7px;height:7px;border-radius:50%;background:var(--green)"></span>`:'')+(S.autoOn&&S.run!=='idle'?`<img src="icons/screen.svg" title="macOS shows this while the screen can be seen">`:'');
+ return `<div class="desk ${S.peek==='none'?'peeknone':''}"><div class="menubar"><span>Keynote</span><span>File</span><span>Edit</span><span class="r">${icons}<span>Fri 16 Oct 10.32</span></span></div>
+  <div class="app"><div class="bar"><i></i><i></i><i></i><span>Webinar plan</span></div><div class="doc"><h2>Webinar plan</h2><p>Date: Thursday 29 October</p><p>Speakers: product team, one customer</p><p>Registrations so far: 200</p></div></div>
+  ${S.run==='idle'?'':panel()}${hud()}<div class="dock"></div></div>`}
+
+function rail(){const items=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Settings','settings']];
+ return `<aside class="rail"><div class="word">Sigma<span>flow</span></div><div class="nav">${items.map(([t,i])=>`<div class="${t==='Meetings'?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div></aside>`}
+
+function rowsWithDictation(){
+ const rows=SAID.map(r=>({who:r[0],t:r[1],lang:r[2],text:r[3]}));
+ if(S.dict==='both')rows.splice(6,0,{who:1,t:33,lang:'en',text:DICTATED});
+ return rows}
+
+function after(){
+ const rows=rowsWithDictation();
+ const body=rows.map((r,i)=>{
+  const p=photoFor(i,rows);
+  const sh=shotsFor(i,rows);
+  const own=S.shotShow==='row'?sh.map(t=>`<tr><td class="time">[${clock(t)}]</td><td>${scr(t,true)}</td></tr>`).join(''):'';
+  const small=S.shotShow==='time'?sh.map(t=>scr(t)).join(''):'';
+  return `<tr><td class="time">[${clock(r.t)}]${p!==null?shot(p):''}${small}</td><td><span class="who">Speaker ${r.who}</span><span class="${r.lang==='ta'?'ta':''}">${esc(r.text)}</span></td></tr>${own}`}).join('');
+ return `<div class="win ${S.peek==='none'?'peeknone':''}">${rail()}<section class="stage"><div class="paint"></div><div class="page">
+  <div class="back"><img src="${ICON('arrow--left')}">Meetings</div>
+  <div class="thead"><div style="flex:1"><div class="tt1">[ 16 Oct ] Fri 10.32 am - 1 min</div><div class="facts"><span><b>Speakers</b>2</span><span><b>Language</b>Tamil and English</span></div></div><button class="btn"><img src="${ICON('play')}">Play 1 min</button></div>
+  <div class="card"><div class="tbar"><span class="col t1">Time</span><span class="col">Transcription</span></div><table class="tt">${body}</table></div></div></section></div>`}
+
+function folder(){
+ const name='[ 16 Oct ] Fri 10.32 am - 1 min',stem='[ 16 Oct ] Fri 10.32 am';
+ const rows=rowsWithDictation();
+ const photos=[],screens=[];
+ const md=rows.map((r,i)=>{
+  const p=photoFor(i,rows);if(p!==null)photos.push(p);
+  const sh=shotsFor(i,rows);sh.forEach(t=>screens.push(t));
+  const path=p===null?'':` ![](<Photos/${stem} - ${fileTime(p)}.jpg>)`;
+  const spath=S.shotShow==='time'?sh.map(t=>` ![](<Screens/${stem} - ${fileTime(t)}.png>)`).join(''):'';
+  let cell=esc(`| [${clock(r.t)}]${path}${spath} | **Speaker ${r.who}:** ${r.text} |`);
+  if(path||spath)cell=`<span class="hl">${cell}</span>`;
+  const own=S.shotShow==='row'?sh.map(t=>`\n<span class="hl">${esc(`| [${clock(t)}] | ![](<Screens/${stem} - ${fileTime(t)}.png>) |`)}</span>`).join(''):'';
+  return cell+own}).join('\n');
+ const head=`# ${name}\n\nDate: Friday 16 October 2026, 10.32 am  \nLength: 1 min  \nSpeakers: 2  \nLanguage: Tamil and English  \nAudio: ${name}.m4a\n\n| Time | Transcription |\n|---|---|\n`;
+ return `<div class="finder"><div class="fbar">SigmaFlow › Meetings › 2026 › 10 October › ${esc(name)}</div>
+  <div class="fcols"><div class="fcol" style="width:420px"><div class="on"><i></i>Photos</div><div><i></i>Screens</div><div><i class="f"></i>${esc(name)}.m4a</div><div><i class="f"></i>${esc(name)}.md</div></div>
+  <div class="fcol" style="flex:1">${photos.map(p=>`<div><i class="p" style="background-position:${CROPS[(p/S.every)%CROPS.length]}"></i>${esc(stem)} - ${fileTime(p)}.jpg</div>`).join('')}<div style="color:#888;padding-top:12px">Screens</div>${screens.map(t=>`<div><i class="s"></i>${esc(stem)} - ${fileTime(t)}.png</div>`).join('')}</div></div>
+  <div class="fprev">${esc(head)}${md}</div></div>`}
+
+function keyName(){return S.key==='rcmd'?'Right ⌘ + S':'⌃⌥S'}
+function states(){
+ const el=document.querySelector('#states');
+ if(S.screen==='folder'){el.innerHTML=`<span>The meeting's folder in Finder, and its .md underneath; rows with a picture are lit</span>`;return}
+ if(S.screen==='after'){el.innerHTML=`<span>${S.peek==='none'?'Pictures stay small':S.peek==='hover'?'Hover a picture':'Click a picture'}</span>`;return}
+ if(S.run==='idle'){el.innerHTML=`<button data-act="talk">Press ⌃⌥N, start talking</button><span>The overlay opens on top of whatever you are doing</span>`;return}
+ el.innerHTML=`<button data-act="talk">Start over</button><button data-act="keyshot">Press ${keyName()}</button><button data-act="dictate" class="${S.dictating?'on':''}">Hold Right ⌘ to dictate</button><span>Or press the real keys; the screen button turns every 15 seconds on</span>`}
+
+function render(){
+ document.querySelectorAll('.seg').forEach(g=>g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',S[g.dataset.k]===b.dataset.v)));
+ document.querySelectorAll('.screens button').forEach(b=>b.classList.toggle('on',b.dataset.s===S.screen));
+ document.querySelectorAll('[data-note]').forEach(n=>n.classList.toggle('hide',n.dataset.note!==S.screen));
+ states();
+ const l0=document.querySelector('#lines');const atEnd=!l0||l0.scrollTop+l0.clientHeight>=l0.scrollHeight-4;const keep=l0?l0.scrollTop:0;
+ document.querySelector('#screen').innerHTML=S.screen==='live'?desk():S.screen==='folder'?folder():after();
+ const l=document.querySelector('#lines');if(l)l.scrollTop=atEnd?l.scrollHeight:keep;
+}
+
+// The bigger view. Hover: beside the overlay (or beside the picture in the app), fully on
+// screen. Click: large in the middle, click again to close.
+const peekEl=document.querySelector('#peek');
+function bigOf(kind,at,w,h){return kind==='photo'?shot(at,w,h):scr(at,false,w,h)}
+function showPeek(target,mode){
+ const [kind,v]=target.dataset.peek.split(':');const at=+v;
+ const wrap=document.querySelector('#wrap').getBoundingClientRect();
+ const host=document.querySelector('#screen').firstElementChild.getBoundingClientRect();
+ const t=target.getBoundingClientRect();
+ const label=kind==='photo'?'Photo':'Screenshot';
+ if(mode==='click'){
+  const w=Math.min(760,host.width-120),h=Math.round(w*(kind==='photo'?0.74:0.625));
+  peekEl.innerHTML=`<div class="peek center" style="left:${host.left-wrap.left+(host.width-w-16)/2}px;top:${host.top-wrap.top+Math.max(20,(host.height-h-40)/2)}px">${bigOf(kind,at,w,h)}<div class="when"><span>${label}</span><span>${clock(at)}</span></div></div>`;
+  return}
+ // One size for photos and screenshots alike (Gokul, 16 Oct): 16:10, a photo fills it.
+ const w=256,h=160;
+ const panel=document.querySelector('.panel');
+ // Beside the overlay on its left; in the app, to the right of the picture.
+ let left=panel&&S.screen==='live'?panel.getBoundingClientRect().left-wrap.left-w-16-12:t.right-wrap.left+14;
+ let top=t.top-wrap.top-h/2+t.height/2;
+ top=Math.max(host.top-wrap.top+30,Math.min(top,host.bottom-wrap.top-h-50));
+ peekEl.innerHTML=`<div class="peek" style="left:${left}px;top:${top}px">${bigOf(kind,at,w,h)}<div class="when"><span>${label}</span><span>${clock(at)}</span></div></div>`}
+function hidePeek(){peekEl.innerHTML=''}
+document.addEventListener('mouseover',e=>{if(S.peek!=='hover')return;const t=e.target.closest('.peekable');if(t)showPeek(t,'hover')});
+document.addEventListener('mouseout',e=>{if(S.peek!=='hover')return;if(e.target.closest('.peekable'))hidePeek()});
+
+// English arrives a few words at a time; Tamil waits for the pause, then the whole line lands.
+let timer=null,queue=[],tick=0;
+function talk(){
+ clearInterval(timer);S.run='talking';S.shown=[];S.partial='';S.sec=0;tick=0;S.lastAuto=-1;S.camOn=true;S.autoOn=false;
+ queue=SAID.map(r=>({t:r[1],lang:r[2],words:r[3].split(' '),text:r[3]}));
+ let cur=null,wait=0;
+ timer=setInterval(()=>{
+  if(S.run==='paused')return;
+  tick++;if(tick%5===0){S.sec++;autoShot()}
+  S.level=4+Math.floor(Math.random()*8);
+  if(!cur){cur=queue.shift();if(!cur){S.partial='';S.level=1;render();return}
+   S.shown.push({t:Math.max(cur.t,S.sec),lang:cur.lang,done:'',photos:S.camOn});wait=0;
+   S.sec=Math.max(S.sec,cur.t);autoShot()}
+  const line=S.shown[S.shown.length-1];
+  if(cur.lang==='ta'){wait++;if(wait<cur.words.length*2+5){render();return}line.done=cur.text;cur=null;render();return}
+  const next=cur.words.shift();
+  if(next===undefined){line.done=(line.done+' '+S.partial).trim();S.partial='';cur=null;render();return}
+  const p=(S.partial+' '+next).trim().split(' ');
+  if(p.length>2)line.done=(line.done+' '+p.shift()).trim();
+  S.partial=p.join(' ');
+  render()},200)}
+
+function autoShot(){
+ if(!S.autoOn)return;
+ const slot=Math.floor(S.sec/15)*15;
+ if(slot>S.lastAuto){S.lastAuto=slot;takeShot(slot)}}
+function takeShot(at){const r=S.shown[S.shown.length-1];if(!r)return;(r.screens=r.screens||[]).push(at??S.sec);render()}
+
+// Holding the dictation key: the small overlay above the Dock, words into the app in front.
+function dictate(){
+ if(S.run==='idle'||S.dictating)return;
+ S.dictating=true;S.dictWords='';let i=0;const words=DICTATED.split(' ');
+ const d=setInterval(()=>{
+  if(i<words.length){S.dictWords=words.slice(0,++i).join(' ');render();return}
+  clearInterval(d);S.dictating=false;
+  if(S.dict==='both')S.shown.push({t:S.sec,lang:'en',done:DICTATED,photos:false});
+  render()},250)}
+
+// The height is yours: drag the bar at the bottom.
+let drag=null;
+document.addEventListener('pointerdown',e=>{if(e.target.closest('#grip')){drag={y:e.clientY,h:S.height};e.preventDefault()}});
+document.addEventListener('pointermove',e=>{if(!drag)return;S.height=Math.max(160,Math.min(640,drag.h+e.clientY-drag.y));const p=document.querySelector('.panel');if(p)p.style.height=S.height+'px'});
+document.addEventListener('pointerup',()=>{drag=null});
+
+// The real keys: Right ⌘ (+ S), ⌃⌥S.
+let rightCmd=false;
+document.addEventListener('keydown',e=>{
+ if(e.key==='Meta'&&e.location===2){rightCmd=true;if(S.screen==='live')dictate()}
+ if(e.code==='KeyS'&&((S.key==='rcmd'&&e.metaKey&&rightCmd)||(S.key==='ctrlopt'&&e.ctrlKey&&e.altKey))){e.preventDefault();if(S.run!=='idle')takeShot()}
+ if(e.key==='Escape')hidePeek()});
+document.addEventListener('keyup',e=>{if(e.key==='Meta')rightCmd=false});
+
+document.addEventListener('click',e=>{
+ const seg=e.target.closest('.seg button');if(seg){S[seg.parentElement.dataset.k]=seg.dataset.v;hidePeek();render();return}
+ const sc=e.target.closest('.screens button');if(sc){S.screen=sc.dataset.s;hidePeek();render();return}
+ if(S.peek==='click'){
+  if(e.target.closest('.peek.center')){hidePeek();return}
+  const t=e.target.closest('.peekable');if(t){showPeek(t,'click');return}}
+ const a=e.target.closest('[data-act]');if(!a)return;
+ if(a.dataset.act==='talk')talk();
+ if(a.dataset.act==='cam'){S.camOn=!S.camOn;render()}
+ if(a.dataset.act==='auto'){S.autoOn=!S.autoOn;if(S.autoOn){S.lastAuto=Math.floor(S.sec/15)*15-15;autoShot()}render()}
+ if(a.dataset.act==='keyshot'){takeShot()}
+ if(a.dataset.act==='dictate'){dictate()}
+ if(a.dataset.act==='pause'){S.run=S.run==='paused'?'talking':'paused';render()}
+ if(a.dataset.act==='stop'){clearInterval(timer);S.run='idle';S.dictating=false;S.screen='after';render()}
+});
+
+// ?talk=1&auto=1 opens a given state, for screenshots.
+const Q=new URLSearchParams(location.search);
+for(const k of ['camIcon','scrIcon','peek','key','shotWhat','shotShow','dict','screen'])if(Q.get(k))S[k]=Q.get(k);
+if(Q.get('talk'))talk();
+if(Q.get('auto'))setTimeout(()=>{S.autoOn=true;S.lastAuto=-1;render()},3000);
+if(Q.get('dictate'))setTimeout(dictate,9000);
+render();
+if(Q.get('peekTest'))setTimeout(()=>{const t=document.querySelectorAll('.peekable');showPeek(t[+(Q.get('peekIndex')||0)],Q.get('peekTest'))},+(Q.get('peekDelay')||100));
+</script>
+</body></html>

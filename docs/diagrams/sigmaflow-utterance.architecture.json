@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SigmaFlow: one utterance, end to end",
+    "output": "docs/diagrams/sigmaflow-utterance.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1370,
+      680
+    ],
+    "views": [
+      {
+        "id": "hold-to-talk",
+        "label": "Hold to talk",
+        "focus": [
+          "user",
+          "hotkey",
+          "controller",
+          "capture",
+          "engine",
+          "hud"
+        ],
+        "note": "Holding the key opens the mic, streams audio to the engine, and shows the live transcript."
+      },
+      {
+        "id": "release-to-type",
+        "label": "Release to type",
+        "focus": [
+          "controller",
+          "formatter",
+          "dictionary",
+          "snippets",
+          "injector",
+          "target"
+        ],
+        "note": "On release the text is cleaned, corrected, expanded, then typed into the focused app."
+      },
+      {
+        "id": "remembered",
+        "label": "What is kept",
+        "focus": [
+          "snippets",
+          "runlog"
+        ],
+        "note": "Every finished utterance is appended to runs.jsonl before anything is typed."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "You",
+      "sublabel": "holds Right ⌥",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        110,
+        60
+      ]
+    },
+    {
+      "id": "hotkey",
+      "type": "security",
+      "label": "HotkeyMonitor",
+      "sublabel": "CGEventTap",
+      "tag": "needs Accessibility",
+      "pos": [
+        215,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "controller",
+      "type": "backend",
+      "label": "DictationController",
+      "sublabel": "the state machine",
+      "tag": "state machine",
+      "pos": [
+        400,
+        300
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "hud",
+      "type": "frontend",
+      "label": "HUD panel",
+      "sublabel": "transcript + meter",
+      "tag": "never key",
+      "pos": [
+        400,
+        130
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "capture",
+      "type": "backend",
+      "label": "AudioCapture",
+      "sublabel": "mic → AsyncStream",
+      "pos": [
+        215,
+        470
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "engine",
+      "type": "backend",
+      "label": "TranscriptionEngine",
+      "sublabel": "Speech · Parakeet · …",
+      "tag": "new per utterance",
+      "pos": [
+        400,
+        470
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "formatter",
+      "type": "backend",
+      "label": "TextFormatter",
+      "sublabel": "rules or Apple LLM",
+      "tag": "optional",
+      "pos": [
+        615,
+        300
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "dictionary",
+      "type": "security",
+      "label": "DictionaryCorrector",
+      "sublabel": "dictionary.txt",
+      "tag": "runs last, always",
+      "pos": [
+        810,
+        300
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "snippets",
+      "type": "backend",
+      "label": "SnippetStore",
+      "sublabel": "expand triggers",
+      "pos": [
+        1025,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "runlog",
+      "type": "database",
+      "label": "runs.jsonl",
+      "sublabel": "append-only log",
+      "tag": "read by MCP",
+      "pos": [
+        1025,
+        470
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "injector",
+      "type": "backend",
+      "label": "TextInjector",
+      "sublabel": "AX write, else ⌘V",
+      "pos": [
+        1210,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "target",
+      "type": "external",
+      "label": "Focused app",
+      "sublabel": "any text field",
+      "pos": [
+        1210,
+        470
+      ],
+      "size": [
+        120,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "SigmaFlow.app · not sandboxed",
+      "wraps": [
+        "hotkey",
+        "controller",
+        "hud",
+        "capture",
+        "engine",
+        "formatter",
+        "dictionary",
+        "snippets",
+        "runlog",
+        "injector"
+      ],
+      "pad": 22
+    },
+    {
+      "kind": "security-group",
+      "label": ".finishing: post-release pipeline",
+      "wraps": [
+        "formatter",
+        "dictionary",
+        "snippets"
+      ],
+      "pad": 12
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "hotkey",
+      "label": "hold key",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hotkey",
+      "to": "controller",
+      "label": "key events",
+      "variant": "emphasis"
+    },
+    {
+      "from": "controller",
+      "to": "hud",
+      "label": "state · level · text",
+      "variant": "dashed"
+    },
+    {
+      "from": "controller",
+      "to": "capture",
+      "label": "open mic",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "capture",
+      "to": "engine",
+      "label": "audio feed",
+      "variant": "emphasis"
+    },
+    {
+      "from": "engine",
+      "to": "controller",
+      "label": "live transcript",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "controller",
+      "to": "formatter",
+      "label": "raw text",
+      "variant": "emphasis"
+    },
+    {
+      "from": "formatter",
+      "to": "dictionary",
+      "label": "cleaned",
+      "variant": "emphasis"
+    },
+    {
+      "from": "dictionary",
+      "to": "snippets",
+      "label": "corrected",
+      "variant": "emphasis"
+    },
+    {
+      "from": "snippets",
+      "to": "runlog",
+      "label": "record run",
+      "variant": "default",
+      "labelDy": 40
+    },
+    {
+      "from": "snippets",
+      "to": "injector",
+      "label": "final text",
+      "variant": "emphasis"
+    },
+    {
+      "from": "injector",
+      "to": "target",
+      "label": "types it",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 40
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Invariants that keep it honest",
+      "items": [
+        "One AsyncStream, one drain task: audio reaches the engine in capture order",
+        "runGeneration is the cancellation token; every async tail re-checks it",
+        "Watchdog on .finishing (30 to 180 s) abandons a hung model with a visible reason",
+        "A second press during .finishing is ignored, so nothing pastes twice"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Off the main path",
+      "items": [
+        "MediaPauser pauses playback while listening, via perl loading MediaHost.dylib",
+        "Settings are read per utterance: a picker change applies on the next hold",
+        "Nothing is injected while SigmaFlow itself is the front app (test mode)",
+        "Sub-300 ms tap is discarded; a double tap latches hands-free recording"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Beyond dictation",
+      "items": [
+        "Option+1…5 rewrite the selection in a saved style (⌘C, rewrite, ⌘V)",
+        "Meetings record to AAC and are diarized and transcribed afterwards",
+        "SigmaFlowMCP lets Claude Desktop answer questions from runs.jsonl"
+      ]
+    }
+  ]
+}

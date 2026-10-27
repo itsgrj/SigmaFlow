@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SigmaFlow demo data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#161616; --layer:#262626; --layer2:#393939; --border:#393939;
+  --t1:#f4f4f4; --t2:#c6c6c6; --t3:#8d8d8d; --ink:#ffffff;
+  --app:#0c0b0a; --appRow:#141210; --appLine:#2a2724;
+  --learned:#f4f4f4;
+  --s3:8px; --s4:12px; --s5:16px; --s6:24px; --s7:32px; --s8:40px; --s9:48px;
+}
+*{box-sizing:border-box;border-radius:0}
+html,body{margin:0;background:var(--bg);color:var(--t1);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.shell{max-width:1120px;padding:var(--s8) var(--s5) var(--s9);text-align:left}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.32px;color:var(--t3);text-transform:uppercase}
+h1{font-size:36px;font-weight:400;margin:var(--s3) 0 var(--s4);line-height:1.2}
+.lede{color:var(--t2);max-width:760px;margin:0 0 var(--s6);font-size:16px}
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin:0 0 var(--s9)}
+.rules div{background:var(--layer);padding:var(--s5)}
+.rules h4{margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:11px;letter-spacing:.32px;color:var(--t3);text-transform:uppercase}
+.rules p{margin:0;color:var(--t2)}
+nav{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border);margin:0 0 var(--s7);position:sticky;top:0;background:var(--bg);z-index:2}
+nav a{color:var(--t2);text-decoration:none;padding:var(--s4) var(--s5);border-bottom:2px solid transparent;font-size:14px}
+nav a:hover{color:var(--t1);border-bottom-color:var(--t3)}
+section{margin:0 0 var(--s9)}
+section > h2{font-size:24px;font-weight:400;margin:0 0 4px}
+section > .sub{color:var(--t2);margin:0 0 var(--s5);max-width:760px}
+/* app look */
+.app{background:var(--app);border:1px solid var(--appLine);font-family:'IBM Plex Mono',monospace;font-size:13px;color:#e8e6e3}
+.app .bar{display:flex;justify-content:space-between;gap:var(--s4);padding:var(--s4) var(--s5);border-bottom:1px solid var(--appLine);color:#8f8a84;font-size:11px;letter-spacing:.32px;text-transform:uppercase}
+.app .day{padding:var(--s4) var(--s5) 4px;color:#8f8a84;font-size:11px;letter-spacing:.32px;text-transform:uppercase;border-top:1px solid var(--appLine)}
+.app .day:first-of-type{border-top:0}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:var(--s4);padding:var(--s4) var(--s5);border-top:1px solid var(--appLine)}
+.row .id{color:#6f6a64;font-size:11px;padding-top:2px}
+.row .txt{color:#f2f0ed}
+.row .meta{color:#8f8a84;font-size:11px;margin-top:4px}
+.row .fix{color:#8f8a84;font-size:11px;margin-top:2px}
+.row .fix s{color:#6f6a64}
+.grid2{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 90px;gap:var(--s4);padding:10px var(--s5);border-top:1px solid var(--appLine);align-items:start}
+.grid2.head{color:#8f8a84;font-size:11px;letter-spacing:.32px;text-transform:uppercase;border-top:0}
+.tag{display:inline-block;border:1px solid #6f6a64;color:#e8e6e3;font-size:10px;letter-spacing:.32px;padding:0 6px;line-height:18px}
+.mt{border:1px solid var(--appLine);background:var(--app);margin:0 0 var(--s5);font-family:'IBM Plex Mono',monospace;font-size:13px}
+.mt .title{padding:var(--s5);border-bottom:1px solid var(--appLine)}
+.mt .title b{display:block;font-weight:500;color:#fff;font-size:15px}
+.mt .title span{color:#8f8a84;font-size:11px}
+.speakers{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s3)}
+.speakers i{font-style:normal;border:1px solid var(--appLine);padding:2px 8px;color:#e8e6e3;font-size:12px}
+.line{display:grid;grid-template-columns:44px 64px minmax(0,1fr);gap:var(--s4);padding:10px var(--s5);border-top:1px solid var(--appLine)}
+.line .t{color:#8f8a84;font-size:12px}
+.line .who{color:#fff;font-weight:500}
+.photo{display:inline-block;width:96px;height:60px;background:#2a2724;border:1px solid #3a3632;color:#8f8a84;font-size:9px;padding:4px;vertical-align:top;margin-top:6px;line-height:1.2}
+.style{display:grid;grid-template-columns:44px 140px minmax(0,1fr);gap:var(--s4);padding:var(--s4) var(--s5);border-top:1px solid var(--appLine)}
+.style .k{color:#fff}
+.style .ex{color:#8f8a84;font-size:12px;margin-top:6px}
+.style .ex b{color:#e8e6e3;font-weight:400}
+.hud{display:flex;align-items:flex-start;gap:var(--s4);background:#000;border:1px solid #3a3632;padding:var(--s4) var(--s5);font-family:'IBM Plex Mono',monospace;font-size:13px;max-width:560px}
+.hud .rec{color:#fff;white-space:nowrap;font-size:11px;padding-top:2px}
+.hud .dots{display:flex;gap:3px;padding-top:7px}.hud .dots i{width:4px;height:4px;background:#30d158;display:block}
+.note{color:var(--t3);font-size:13px;margin:var(--s3) 0 0;max-width:760px}
+.ask{background:var(--layer);border-left:2px solid var(--t1);padding:var(--s5);margin:var(--s7) 0 0;max-width:760px}
+.ask p{margin:0;color:var(--t2)}
+.ask b{color:var(--t1);font-weight:500}
+@media (max-width:760px){
+  .rules{grid-template-columns:1fr}
+  .grid2{grid-template-columns:36px 1fr 1fr}
+  .grid2 > :nth-child(4){display:none}
+  .line{grid-template-columns:36px 52px 1fr}
+  .style{grid-template-columns:36px 1fr}.style .k{grid-column:2}
+  .style > div:last-child{grid-column:2}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="eyebrow">SigmaFlow · demo mode · content, round 1</div>
+  <h1>Socrates uses SigmaFlow</h1>
+  <p class="lede">Everything the public will see in screenshots, before a line of code is written. The app already sits on top of <em>The Death of Socrates</em>, so the demo user is the man himself: his errands, his trial, his friends who keep agreeing with him. Every item has a number. Tell me numbers to change, cut or rewrite.</p>
+
+  <div class="rules">
+    <div><h4>Nothing real</h4><p>No real companies, colleagues or customers. Only people from Plato.</p></div>
+    <div><h4>Shows every feature</h4><p>Corrections, LEARNED rules, named speakers, a two-sided call, photos in notes, styles.</p></div>
+    <div><h4>Lives in the repo</h4><p>A demo folder anyone can open. Your own data folders are never read or written.</p></div>
+  </div>
+
+  <nav>
+    <a href="#t">Transcriptions</a><a href="#d">Dictionary</a><a href="#s">Snippets</a><a href="#m">Meetings</a><a href="#c">Conversations</a><a href="#st">Styles</a><a href="#o">Overlay</a>
+  </nav>
+
+  <!-- TRANSCRIPTIONS -->
+  <section id="t">
+    <h2>Transcriptions</h2>
+    <p class="sub">Twenty dictations, newest first. Four show a correction line, which is how the dictionary proves itself on this page.</p>
+    <div class="app">
+      <div class="bar"><span>Transcriptions</span><span>20 recordings</span></div>
+      <div class="day">Today</div>
+      <div class="row"><div class="id">T01</div><div><div class="txt">Remind me to ask Crito whether the rooster for Asclepius has been paid for.</div><div class="meta">11:42 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T02</div><div><div class="txt">Draft a reply to Meletus: thank you for the accusation, I have a few small questions.</div><div class="meta">10:05 · Parakeet Unified EN</div><div class="fix">CORRECTED <s>melee tus</s> Meletus</div></div></div>
+      <div class="row"><div class="id">T03</div><div><div class="txt">Note to self: I know that I know nothing. Check again after lunch.</div><div class="meta">09:14 · Apple</div></div></div>
+      <div class="row"><div class="id">T04</div><div><div class="txt">Text Xanthippe that I will be home by sunset, unless someone tries to define justice first.</div><div class="meta">08:30 · Parakeet Unified EN</div><div class="fix">CORRECTED <s>zan tippy</s> Xanthippe</div></div></div>
+      <div class="day">Yesterday</div>
+      <div class="row"><div class="id">T05</div><div><div class="txt">Agenda for the agora: virtue, courage, and whether anyone has seen my sandals.</div><div class="meta">18:20 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T06</div><div><div class="txt">Tell Plato he can write this down, but please stop putting words in my mouth.</div><div class="meta">16:02 · Parakeet Unified EN</div><div class="fix">CORRECTED <s>play doh</s> Plato</div></div></div>
+      <div class="row"><div class="id">T07</div><div><div class="txt">Ask the oracle at Delphi to confirm in writing that I am the wisest. Then ask what wisest means.</div><div class="meta">14:47 · Apple</div></div></div>
+      <div class="row"><div class="id">T08</div><div><div class="txt">Euthyphro, quick question: is it pious because the gods love it, or do they love it because it is pious? No rush.</div><div class="meta">11:10 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T09</div><div><div class="txt">Shopping list: olives, bread, figs. No hemlock.</div><div class="meta">09:02 · Apple</div></div></div>
+      <div class="day">Thu 15 Oct</div>
+      <div class="row"><div class="id">T10</div><div><div class="txt">Book a slot at the gymnasium. Not for exercise, for arguing.</div><div class="meta">19:40 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T11</div><div><div class="txt">Follow up with Alcibiades about the symposium. He still owes me a speech and a cloak.</div><div class="meta">17:25 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T12</div><div><div class="txt">The unexamined inbox is not worth reading.</div><div class="meta">12:03 · Apple</div></div></div>
+      <div class="row"><div class="id">T13</div><div><div class="txt">Reply to the jury: as my penalty, I propose free meals at the Prytaneum for life.</div><div class="meta">10:48 · Parakeet Unified EN</div><div class="fix">CORRECTED <s>pretty neum</s> Prytaneum</div></div></div>
+      <div class="day">Wed 14 Oct</div>
+      <div class="row"><div class="id">T14</div><div><div class="txt">Meeting notes: Glaucon agrees. Glaucon agrees again. Glaucon agrees a third time.</div><div class="meta">18:12 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T15</div><div><div class="txt">Ask Meno whether virtue can be taught, and whether his student is free on Thursday for some geometry.</div><div class="meta">15:30 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T16</div><div><div class="txt">Remember: wonder is the beginning of wisdom. Also the beginning of most of my arguments.</div><div class="meta">11:55 · Apple</div></div></div>
+      <div class="row"><div class="id">T17</div><div><div class="txt">Tell Crito, again, that I am not escaping. Thank him for the boat though.</div><div class="meta">09:20 · Parakeet Unified EN</div></div></div>
+      <div class="day">Tue 13 Oct</div>
+      <div class="row"><div class="id">T18</div><div><div class="txt">Draft for the next dialogue: start with a simple question, end three hours later with nobody sure of anything.</div><div class="meta">16:44 · Parakeet Unified EN</div></div></div>
+      <div class="row"><div class="id">T19</div><div><div class="txt">Reminder for the trial: bring nothing, prepare nothing, ask questions.</div><div class="meta">10:10 · Apple</div></div></div>
+      <div class="row"><div class="id">T20</div><div><div class="txt">Is this thing recording? Testing, one, two, Socrates.</div><div class="meta">09:01 · Apple</div></div></div>
+    </div>
+  </section>
+
+  <!-- DICTIONARY -->
+  <section id="d">
+    <h2>Dictionary</h2>
+    <p class="sub">Fifteen entries. Greek names are exactly the words a speech engine gets wrong, which makes the feature obvious at a glance. Five carry the LEARNED tag, added from his own corrections.</p>
+    <div class="app">
+      <div class="bar"><span>Dictionary</span><span>15 entries</span></div>
+      <div class="grid2 head"><div></div><div>When I say this</div><div>SigmaFlow should type</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D01</div><div>so crates</div><div>Socrates</div><div><span class="tag">LEARNED</span></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D02</div><div>zan tippy</div><div>Xanthippe</div><div><span class="tag">LEARNED</span></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D03</div><div>melee tus</div><div>Meletus</div><div><span class="tag">LEARNED</span></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D04</div><div>play doh</div><div>Plato</div><div><span class="tag">LEARNED</span></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D05</div><div>pretty neum</div><div>Prytaneum</div><div><span class="tag">LEARNED</span></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D06</div><div>any spelling</div><div>Crito</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D07</div><div>any spelling</div><div>Alcibiades</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D08</div><div>any spelling</div><div>Euthyphro</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D09</div><div>any spelling</div><div>Asclepius</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D10</div><div>any spelling</div><div>Glaucon</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D11</div><div>a gora</div><div>agora</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D12</div><div>del fee</div><div>Delphi</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D13</div><div>a lank us</div><div>elenchus</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D14</div><div>a poria</div><div>aporia</div><div></div></div>
+      <div class="grid2"><div class="id" style="color:#6f6a64;font-size:11px">D15</div><div>any spelling</div><div>SigmaFlow</div><div></div></div>
+    </div>
+  </section>
+
+  <!-- SNIPPETS -->
+  <section id="s">
+    <h2>Snippets</h2>
+    <p class="sub">Five. Say the trigger anywhere in a sentence and the saved text replaces it.</p>
+    <div class="app">
+      <div class="bar"><span>Snippets</span><span>5 snippets</span></div>
+      <div class="grid2 head"><div></div><div>Say</div><div>Get</div><div></div></div>
+      <div class="grid2"><div style="color:#6f6a64;font-size:11px">S01</div><div>my sign off</div><div>Yours in perpetual questioning, Socrates</div><div></div></div>
+      <div class="grid2"><div style="color:#6f6a64;font-size:11px">S02</div><div>my address</div><div>The agora, by the stoa. Ask anyone.</div><div></div></div>
+      <div class="grid2"><div style="color:#6f6a64;font-size:11px">S03</div><div>out of office</div><div>I am at the gymnasium examining young men. I will reply once I have examined your question, and you.</div><div></div></div>
+      <div class="grid2"><div style="color:#6f6a64;font-size:11px">S04</div><div>the disclaimer</div><div>I know that I know nothing, so please check this against your own reasoning.</div><div></div></div>
+      <div class="grid2"><div style="color:#6f6a64;font-size:11px">S05</div><div>my defence</div><div>The full defence, as given to the jury, is available on request from Plato.</div><div></div></div>
+    </div>
+  </section>
+
+  <!-- MEETINGS -->
+  <section id="m">
+    <h2>Meetings</h2>
+    <p class="sub">Two. M1 is a room recording with both speakers renamed. M2 is a call, so it is two-sided, and one voice is still a number, which shows that naming is optional.</p>
+    <div class="mt">
+      <div class="title"><b>[ 14 Oct ] Wed 4.10 pm - 12 min - Crito's escape plan, declined</b><span>Language: English · M1</span>
+        <div class="speakers"><i>Socrates</i><i>Crito</i></div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.1</div><div class="t">[00:04]</div><div><span class="who">Crito:</span> The guards are paid, the boat is ready, and Thessaly is lovely this time of year.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.2</div><div class="t">[00:11]</div><div><span class="who">Socrates:</span> Before we pack, Crito, should we care what the many think, or only what the wise think?</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.3</div><div class="t">[00:19]</div><div><span class="who">Crito:</span> I knew you would ask a question. I hoped you would ask it on the boat.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.4</div><div class="t">[00:27]</div><div><span class="who">Socrates:</span> Then let us examine whether leaving is just. If it is, I will go. If not, I will stay.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.5</div><div class="t">[11:48]</div><div><span class="who">Crito:</span> Fine. I have nothing more to say.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M1.6</div><div class="t">[11:53]</div><div><span class="who">Socrates:</span> Then let us follow where the argument leads. Also, cancel the boat.</div></div>
+    </div>
+    <div class="mt">
+      <div class="title"><b>[ 16 Oct ] Fri 11.00 am - 25 min - Weekly sync with the Academy</b><span>Language: English · call, both sides · M2</span>
+        <div class="speakers"><i>Socrates</i><i>Plato</i><i>Speaker 3</i></div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.1</div><div class="t">[00:02]</div><div><span class="who">Plato:</span> Can everyone hear me? I am writing all of this down, as usual.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.2</div><div class="t">[00:09]</div><div><span class="who">Socrates:</span> Good. First item: what is a meeting, and how would we know if we had one?</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.3</div><div class="t">[00:16]</div><div><span class="who">Speaker 3:</span> Yes, Socrates.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.4</div><div class="t">[00:21]</div><div><span class="who">Plato:</span> For the record, the agenda had four items. We are still on the definition of item.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.5</div><div class="t">[00:30]</div><div><span class="who">Speaker 3:</span> Clearly, Socrates.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">M2.6</div><div class="t">[24:41]</div><div><span class="who">Socrates:</span> Same time next week. Bring your assumptions, leave without them.</div></div>
+    </div>
+    <p class="note">Both meetings need short audio files to show as finished. They are made with a text to speech voice reading these exact lines, so no real voice is involved.</p>
+  </section>
+
+  <!-- CONVERSATIONS -->
+  <section id="c">
+    <h2>Conversations</h2>
+    <p class="sub">One set of live notes, written down as it happened, with camera photos placed at the moments they were taken. The photos are public domain paintings and freely licensed museum photos, each credited in the repo.</p>
+    <div class="mt">
+      <div class="title"><b>[ 17 Oct ] Sat 9.30 am - 40 min - A walk through the agora</b><span>Language: English · C1</span>
+        <div class="speakers"><i>Socrates</i><i>Speaker 2</i></div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">C1.1</div><div class="t">[00:02]</div><div><span class="who">Socrates:</span> You say you know what courage is. Wonderful. Then tell me, slowly.<br><span class="photo">PHOTO · The School of Athens, Raphael, 1511</span></div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">C1.2</div><div class="t">[00:30]</div><div><span class="who">Speaker 2:</span> Courage is standing firm in battle.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">C1.3</div><div class="t">[00:41]</div><div><span class="who">Socrates:</span> And the soldier who retreats on purpose, to win later. Is he a coward?<br><span class="photo">PHOTO · Socrates, marble bust, Louvre</span></div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">C1.4</div><div class="t">[01:05]</div><div><span class="who">Speaker 2:</span> I need to sit down.</div></div>
+      <div class="line"><div style="color:#6f6a64;font-size:11px">C1.5</div><div class="t">[39:50]</div><div><span class="who">Socrates:</span> So we agree we do not know what courage is. Excellent progress. Same time tomorrow?<br><span class="photo">PHOTO · Socrates seeks Alcibiades, Gérôme, 1861</span></div></div>
+    </div>
+    <p class="note">On the Conversations list, these three photos form the photo stacks beside the row.</p>
+  </section>
+
+  <!-- STYLES -->
+  <section id="st">
+    <h2>Styles</h2>
+    <p class="sub">Three, bound to ⌥1 to ⌥3. Each shows what it does to the same plain sentence.</p>
+    <div class="app">
+      <div class="bar"><span>Styles</span><span>3 styles</span></div>
+      <div class="style"><div style="color:#6f6a64;font-size:11px">ST1</div><div class="k">⌥1 Socratic</div><div>Turns any statement into a question.<div class="ex">“We ship on Friday.” becomes <b>“Do we ship on Friday, and what do we mean by ship?”</b></div></div></div>
+      <div class="style"><div style="color:#6f6a64;font-size:11px">ST2</div><div class="k">⌥2 Plato's draft</div><div>Tidy, formal prose, ready for the record.<div class="ex">“We ship on Friday.” becomes <b>“It was agreed that the work would be delivered on Friday.”</b></div></div></div>
+      <div class="style"><div style="color:#6f6a64;font-size:11px">ST3</div><div class="k">⌥3 The oracle</div><div>Short, and slightly cryptic.<div class="ex">“We ship on Friday.” becomes <b>“Friday. If the gods allow.”</b></div></div></div>
+    </div>
+  </section>
+
+  <!-- OVERLAY -->
+  <section id="o">
+    <h2>The overlay recording</h2>
+    <p class="sub">The six second loop under the hero image. This is the sentence spoken while recording it.</p>
+    <div class="hud"><span class="rec">● REC 00:04</span><span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Before we agree, what exactly do we mean by done?</span></div>
+    <p class="note">O1. Spoken by you, or by a text to speech voice. Your choice.</p>
+  </section>
+
+  <div class="ask"><p><b>Your turn.</b> Reply with the numbers you want changed, cut or rewritten, for example “T09 cut, M2.3 funnier”. Once the content is right, I will ask before building demo mode.</p></div>
+</div>
+</body>
+</html>

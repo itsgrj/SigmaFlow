@@ -1,0 +1,6 @@
+LanguageID.mlpackage is SpeechBrain's lang-id-voxlingua107-ecapa
+(https://huggingface.co/speechbrain/lang-id-voxlingua107-ecapa), converted to CoreML
+(float16) on 13 October 2026. The model and SpeechBrain are licensed under the
+Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
+
+Language labels: 107 VoxLingua107 languages; Tamil is output 91, English output 20.

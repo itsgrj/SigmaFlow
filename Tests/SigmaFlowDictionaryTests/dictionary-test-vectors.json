@@ -1,0 +1,461 @@
+{
+  "$comment": [
+    "Shared behavioural contract for the dictionary correction pass.",
+    "",
+    "The macOS app (Swift) and the Windows app (C#) implement this logic independently.",
+    "Independent implementations drift. This file is the thing that stops them: both must",
+    "run every case below and produce exactly the stated output. A change to correction",
+    "semantics starts here, not in either implementation.",
+    "",
+    "Rules under test:",
+    "  1. Whole matches only  - a rule must never bite into a longer word.",
+    "  2. Case-insensitive    - the trigger matches in any case; output is verbatim.",
+    "  3. Longest match first - a longer trigger wins over a shorter overlapping one.",
+    "  4. Glued words match   - parts may be separated by any number of spaces or hyphens,",
+    "                           including none at all.",
+    "  5. Disabled is inert   - a disabled entry changes nothing.",
+    "",
+    "'learningCases' is a second contract, for the other direction: what SigmaFlow is",
+    "willing to LEARN from a correction the user makes in the app it typed into. Every case",
+    "is a before/after pair of the whole field. 'hear'/'write' present means that rule may",
+    "be offered; absent means the change must be refused. Refusals are the point of the",
+    "list — an offered rule the user declines costs a glance, but a rule made from a",
+    "rewording follows them into every future dictation."
+  ],
+  "version": 1,
+  "cases": [
+    {
+      "name": "basic phrase replacement",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "I use cloud code every day.",
+      "expected": "I use Claude Code every day.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "glued together with no separator",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "I use CloudCode every day.",
+      "expected": "I use Claude Code every day.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "joined by a hyphen",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "I use Cloud-Code every day.",
+      "expected": "I use Claude Code every day.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "multiple spaces between parts",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "I use cloud  code every day.",
+      "expected": "I use Claude Code every day.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "trigger matches regardless of case",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "CLOUD CODE is great.",
+      "expected": "Claude Code is great.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "must not corrupt a longer word that starts the same way",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "Cloudflare fronts the cloudcodex service.",
+      "expected": "Cloudflare fronts the cloudcodex service.",
+      "expectedCorrections": []
+    },
+    {
+      "name": "must not touch the ordinary word alone",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "The cloud is fine and the code is fine.",
+      "expected": "The cloud is fine and the code is fine.",
+      "expectedCorrections": []
+    },
+    {
+      "name": "longest trigger wins over a shorter overlapping one",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud",
+          "write": "Claude"
+        },
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "cloud code",
+      "expected": "Claude Code",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "counts repeated hits",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "clawed code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "clawed code, then clawed code again, and clawed code.",
+      "expected": "Claude Code, then Claude Code again, and Claude Code.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "punctuation is a boundary",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "(cloud code), \"cloud code\"; cloud code!",
+      "expected": "(Claude Code), \"Claude Code\"; Claude Code!",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "a possessive still matches - the apostrophe is not a letter",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "cloud code's output",
+      "expected": "Claude Code's output",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "a disabled entry changes nothing",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code",
+          "isEnabled": false
+        }
+      ],
+      "input": "I use cloud code every day.",
+      "expected": "I use cloud code every day.",
+      "expectedCorrections": []
+    },
+    {
+      "name": "a term entry never rewrites text",
+      "entries": [
+        {
+          "kind": "term",
+          "write": "Anthropic"
+        }
+      ],
+      "input": "anthropic makes models.",
+      "expected": "anthropic makes models.",
+      "expectedCorrections": []
+    },
+    {
+      "name": "single word trigger is honoured when asked for",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "vercell",
+          "write": "Vercel"
+        }
+      ],
+      "input": "Deployed on Vercell today.",
+      "expected": "Deployed on Vercel today.",
+      "expectedCorrections": [
+        {
+          "to": "Vercel",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "several independent rules in one pass",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "clawed code",
+          "write": "Claude Code"
+        },
+        {
+          "kind": "correction",
+          "hear": "whisper flow",
+          "write": "Wispr Flow"
+        }
+      ],
+      "input": "clawed code beat whisper flow.",
+      "expected": "Claude Code beat Wispr Flow.",
+      "expectedCorrections": [
+        {
+          "to": "Claude Code",
+          "count": 1
+        },
+        {
+          "to": "Wispr Flow",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "empty input is left alone",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "cloud code",
+          "write": "Claude Code"
+        }
+      ],
+      "input": "",
+      "expected": "",
+      "expectedCorrections": []
+    },
+    {
+      "name": "replacement containing regex metacharacters is literal",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "c plus plus",
+          "write": "C++"
+        }
+      ],
+      "input": "I write c plus plus.",
+      "expected": "I write C++.",
+      "expectedCorrections": [
+        {
+          "to": "C++",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "trigger containing regex metacharacters is literal",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "dot net",
+          "write": ".NET"
+        }
+      ],
+      "input": "Built with dot net.",
+      "expected": "Built with .NET.",
+      "expectedCorrections": [
+        {
+          "to": ".NET",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "accented trigger matches decomposed input (NFC normalization)",
+      "$comment": "macOS hands back NFD strings from several APIs. Without normalizing both sides, an accented trigger silently never fires. Input here is deliberately NFD.",
+      "entries": [
+        {
+          "kind": "correction",
+          "hear": "café racer",
+          "write": "Café Racer"
+        }
+      ],
+      "input": "a café racer bike",
+      "expected": "a Café Racer bike",
+      "expectedCorrections": [
+        {
+          "to": "Café Racer",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "learningCases": [
+    {
+      "name": "a misheard name is the case this exists for",
+      "before": "I sent the draft to clode last night.",
+      "after": "I sent the draft to Claude last night.",
+      "hear": "clode",
+      "write": "Claude"
+    },
+    {
+      "name": "joining and capitalising two words is a distance of zero",
+      "before": "Let's ship sigma flow this week.",
+      "after": "Let's ship SigmaFlow this week.",
+      "hear": "sigma flow",
+      "write": "SigmaFlow"
+    },
+    {
+      "name": "a name written as two words, said as two, wanted as one",
+      "before": "ask gokul raj about the build",
+      "after": "ask Gokulraj about the build",
+      "hear": "gokul raj",
+      "write": "Gokulraj"
+    },
+    {
+      "name": "a spelling variant of a long word",
+      "before": "the quantise step is slow",
+      "after": "the quantize step is slow",
+      "hear": "quantise",
+      "write": "quantize"
+    },
+    {
+      "name": "a silent-letter mishearing of a short word",
+      "before": "pick up the fone",
+      "after": "pick up the phone",
+      "hear": "fone",
+      "write": "phone"
+    },
+    {
+      "name": "the user rewording their own sentence is not a mishearing",
+      "before": "Let's move the meeting to Friday.",
+      "after": "Let's move our standup to Friday.",
+      "$comment": "The volume complaint in practice: people edit their own wording constantly."
+    },
+    {
+      "name": "a different word entirely, however short the run",
+      "before": "we run the parakeet model",
+      "after": "we run the whisper model"
+    },
+    {
+      "name": "a preposition swap is grammar, and too short to carry a rule",
+      "before": "I put it in the folder",
+      "after": "I put it on the folder"
+    },
+    {
+      "name": "a homophone of a word that appears in every sentence",
+      "$comment": "Sounds identical and scores well; refused anyway, because the rule would fire forever.",
+      "before": "send it to there team",
+      "after": "send it to their team"
+    },
+    {
+      "name": "a trigger the app would warn about by hand is never offered on its own",
+      "$comment": "Same DictionaryWarning check the add form runs. 'cloud' rewrites every use of the word.",
+      "before": "I use cloud code every day",
+      "after": "I use Claude code every day"
+    },
+    {
+      "name": "a trigger too short to be distinctive is refused",
+      "before": "the api call failed",
+      "after": "the AP1 call failed"
+    },
+    {
+      "name": "a common word is refused even when only its spelling moved",
+      "before": "and then we shipped it",
+      "after": "an then we shipped it"
+    },
+    {
+      "name": "spelling a number out is a formatting taste, not a rule",
+      "before": "we need 5 more of them",
+      "after": "we need five more of them"
+    },
+    {
+      "name": "more than two words changed is a rewrite",
+      "before": "the plan for the quarter is fine",
+      "after": "the plan for next year looks fine"
+    },
+    {
+      "name": "capitalisation alone is left to the user to add by hand",
+      "$comment": "Case is folded before comparing, so this reads as no change at all.",
+      "before": "I sent it to claude",
+      "after": "I sent it to Claude"
+    },
+    {
+      "name": "no edit at all",
+      "before": "nothing changed here",
+      "after": "nothing changed here"
+    },
+    {
+      "name": "an empty field after the edit proposes nothing",
+      "before": "some dictated words",
+      "after": "   "
+    }
+  ]
+}

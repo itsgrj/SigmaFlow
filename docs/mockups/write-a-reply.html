@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Write from the screen</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--hud:rgba(18,18,20,.92);--scrim:rgba(0,0,0,.58);--green:#32d74b;--meterOff:rgba(255,255,255,.18);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+ --sys:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink2)}
+.review{max-width:1280px;margin:auto;padding:34px 30px 80px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1000px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:44px 0 6px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 16px;max-width:1000px}
+.note b{color:var(--ink);font-weight:500}
+.rec{border:1px solid var(--strong);border-radius:8px;background:#1a1a1a;padding:12px 16px;font-size:13.5px;line-height:1.6;max-width:1000px;margin:0 0 18px}
+.rec b{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;font-weight:400;margin-right:8px}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
+.opt{border:1px solid var(--border);border-radius:8px;background:#1a1a1a;padding:12px 14px 14px;cursor:pointer;transition:border-color .12s;min-width:0}
+.opt:hover{border-color:var(--strong)}.opt.on{border-color:var(--ink)}
+.oh{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.oh h3{font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin:0;font-weight:400}
+.oh .n{font:11px var(--mono);color:var(--dim)}
+.tag{margin-left:auto;font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--strong);padding:1px 6px;white-space:nowrap}
+.opt p{font-size:12.5px;line-height:1.5;color:var(--ink2);margin:8px 0 0}
+
+/* names: a slice of the sidebar */
+.side{background:#000;border:1px solid var(--border);border-radius:6px;padding:6px}
+.side div{display:flex;align-items:center;gap:9px;height:26px;padding:0 8px;border-radius:5px;font:12px var(--pixel);color:var(--ink)}
+.side div.f{color:var(--dim)}
+.side div.on{background:var(--sel)}
+.side img{width:12px;height:12px;filter:invert(1);opacity:.75}
+.label{margin-top:8px;font:10px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.label i{width:6px;height:6px;border-radius:50%;background:var(--ink);display:inline-block}
+
+/* placement: a small window */
+.win{border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;height:300px;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:150px;flex:0 0 150px;background:#000;border-right:1px solid var(--border);padding:14px 6px}
+.rail .wm{font:16px var(--pixel);padding:0 8px 12px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail div.it{display:flex;align-items:center;gap:8px;height:24px;padding:0 8px;border-radius:5px;font:11px var(--pixel)}
+.rail div.it.on{background:var(--sel)}
+.rail img{width:11px;height:11px;filter:invert(1);opacity:.75}
+.pg{flex:1;padding:16px 18px;font-family:var(--pixel);min-width:0}
+.pg h4{font:16px var(--pixel);font-weight:400;margin:0 0 4px}
+.pg .sub{font-size:11px;color:var(--ink2);margin:0 0 12px}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--border);margin-bottom:10px;font-size:11px;color:var(--ink2)}
+.tabs span{padding-bottom:6px}.tabs span.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.cd{border:1px solid var(--border);border-radius:6px;background:var(--glass);font-size:11px}
+.cd .r{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.cd .r:last-child{border-bottom:0}
+.cd .r .c{color:var(--ink2);font-size:10px;margin-top:2px}
+.kc{margin-left:auto;border:1px solid var(--border);border-radius:4px;padding:1px 6px;font:10px var(--mono);background:var(--fill)}
+.bt{margin-left:auto;font-size:10px;color:var(--ink2)}
+
+/* try-it replacements */
+.pair{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-family:var(--pixel);font-size:11.5px;line-height:1.45;padding:10px 12px;border-bottom:1px solid var(--border)}
+.pair:last-child{border-bottom:0}
+.pair .k{font:9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.pair .say{color:var(--ink2)}
+.steps{display:grid;grid-template-columns:1fr;gap:6px;padding:10px}
+.steps div{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font:11px var(--pixel);line-height:1.4;display:flex;gap:10px;align-items:center}
+.steps b{font:9.5px var(--mono);color:var(--dim);font-weight:400}
+.bigkey{display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 12px}
+.bigkey .cap{width:120px;height:72px;border:1px solid var(--strong);border-radius:10px;background:var(--fill);display:flex;flex-direction:column;justify-content:space-between;padding:8px 10px;font:12px var(--pixel)}
+.bigkey .cap span:first-child{font-size:20px;align-self:flex-end}
+.bigkey p{font:12px var(--pixel);color:var(--ink2);margin:0;text-align:center}
+
+/* the desk, where the overlay variations sit */
+.desk{position:relative;height:290px;border-radius:6px;background:#2a2d33;overflow:hidden;margin-top:4px;font-family:var(--sys)}
+.mbar{position:absolute;left:0;right:0;top:0;height:14px;background:rgba(0,0,0,.35);display:flex;align-items:center;gap:8px;padding:0 8px;font-size:8px;color:#ddd}
+.mbar .sp{margin-left:auto}
+.mbar img{width:9px;height:9px;filter:invert(1)}
+.app{position:absolute;left:24px;right:24px;top:24px;height:156px;background:#1e1e1e;border:1px solid rgba(255,255,255,.12);border-radius:6px;overflow:hidden}
+.app .tb{height:16px;background:#262626;display:flex;align-items:center;gap:4px;padding:0 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.app .tb i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22)}
+.app .tb span{margin-left:8px;font-size:8px;color:#aaa}
+.app .body{padding:8px 10px;font-size:9px;line-height:1.45;color:#cfcfcf}
+.app .body b{color:#f2f2f2}
+.app .reply{position:absolute;left:10px;right:10px;bottom:8px;height:42px;border:1px solid rgba(10,132,255,.6);border-radius:4px;background:#181818;padding:5px 7px;font-size:8px;color:#888}
+.caret{display:inline-block;width:1px;height:10px;background:#eee;vertical-align:-2px}
+.dock{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:200px;height:20px;border-radius:7px;background:rgba(255,255,255,.12)}
+.hudw{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:calc(100% - 36px)}
+.hud{background:var(--hud);border:1px solid var(--strong);border-radius:9px;padding:8px 11px;font-family:var(--pixel);box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.st{display:flex;align-items:center;gap:8px;height:12px}
+.g{width:9px;height:9px;display:flex;align-items:center;justify-content:center;flex:0 0 9px}
+.g i{width:6px;height:6px;border-radius:50%;background:var(--ink)}
+.g img{width:9px;height:9px;filter:invert(1)}
+.e{font-size:8.5px;letter-spacing:.55px;text-transform:uppercase;white-space:nowrap}
+.t{font-size:9px;color:var(--ink2)}
+.m{display:flex;gap:2px}.m i{width:3px;height:3px;border-radius:50%;background:var(--meterOff)}.m i.l{background:var(--green)}
+.w{margin-top:6px;font-size:10.5px;line-height:14px}
+.w.sec{color:var(--ink2)}
+.chip{margin-left:auto;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--strong);border-radius:4px;padding:1px 5px;font-size:8px;white-space:nowrap}
+.chip .ap{width:9px;height:9px;border-radius:2px;background:#ededed;color:#111;font-size:7px;display:inline-flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Write from the screen, round 3</h1>
+<p class="lead"><b>Built 23 Oct 2026</b> as Write for me (round 2 picks 1A 2A 3B 4A). Gokul, 26 Oct: the name sits oddly in the sidebar, Try it confuses, and the overlay looks like an ordinary dictation. Four questions. Click to pick; reply like <b>1-01 2B 3A 4-04+02</b>.</p>
+
+<h2>01 The name, 20 ways</h2>
+<p class="note">Every other page is a noun: Models, Meetings, Snippets, Styles. "Write for me" is a sentence, which is why it reads oddly. Each card shows the name in the sidebar and what the overlay says while you talk.</p>
+<section class="grid g5" data-q="name" id="names"></section>
+
+<h2>02 Where it lives</h2>
+<p class="note">Styles and this already share an engine. A style rewrites what you already wrote; this writes something new from what you say. Both are SigmaFlow writing for you, so they can share a page under a wider name.</p>
+<section class="grid g3" data-q="place" id="places"></section>
+
+<h2>03 In place of Try it</h2>
+<p class="note">Try it asked you to hold a button and talk to a pretend message. These explain the same thing without asking you to do anything.</p>
+<section class="grid g5" data-q="try" id="tries"></section>
+
+<h2>04 The overlay, 20 ways to know you are in this mode</h2>
+<p class="note">Each is drawn at the moment that matters, a second after the key goes down, in Mail with the reply box open. Some change the card, some change what is around it on the screen. Two or three can be combined. The overlay label uses the name picked in 01.</p>
+<div class="rec"><b>My pick</b>04 with 02: the card turns white, so you can't miss it, and the chip names the app the words will go into. Both stay monochrome.</div>
+<section class="grid g4" data-q="hud" id="huds"></section>
+
+</main>
+<script>
+const P={name:'01',place:'B',try:'A',hud:'04'};
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+
+// ---------- 01 names ----------
+const NAMES=[
+ ['01','Ghostwriter','edit','Writes in your name what you tell it. Says exactly what it is.','My pick'],
+ ['02','Drafts','text--short-paragraph','What it makes: something you read before you send.'],
+ ['03','Replies','arrow--left','The most common use, but it does more than reply.'],
+ ['04','Compose','edit','The word Mail uses for a new message.'],
+ ['05','Writer','edit','Plain, like Models and Snippets.'],
+ ['06','Scribe','book','Someone who writes down what you tell them to.'],
+ ['07','Assist','lightning','Wide; leaves room for more later.'],
+ ['08','Answers','text--align--left','Fits questions, less so emails.'],
+ ['09','Responses','arrow--left','Any kind of reply, not only messages.'],
+ ['10','Requests','user--speaker','What you do: ask for something.'],
+ ['11','Commands','chip','Sounds like a terminal; precise, a little cold.'],
+ ['12','Asks','user--speaker','Short and spoken, like the feature.'],
+ ['13','Briefs','notebook','You brief it, it writes. Fits the .md notes later.'],
+ ['14','Intents','lightning','What you mean, not what you said.'],
+ ['15','Context','folder','Where your notes will live too.'],
+ ['16','Muse','magic-wand','Warm, a little poetic.'],
+ ['17','Quill','edit','A pen, one word, a little old-fashioned.'],
+ ['18','Echo','renew','You speak, it answers back in writing.'],
+ ['19','Autowrite','edit','Says what happens, sounds like a setting.'],
+ ['20','Ghost','view','Short and odd; memorable.'],
+];
+const label=()=>NAMES.find(n=>n[0]===P.name)[1];
+function drawNames(){
+ document.getElementById('names').innerHTML=NAMES.map(([n,name,icon,why,tag])=>
+  `<div class="opt ${P.name===n?'on':''}" data-v="${n}"><div class="oh"><span class="n">${n}</span><h3>${name}</h3>${tag?`<span class="tag">${tag}</span>`:''}</div>
+   <div class="side"><div class="f"><img src="${ICON('magic-wand')}">Styles</div><div class="on"><img src="${ICON(icon)}">${name}</div><div class="f"><img src="${ICON('settings')}">Settings</div></div>
+   <div class="label"><i></i>${name}</div><p>${why}</p></div>`).join('');
+}
+
+// ---------- 02 placement ----------
+const RAIL=['Models','Transcriptions','Meetings','Conversations','Dictionary','Snippets'];
+function rail(extra,on){
+ const icons={Models:'chip',Transcriptions:'text--align--left',Meetings:'microphone',Conversations:'notebook',Dictionary:'book',Snippets:'text--short-paragraph',Settings:'settings'};
+ const items=[...RAIL.map(t=>[t,icons[t]]),...extra,['Settings','settings']];
+ return `<div class="rail"><div class="wm">Sigma<span>flow</span></div>${items.map(([t,i])=>`<div class="it ${t===on?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div>`;
+}
+function setupCard(){return `<div class="cd"><div class="r"><div>Key<div class="c">Hold it and say what to write.</div></div><span class="kc">Right ⌥</span></div><div class="r"><div>Writes with<div class="c">Claude</div></div><span class="bt">Change</span></div></div>`}
+function drawPlaces(){
+ const n=label();
+ const opts=[
+  ['A','Its own page',`${rail([['Styles','magic-wand'],[n,'edit']],n)}<div class="pg"><h4>${n}</h4><div class="sub">Say what to write. SigmaFlow writes it where you type.</div>${setupCard()}</div>`,
+   'Nine pages. Simple to find, but a second place that shows the engine.'],
+  ['B','One page, renamed Writing',`${rail([['Writing','magic-wand']],'Writing')}<div class="pg"><h4>Writing</h4><div class="sub">Everything SigmaFlow writes for you, and how.</div><div class="tabs"><span>Default style</span><span>Custom styles</span><span class="on">${n}</span></div>${setupCard()}</div>`,
+   'Back to eight pages. One engine, set once at the top of the page for all three tabs. Styles becomes Writing.'],
+  ['C','A tab on Styles, name kept',`${rail([['Styles','magic-wand']],'Styles')}<div class="pg"><h4>Styles</h4><div class="sub">How your words look, and what SigmaFlow writes.</div><div class="tabs"><span>Default style</span><span>Custom styles</span><span class="on">${n}</span></div>${setupCard()}</div>`,
+   'Eight pages, nothing renamed. But a style is a look, and this is not one.'],
+ ];
+ document.getElementById('places').innerHTML=opts.map(([v,t,win,why])=>
+  `<div class="opt ${P.place===v?'on':''}" data-v="${v}"><div class="oh"><span class="n">${v}</span><h3>${t}</h3>${v==='B'?'<span class="tag">My pick</span>':''}</div><div class="win">${win}</div><p>${why}</p></div>`).join('');
+}
+
+// ---------- 03 try-it replacements ----------
+function drawTries(){
+ const t=[
+  ['A','What you say, what you get',`<div class="cd">
+    <div class="pair"><span class="k">You say</span><span class="say">Reply to Priya, Thursday works but not before eleven.</span><span class="k">You get</span><span>Hi Priya, Thursday works, but could we make it 11? Thanks, Gokul</span></div>
+    <div class="pair"><span class="k">You say</span><span class="say">Tell Arjun yes and that I’ll send the link.</span><span class="k">You get</span><span>Yes, 4.30 works. I’ll send the link.</span></div>
+    <div class="pair"><span class="k">You say</span><span class="say">Commit message for this.</span><span class="k">You get</span><span>Move dictations into the SigmaFlow folder</span></div></div>`,
+   'Words only, three real-looking pairs, the way the copy voice says to show a change.'],
+  ['B','A short loop',`<div class="cd" style="padding:10px" id="loop"></div>`,
+   'The Settings tiles’ trick: a tiny scene plays on its own. You watch, you don’t act.'],
+  ['C','Three steps',`<div class="cd"><div class="steps"><div><b>1</b>Hold <span class="kc" style="margin:0">Right ⌥</span></div><div><b>2</b>Say what to write</div><div><b>3</b>SigmaFlow writes it where you type</div></div></div>`,
+   'The shortest possible map. No example, so it says less about what you can ask.'],
+  ['D','The key, large',`<div class="cd"><div class="bigkey"><div class="cap"><span>⌥</span><span>option</span></div><p>Hold it. Say what to write. Let go.</p></div></div>`,
+   'The key you hold is the whole lesson. Fewest words.'],
+  ['E','Nothing',`<div class="cd" style="padding:28px 12px;text-align:center;color:var(--dim);font:11px var(--pixel)">Only Key and Writes with.<br>The overlay teaches the rest.</div>`,
+   'Leanest. Leans entirely on 04 being unmistakable.'],
+ ];
+ document.getElementById('tries').innerHTML=t.map(([v,title,body,why])=>
+  `<div class="opt ${P.try===v?'on':''}" data-v="${v}"><div class="oh"><span class="n">${v}</span><h3>${title}</h3>${v==='A'?'<span class="tag">My pick</span>':''}</div>${body}<p>${why}</p></div>`).join('');
+ loop();
+}
+let loopT=0;
+function loop(){
+ const el=document.getElementById('loop');if(!el)return;
+ const ask='Reply to Priya, Thursday works'.split(' '),out='Hi Priya, Thursday works, but could we make it 11?';
+ const t=loopT%10;
+ const words=t<4?ask.slice(0,Math.floor(t*1.6)).join(' '):ask.join(' ');
+ el.innerHTML=`<div style="font:10px var(--pixel);color:var(--ink2);margin-bottom:8px">Priya: Thursday at 10?</div>
+  <div class="hud" style="opacity:${t<6?1:0};transition:opacity .3s"><div class="st"><span class="g">${t<4?'<i></i>':`<img src="${ICON('circle-dash')}">`}</span><span class="e">${label()}</span></div><div class="w ${t<4?'':'sec'}">${words||'…'}</div>${t>=4&&t<6?`<div class="w">${out.slice(0,Math.floor((t-4)*30))}</div>`:''}</div>
+  <div style="margin-top:8px;border:1px solid var(--border);border-radius:5px;padding:6px 8px;font:10.5px var(--pixel);min-height:30px;color:${t>=6?'var(--ink)':'var(--dim)'}">${t>=6?out:'A text box'}</div>`;
+}
+setInterval(()=>{loopT+=.25;loop()},250);
+
+// ---------- 04 overlay variations ----------
+const ASK='Reply to Priya, Thursday works but';
+function meter(n=9){return `<span class="m">${Array.from({length:10},(_,i)=>`<i class="${i<n?'l':''}"></i>`).join('')}</span>`}
+function hud(o={}){
+ const glyph=o.glyph||'<i></i>';
+ const st=`<div class="st"><span class="g">${glyph}</span><span class="e" style="${o.labelStyle||''}">${o.label??label()}</span>${o.noTimer?'':`<span class="t">00:02</span>${meter()}`}${o.chip||''}</div>`;
+ const words=o.words??`<div class="w">${ASK}</div>`;
+ return `<div class="hud" style="${o.style||''}">${o.top||''}${st}${words}${o.after||''}</div>`;
+}
+function scene(o={}){
+ const appStyle=o.appStyle||'';
+ return `<div class="desk" style="${o.deskStyle||''}">
+  <div class="mbar"><img src="${ICON('microphone--filled')}" style="${o.mbarGlyph?'display:none':''}">${o.mbarGlyph||''}<span>Mail</span><span>File</span><span>Edit</span><span class="sp">Mon 10:42</span></div>
+  <div class="app" style="${appStyle}"><div class="tb"><i></i><i></i><i></i><span>Inbox</span></div>
+   <div class="body"><b>Priya Raman</b><br>Could we go through the pricing deck on Thursday at 10? Also, would you add the Q3 numbers to slide 4?</div>
+   <div class="reply">To: Priya Raman<br><span class="caret"></span>${o.atCaret||''}</div></div>
+  ${o.around||''}
+  <div class="dock"></div>
+  <div class="hudw" style="${o.hudPos||''}">${o.hud??hud()}</div>
+ </div>`;
+}
+const APPCHIP=`<span class="chip"><span class="ap">✉</span>Mail</span>`;
+function variations(){
+ const L=label();
+ return [
+  ['01','Pen, not dot','The steady dot becomes a pen. The one mark that always means recording now means writing.',scene({hud:hud({glyph:`<img src="${ICON('edit')}">`})})],
+  ['02','Where it will go','A chip names the app the writing will land in, read when the key goes down.',scene({hud:hud({chip:APPCHIP})})],
+  ['03','Who it is for','The chip names who you are answering, read from the screen.',scene({hud:hud({chip:`<span class="chip">To Priya</span>`})})],
+  ['04','White card','The card inverts: white, black ink. Nothing else in SigmaFlow looks like this, so it can’t be mistaken.',scene({hud:`<div class="hud" style="background:#ededed;border-color:#ededed;color:#111"><div class="st"><span class="g"><i style="background:#111"></i></span><span class="e">${L}</span><span class="t" style="color:#555">00:02</span>${meter()}${APPCHIP.replace('class="chip"','class="chip" style="border-color:rgba(0,0,0,.25)"').replace('background:#ededed','').replace('class="ap"','class="ap" style="background:#111;color:#ededed"')}</div><div class="w">${ASK}</div></div>`}),'My pick'],
+  ['05','Dashed edge','A dashed edge, the mark of a draft: what comes out is yours to check.',scene({hud:hud({style:'border:1px dashed rgba(255,255,255,.55)'})})],
+  ['06','A prompt','Your words come after a › like a command line. You are giving an instruction, not dictating.',scene({hud:hud({words:`<div class="w"><span style="color:var(--dim)">› </span>${ASK}</div>`})})],
+  ['07','It asks first','Before you speak, the card asks “What should I write?” instead of saying Listening.',scene({hud:hud({words:`<div class="w sec">What should I write?</div>`})})],
+  ['08','Two voices','YOU over your words, SIGMAFLOW under them, waiting. It reads as a conversation.',scene({hud:hud({words:`<div class="w"><span class="e" style="color:var(--dim);margin-right:6px">You</span>${ASK}</div><div class="w sec"><span class="e" style="color:var(--dim);margin-right:6px">SigmaFlow</span>…</div>`})})],
+  ['09','What it sees','A small picture of the screen it read sits in the card. Proof it is looking, and at what.',scene({hud:hud({words:`<div style="display:flex;gap:8px;margin-top:6px;align-items:flex-start"><div style="width:44px;height:28px;flex:0 0 44px;border:1px solid var(--strong);border-radius:3px;background:#2a2d33;position:relative"><div style="position:absolute;inset:4px 3px 6px;background:#1e1e1e;border-radius:1px"></div></div><div class="w" style="margin:0">${ASK}</div></div>`})})],
+  ['10','The window, outlined','A thin white line goes around the window being read, for as long as you hold.',scene({around:`<div style="position:absolute;left:21px;right:21px;top:21px;height:162px;border:1.5px solid #ededed;border-radius:8px"></div>`})],
+  ['11','Spotlight','Everything but the window being read dims. The rest of the screen is out of it.',scene({around:`<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 0,24px 24px,24px 180px,calc(100% - 24px) 180px,calc(100% - 24px) 24px,24px 24px)"></div>`})],
+  ['12','At the cursor','The card opens under the text box you are writing into, not above the Dock.',scene({hudPos:'bottom:auto;top:184px;left:34px;transform:none;width:calc(100% - 68px)'})],
+  ['13','Speech bubble','The card grows a point aimed at the text box. The words go there.',scene({hud:`<div style="position:relative">${hud()}<div style="position:absolute;left:46px;top:-6px;width:10px;height:10px;background:var(--hud);border-left:1px solid var(--strong);border-top:1px solid var(--strong);transform:rotate(45deg)"></div></div>`,hudPos:'bottom:auto;top:188px;left:34px;transform:none;width:calc(100% - 68px)'})],
+  ['14','Ruled lines','Faint ruled lines under your words: the paper the writing will fill.',scene({hud:hud({after:`<div style="margin-top:8px;display:grid;gap:7px">${'<div style="height:1px;background:rgba(255,255,255,.14)"></div>'.repeat(3)}</div>`})})],
+  ['15','Pen at the caret','A small pen mark sits at the text cursor in the app itself, where the words will go.',scene({atCaret:`<span style="display:inline-flex;margin-left:3px;vertical-align:-3px;background:#ededed;border-radius:3px;padding:1px"><img src="${ICON('edit')}" style="width:8px;height:8px"></span>`})],
+  ['16','The key you hold','A small ⌥ keycap in the card, pressed. Which key, which mode.',scene({hud:hud({glyph:`<span style="font:8px var(--mono);border:1px solid var(--ink);border-radius:2px;padding:0 2px;line-height:9px">⌥</span>`})})],
+  ['17','SigmaFlow’s own mark','The app icon in place of the dot: SigmaFlow is the one about to write.',scene({hud:hud({glyph:`<img src="icons/appicon.png" style="width:11px;height:11px;filter:none;border-radius:3px">`})})],
+  ['18','A header','A header with its own line: WRITING INTO MAIL. The card reads as a different thing, a compose window.',scene({hud:hud({top:`<div style="display:flex;align-items:center;gap:6px;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--border)"><span class="e" style="color:var(--ink2)">Writing into</span>${APPCHIP.replace('margin-left:auto','')}</div>`.replace('class="chip"','class="chip" style="margin-left:0"')})})],
+  ['19','Its own sound','Not on screen: a different start sound, and the menu bar mark becomes a pen.',scene({mbarGlyph:`<img src="${ICON('edit')}" style="width:9px;height:9px;filter:invert(1);outline:1px solid #ededed;outline-offset:1px;border-radius:1px">`,hud:hud({after:`<div class="w sec" style="font-size:9px;margin-top:6px">♪ a pen-scratch sound, not the usual tick</div>`})})],
+  ['20','A pen on the pointer','The mouse pointer carries a small pen while you hold. Wherever you look, it is there.',scene({around:`<div style="position:absolute;left:60%;top:96px;font-size:16px;color:#fff;text-shadow:0 0 2px #000;transform:rotate(-120deg)">➤</div><div style="position:absolute;left:calc(60% + 13px);top:110px;background:#ededed;border-radius:3px;padding:1px"><img src="${ICON('edit')}" style="width:8px;height:8px"></div>`})],
+ ];
+}
+function drawHuds(){
+ document.getElementById('huds').innerHTML=variations().map(([n,title,why,html,tag])=>
+  `<div class="opt ${P.hud===n?'on':''}" data-v="${n}"><div class="oh"><span class="n">${n}</span><h3>${title}</h3>${tag?`<span class="tag">${tag}</span>`:''}</div>${html}<p>${why}</p></div>`).join('');
+}
+
+function draw(){drawNames();drawPlaces();drawTries();drawHuds()}
+document.addEventListener('click',e=>{const o=e.target.closest('[data-v]');if(!o)return;const q=o.closest('[data-q]');if(!q)return;P[q.dataset.q]=o.dataset.v;draw()});
+draw();
+</script>
+</body></html>

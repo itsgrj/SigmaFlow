@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow, the first open</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#878787;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--hudGlass:rgba(16,16,16,.62);--scrim:rgba(0,0,0,.58);
+ --green:#32D74B;--meterOff:rgba(255,255,255,.18);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+.review{max-width:1240px;margin:auto;padding:34px 30px 80px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:980px;margin:0 0 22px}
+.lead b{color:var(--ink);font-weight:500}
+.choices{display:grid;grid-template-columns:1fr 1fr;max-width:1000px;gap:10px;margin:0 0 16px}
+.choice{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#1a1a1a}
+.choice h3{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:0 0 10px}
+.seg{display:flex;flex-direction:column;gap:4px}
+.seg button{text-align:left;border:1px solid transparent;border-radius:6px;padding:7px 9px;color:var(--ink2);font-size:13px;line-height:1.35}
+.seg button b{font:500 10px var(--mono);margin-right:8px;color:var(--dim)}
+.seg button.on{border-color:var(--strong);background:var(--sel);color:var(--ink)}
+.seg button.on b{color:var(--ink)}
+.seen{margin:9px 0 0;font-size:12px;color:var(--dim);line-height:1.6}
+.seen a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--border);margin-right:8px}
+.strip{display:flex;align-items:center;gap:6px;margin:14px 0 0;flex-wrap:wrap;max-width:1160px}
+.strip .chip{font:12px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:5px;padding:5px 9px}
+.strip .chip.on{color:var(--ink);border-color:var(--strong);background:var(--sel)}
+.strip .chip.done{color:var(--ink2)}
+.strip .sp{flex:1}
+.hint{font-size:12px;color:var(--dim);margin:8px 0 0;max-width:1160px;line-height:1.55;display:flex;gap:20px}
+.hint .dlr{margin-left:auto;font:11px var(--mono);white-space:nowrap}
+.k{font:12px var(--mono);border:1px solid var(--border);border-radius:4px;padding:2px 8px;background:var(--fill);color:var(--ink)}
+.hint .k{font-size:11px;padding:1px 6px}
+
+/* the screen */
+.frame{width:1160px;height:680px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#000}
+.desk{position:absolute;inset:0}
+.desk:before{content:"";position:absolute;inset:-10px;background:url("../../Resources/background-colour.jpg") center 60%/cover;filter:blur(2px) brightness(.5)}
+.menubar{position:absolute;left:0;right:0;top:0;height:24px;background:rgba(0,0,0,.35);backdrop-filter:blur(20px);display:flex;align-items:center;gap:18px;padding:0 14px;font:12px var(--geist);color:rgba(255,255,255,.9);z-index:2}
+.menubar .sig{font:600 13px var(--geist)}.menubar .r{margin-left:auto;display:flex;gap:14px;align-items:center}
+.mbi{font:600 14px var(--geist);background:rgba(255,255,255,.28);border-radius:4px;padding:0 6px;height:20px;display:inline-flex;align-items:center}
+.dock{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);height:54px;padding:6px 8px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(20px);display:flex;gap:7px;z-index:2}
+.dock i{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.16);display:block}
+.dock img{width:42px;height:42px;border-radius:10px}
+.mwin{position:absolute;border:1px solid var(--strong);border-radius:12px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.6);z-index:3}
+.lights{position:absolute;left:14px;top:14px;display:flex;gap:8px;z-index:5}
+.lights i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.18);display:block}
+.paint{position:absolute;inset:0;background:url("../../Resources/background-colour.jpg") center/cover}
+.paint:after{content:"";position:absolute;inset:0;background:var(--scrim)}
+
+.setup{left:200px;top:34px;width:760px;height:482px;background:#000;transition:opacity .25s,transform .25s}
+.setup.back{opacity:.28;transform:scale(.985)}
+.setup .body{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 70px 70px;text-align:center}
+.setup .foot{position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;padding:0 22px;gap:10px;border-top:1px solid var(--border);background:rgba(0,0,0,.35)}
+.dots{display:flex;gap:6px}.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);display:block}.dots i.on{background:var(--ink)}
+.foot .sp{flex:1}
+
+.app{inset:0;border:0;border-radius:0;display:flex;box-shadow:none}
+.rail{width:219px;flex:0 0 219px;background:#000;border-right:1px solid var(--border);padding:58px 10px 16px;display:flex;flex-direction:column;position:relative;z-index:1}
+.word{font:28px var(--pixel);padding:0 11px;margin-bottom:34px;display:flex;align-items:center}.word span{font-family:PixelCircle,var(--pixel)}
+.word .logo{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,.2);margin-right:10px}
+.nav div{display:flex;align-items:center;gap:13px;height:37px;padding:0 11px;border-radius:6px;font:14px var(--pixel);margin-bottom:9px}
+.nav div.on{background:var(--sel)}
+.nav img{width:15px;height:15px;filter:invert(1);opacity:.75}
+.ver{margin-top:auto;padding:0 11px;font:11px var(--pixel);color:var(--dim)}
+.stage{flex:1;position:relative;overflow:hidden}
+.page{position:relative;height:100%;padding:30px 29px 40px;display:flex;flex-direction:column}
+.phead h1{font:22px var(--pixel);font-weight:400;margin:0 0 20px}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--glass)}
+.trow{display:flex;gap:18px;padding:16px 20px;border-top:1px solid var(--border);font:15px/1.5 var(--pixel)}
+.trow:first-child{border-top:0}
+.trow time{font:13px var(--pixel);color:var(--dim);flex:0 0 70px;padding-top:2px}
+.empty{margin:auto;text-align:center;font:15px var(--pixel);color:var(--ink2)}
+.emptysc{margin:auto;width:440px}
+
+/* steps */
+.st{display:flex;flex-direction:column;align-items:center;width:100%}
+.st .pre{margin-bottom:22px}
+.st h2{font:26px var(--pixel);font-weight:400;margin:0;display:flex;align-items:center;gap:12px}
+.st h2 .kt{font:20px var(--mono);border:1px solid var(--strong);border-bottom-width:3px;border-radius:6px;padding:2px 10px;background:var(--fill)}
+.st .bd{margin-top:20px;width:100%;display:flex;flex-direction:column;align-items:center}
+.wm{font:56px var(--pixel)}.wm span{font-family:PixelCircle,var(--pixel)}
+.appicon{width:84px;height:84px;border-radius:19px;border:1px solid rgba(255,255,255,.2)}
+.btn{height:32px;padding:0 14px;border-radius:6px;border:1px solid var(--strong);background:var(--fill);font:13px var(--pixel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--ink)}
+.btn.primary{background:var(--ink);color:#0a0a0a;border-color:var(--ink)}
+.btn.primary[disabled]{opacity:.35;cursor:default}
+.btn.quiet{border-color:transparent;background:none;color:var(--ink2)}
+.rows{width:100%;max-width:470px;border:1px solid var(--border);border-radius:8px;background:var(--glass);text-align:left}
+.prow{display:flex;align-items:center;gap:12px;min-height:54px;padding:0 16px;border-top:1px solid var(--border);font:14px var(--pixel)}
+.prow:first-child{border-top:0}
+.prow>img{width:16px;filter:invert(1);opacity:.8}
+.prow .end{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ok{display:inline-flex;align-items:center;gap:6px;font:13px var(--pixel);color:var(--ink2)}
+.ok img{width:14px;filter:invert(1)}
+.path{font:12px var(--mono);color:var(--ink2)}
+.line2{height:2px;background:rgba(255,255,255,.12);border-radius:1px;overflow:hidden;width:120px;display:inline-block}
+.line2 i{display:block;height:100%;background:var(--ink)}
+
+.board{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.35);width:100%;max-width:520px;user-select:none}
+.board .r{display:flex;gap:4px}
+.board i{height:16px;flex:1;border-radius:4px;background:rgba(255,255,255,.07);display:flex;align-items:flex-end;justify-content:flex-end;font:9px var(--pixel);font-style:normal;color:var(--dim);padding:2px 4px}
+.board i.target{outline:1px solid var(--ink);color:var(--ink);cursor:pointer}
+.board i.lit{background:var(--ink);color:#0a0a0a;box-shadow:0 0 0 1px var(--ink),0 0 18px rgba(255,255,255,.35)}
+.taps{display:flex;gap:8px;justify-content:center;margin-top:14px}
+.taps i{width:8px;height:8px;border-radius:50%;border:1px solid var(--strong);display:block}
+.taps i.on{background:var(--ink);border-color:var(--ink)}
+.field{width:100%;max-width:520px;min-height:96px;border:1px solid var(--strong);border-radius:8px;background:var(--glass);padding:14px 16px;text-align:left;font:15px/1.5 var(--pixel);margin-top:12px}
+.field p{margin:0 0 6px}
+.field p.fresh{animation:in .5s ease-out}
+.field .wait{display:flex;align-items:center;height:22px}
+@keyframes in{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:none}}
+.status{margin-top:12px;height:20px;display:flex;justify-content:center}
+.holdrow{display:flex;align-items:center;gap:10px;margin-top:10px;font:12px var(--pixel);color:var(--dim);justify-content:center}
+.holdkey{font:12px var(--mono);border:1px solid var(--strong);border-bottom-width:3px;border-radius:5px;padding:3px 9px;color:var(--ink);background:var(--fill);user-select:none;cursor:pointer}
+.holdkey.down{background:var(--ink);color:#0a0a0a;border-bottom-width:1px}
+.sc{width:100%;max-width:440px;border:1px solid var(--border);border-radius:8px;background:var(--glass);text-align:left}
+.sc div{display:flex;align-items:center;min-height:40px;padding:0 16px;border-top:1px solid var(--border);font:13px var(--pixel)}
+.sc div:first-child{border-top:0}
+.sc span{margin-left:auto}
+.side{position:absolute;right:0;top:0;bottom:0;width:300px;background:rgba(8,8,8,.92);border-left:1px solid var(--border);padding:24px 18px;z-index:4;animation:slide .3s ease-out}
+@keyframes slide{from{transform:translateX(40px);opacity:0}}
+.side h3{font:15px var(--pixel);font-weight:400;margin:0 0 14px;display:flex;align-items:center}
+.side h3 button{margin-left:auto;opacity:.7}.side h3 img{width:14px;filter:invert(1)}
+.mbcard{position:absolute;right:120px;top:36px;width:320px;padding:16px 18px;background:rgba(16,16,16,.9);border:1px solid var(--strong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.55);z-index:6}
+.mbcard:before{content:"";position:absolute;right:30px;top:-7px;width:12px;height:12px;background:rgba(16,16,16,.9);border-left:1px solid var(--strong);border-top:1px solid var(--strong);transform:rotate(45deg)}
+.mbcard h2{font:16px var(--pixel);font-weight:400;margin:0 0 12px}
+.mbact{display:flex;justify-content:flex-end;margin-top:14px}
+
+/* round 4: the words under each title */
+.st .line{font:14px/1.5 var(--pixel);color:var(--ink2);margin:10px 0 0;max-width:600px}
+.prow{padding:10px 16px}
+.prow .lbl{display:flex;flex-direction:column;gap:3px}
+.prow .lbl small{font:12px/1.4 var(--pixel);color:var(--dim)}
+.prow.pick{cursor:pointer}
+.radio{width:14px;height:14px;border-radius:50%;border:1px solid var(--strong);flex:0 0 auto}
+.radio.on{border:4px solid var(--ink)}
+.tag{font:11px var(--pixel);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--ink);border-radius:4px;padding:3px 7px;color:var(--ink);white-space:nowrap}
+.warn{margin-top:10px;width:100%;max-width:470px;font:12px/1.5 var(--pixel);color:var(--ink2);text-align:left;display:flex;gap:8px;align-items:flex-start}
+.warn img{width:14px;filter:invert(1);opacity:.8;margin-top:2px}
+.badges{display:flex;gap:8px;justify-content:center}
+.badges span{font:12px var(--pixel);color:var(--ink2);border:1px solid var(--border);border-radius:4px;padding:4px 9px;background:var(--fill)}
+.mbcard p{font:13px/1.5 var(--pixel);color:var(--ink2);margin:-4px 0 12px}
+
+/* the HUD, as HUDView draws it */
+.hud{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);width:440px;padding:14px 18px;background:var(--hudGlass);border:1px solid var(--strong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.55);z-index:20;font-family:var(--pixel);backdrop-filter:blur(24px)}
+.frame.full .hud{bottom:28px}
+.hud .status2{display:flex;align-items:center;gap:14px;height:16px}
+.hud .glyph{width:12px;height:12px;display:flex;align-items:center;justify-content:center}
+.hud .dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.hud .lock{position:relative;width:9px;height:7px;background:var(--ink);border-radius:1px;margin-top:4px}
+.hud .lock:before{content:"";position:absolute;left:1.5px;top:-5px;width:6px;height:6px;border:1.5px solid var(--ink);border-bottom:0;border-radius:4px 4px 0 0;box-sizing:border-box}
+.hud .eb{font-size:12px;letter-spacing:.72px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.hud .ro{font-size:13px;color:var(--ink2)}
+.meter{display:flex;gap:3px}.meter i{width:5px;height:5px;border-radius:50%;background:var(--meterOff);display:block}.meter i.lit{background:var(--green)}
+.hud .words{margin-top:10px;font-size:15px;line-height:20px;min-height:20px}
+.hud .words span{display:inline-block;animation:in .35s ease-out}
+
+/* macOS's own asks */
+.sys{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
+.alert{width:260px;padding:20px 16px 16px;border-radius:12px;background:rgba(40,40,42,.96);border:1px solid rgba(255,255,255,.14);box-shadow:0 20px 60px rgba(0,0,0,.6);text-align:center;font:13px/1.35 -apple-system,var(--geist)}
+.alert img{width:56px;height:56px;border-radius:12px;margin-bottom:10px}
+.alert b{display:block;font-weight:600;margin-bottom:6px}
+.alert p{margin:0 0 14px;font-size:11px;color:rgba(255,255,255,.75)}
+.alert .ab{display:flex;flex-direction:column;gap:6px}
+.alert .ab button{height:28px;border-radius:6px;background:rgba(255,255,255,.12);font-size:13px}
+.alert .ab button.def{background:#0a84ff}
+.sett{width:520px;border-radius:12px;background:rgba(30,30,32,.98);border:1px solid rgba(255,255,255,.14);box-shadow:0 20px 60px rgba(0,0,0,.6);font:13px -apple-system,var(--geist);overflow:hidden}
+.sett .tt{height:44px;display:flex;align-items:center;padding:0 16px 0 80px;font-weight:600;border-bottom:1px solid rgba(255,255,255,.08);position:relative}
+.sett .tt .lights{top:16px}
+.sett .bd{padding:16px}
+.sett .bd p{margin:0 0 12px;color:rgba(255,255,255,.6);font-size:12px}
+.sett .li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.05)}
+.sett .li img{width:24px;height:24px;border-radius:6px}
+.sett .tg{margin-left:auto;width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,.2);position:relative;cursor:pointer}
+.sett .tg:after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.sett .tg.on{background:#0a84ff}.sett .tg.on:after{left:18px}
+.sett .pt{font-size:11px;color:rgba(255,255,255,.45);margin:14px 0 0}
+</style>
+</head>
+<body><main class="review">
+
+<h1>The first open</h1>
+<p class="lead"><b>Round 6, 19 Oct 2026.</b> Every line rewritten in the voice of tryvoiceink.com: say what you get, in plain words, with SigmaFlow doing the work. Switch The voice to compare with round 4. <b>Round 5:</b> Picked: <b>1A</b> the keyboard drawn, <b>2B</b> the talking step waits for Parakeet, <b>3A</b> hands free as its own step, <b>8E</b> straight into the app with their first words already there. This round is only the line under SigmaFlow on Welcome. <b>Round 4:</b> Every step now has a line or two under its title, and the folder step helps the person choose. <b>Round 3:</b> The words streaming live are the moment, so they come right after the permissions: <b>Welcome, Microphone and Accessibility, hold Right ⌘ and talk, then hands free.</b> Parakeet Unified EN downloads from the first second and is never named. No key choice and no model step; both live in the app. Kept from before: 1A 2A 3A 5A 7B. It is live: hold <b>Right ⌘</b> (or the outlined key with the mouse), tap it twice quickly for hands free, tap once to stop, Esc to throw away.</p>
+
+<section class="choices" id="choices"></section>
+<div id="screen"></div>
+<div class="strip" id="strip"></div>
+<p class="hint" id="hint"></p>
+</main>
+
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const MB=id=>`https://mobbin.com/screens/${id}`, MF=id=>`https://mobbin.com/flows/${id}`;
+
+const TAGS=[
+ ['fast','You talk faster than you type.'],
+ ['already','Say it. It is already written.'],
+ ['anyapp','Your voice, typed into any app.'],
+ ['kept','Everything you say, written down and kept on your Mac.'],
+ ['hold','Hold a key. Say it. Done.']];
+const PICKS=[
+ {k:'voice',h:'The voice',o:[['ink','New: written the way tryvoiceink.com is written'],['r4','Round 4, as it was']],seen:[]},
+ {k:'tag',h:'The line on Welcome',o:TAGS,seen:[]},
+];
+// Every word on the steps, in both voices. K(key) reads the one picked.
+const COPY={
+ ink:{
+  welcomeMore:'Hold one key, speak naturally, and SigmaFlow writes it into any app.',
+  badges:['Runs on your Mac','Words as you speak','Works in every app'],
+  permTitle:'Two quick permissions',
+  permLine:'SigmaFlow listens only while you hold the key, and writes wherever your cursor is.',
+  micSub:'So SigmaFlow can hear you.',
+  axSub:'So it can write in any app.',
+  tryLine:'Speak naturally. SigmaFlow writes it for you.',
+  tryDone:'Now it works in Mail, Slack, Notes, anywhere you type.',
+  handsIdle:'For longer thoughts. Talk with your hands free, and tap once when you’re done.',
+  handsOn:'Keep talking. Tap once to finish, or press Esc to throw it away.',
+  handsDone:'Hands free, whenever you need it.',
+  folderTitle:'Your recordings stay yours',
+  folderLine:'Every meeting and conversation is saved to one folder on this Mac. Open it, move it, back it up. It’s yours.',
+  folderWarn:'Documents syncs to iCloud, so recordings saved here will leave this Mac.',
+  doneLine:'These work in every app.',
+  mbLine:'Close the window anytime. SigmaFlow keeps working from up here.'},
+ r4:{
+  welcomeMore:'',badges:[],
+  permTitle:'Microphone and Accessibility',
+  permLine:'Two switches, so SigmaFlow can hear you and type for you. Your voice is turned into text right here on this Mac.',
+  micSub:'To hear you while you hold the key.',
+  axSub:'To put your words into the app you are using.',
+  tryLine:'Say anything. Your words appear as you speak, and land here when you let go.',
+  tryDone:'That works in every app: mail, chat, documents, anywhere you can type.',
+  handsIdle:'For longer thoughts. Two quick taps and it keeps listening, with your hands off the keys.',
+  handsOn:'Talk as long as you like. Tap once more to finish, or press Esc to throw it away.',
+  handsDone:'Tap twice whenever you would rather not hold the key.',
+  folderTitle:'Where your recordings live',
+  folderLine:'Every meeting and conversation, the audio and its transcript, is kept as ordinary files in one folder on this Mac. Open it, move it or back it up like any other folder.',
+  folderWarn:'Documents syncs to iCloud on this Mac, so recordings kept here will be copied off it.',
+  doneLine:'These work in any app, whenever SigmaFlow is running.',
+  mbLine:'Close the window whenever you like. SigmaFlow keeps working from the menu bar.'}};
+const K=k=>COPY[S.voice][k];
+const S={tryv:'board',early:'wait',hands:'step',end:'first',tag:'fast',voice:'ink'};
+let at=0;
+
+// Parakeet, downloading from the moment the app opens. The person never sees this.
+let DL=0;
+setInterval(()=>{if(DL<100){DL++;if(S.early==='wait'&&['try','hands'].includes(cur())&&!R.rec)render();else hint()}},230);
+const ready=()=>S.early==='apple'||DL>=100;
+
+const fresh=()=>({folder:'home',other:null,mic:false,ax:false,down:false,rec:false,latched:false,t0:0,shown:0,sent:0,lastTap:0,landed:[],times:[],newest:-1,tried:false,handsDone:false,sheet:null,panel:true,mbDone:false});
+let R=fresh();
+const SENT=[
+ 'Remind me to send the deck to Priya before Friday, and ask her about the budget.',
+ 'Okay, so the plan for tomorrow is to finish the onboarding screens first, then review the meeting notes with the team after lunch.',
+ 'Also, book a table for four at seven tonight.'].map(t=>t.split(' '));
+const partial=(s,n)=>{let w=SENT[s].slice(0,n).join(' ');if(n<SENT[s].length)w=w.replace(/,$/,'')+'.';return w};
+
+const NAMES={welcome:'Welcome',perm:'Permissions',try:'Talk',hands:'Hands free',folder:'Folder',done:'Shortcuts',app:'In the app'};
+function steps(){
+ const s=['welcome','perm','try'];
+ if(S.hands==='step')s.push('hands');
+ s.push('folder');
+ if(S.end==='card')s.push('done');
+ s.push('app');
+ return s;
+}
+const cur=()=>steps()[Math.min(at,steps().length-1)];
+const tickOk=t=>`<span class="ok"><img src="${ICON('checkmark')}">${t}</span>`;
+const KT=`<span class="kt">Right ⌘</span>`;
+
+// ---- the insides ----
+function board(){
+ const row=n=>`<div class="r">${'<i></i>'.repeat(n)}</div>`;
+ return `<div class="board">${row(14)}${row(14)}${row(13)}${row(12)}<div class="r"><i style="flex:1">fn</i><i style="flex:1">⌃</i><i style="flex:1">⌥</i><i style="flex:1.3">⌘</i><i style="flex:5.4"></i><i class="target ${R.down?'lit':''}" style="flex:1.3" data-hold>⌘</i><i style="flex:1">⌥</i><i style="flex:3"></i></div></div>`;
+}
+function field(){
+ if(!ready()&&!R.landed.length)return `<div class="field"><span class="wait"><span class="line2"><i style="width:${DL}%"></i></span></span></div>`;
+ return `<div class="field">${R.landed.map((t,i)=>`<p class="${i===R.newest?'fresh':''}">${t}</p>`).join('')}</div>`;
+}
+const holdrow=()=>S.tryv==='field'?`<div class="holdrow">or hold <span class="holdkey ${R.down?'down':''}" data-hold>Right ⌘</span> with the mouse</div>`:'';
+function tapDots(){
+ const one=R.latched||Date.now()-R.lastTap<350;
+ return `<div class="taps"><i class="${one?'on':''}"></i><i class="${R.latched?'on':''}"></i></div>`;
+}
+function handsTitle(){
+ if(R.latched)return 'Tap once to stop';
+ if(R.handsDone)return 'Hands free';
+ return `Tap ${KT} twice`;
+}
+function handsLine(){
+ if(R.latched)return K('handsOn');
+ if(R.handsDone)return K('handsDone');
+ return K('handsIdle');
+}
+function step(id){
+ switch(id){
+  case 'welcome':return {pre:`<img class="appicon" src="icons/appicon.png">`,title:`<span class="wm">Sigma<span>flow</span></span>`,line:[TAGS.find(t=>t[0]===S.tag)[1],K('welcomeMore')].filter(Boolean).join(' '),body:K('badges').length?`<div class="badges">${K('badges').map(b=>`<span>${b}</span>`).join('')}</div>`:'',next:['Start',true]};
+  case 'perm':{
+   const row=(kind,name,sub,ic)=>`<div class="prow"><img src="${ICON(ic)}"><span class="lbl">${name}<small>${sub}</small></span><span class="end">${R[kind]?tickOk('Allowed'):`<button class="btn" data-act="ask-${kind}">Allow</button>`}</span></div>`;
+   return {title:K('permTitle'),line:K('permLine'),body:`<div class="rows">${row('mic','Microphone',K('micSub'),'microphone')}${row('ax','Accessibility',K('axSub'),'text--align--left')}</div>`,next:['Continue',R.mic&&R.ax]};}
+  case 'try':{
+   const inline=S.hands==='inline'&&R.tried;
+   const title=inline?handsTitle():`Hold ${KT} and talk`;
+   const line=inline?handsLine():R.tried?K('tryDone'):K('tryLine');
+   const done=inline?R.handsDone:R.tried;
+   const body=`${S.tryv==='field'?'':board()}${inline?tapDots():''}${field()}${holdrow()}<div class="status">${done?tickOk('Done'):''}</div>`;
+   return {title,line,body,next:['Continue',S.hands==='inline'?R.handsDone:R.tried]};}
+  case 'hands':return {title:handsTitle(),line:handsLine(),body:`${S.tryv==='field'?'':board()}${tapDots()}${field()}${holdrow()}<div class="status">${R.handsDone?tickOk('Done'):''}</div>`,next:['Continue',R.handsDone]};
+  case 'folder':{
+   const home=R.folder==='home';
+   const other=R.other?`<span class="path">${R.other}</span>`:'Choose a folder';
+   const rows=`<div class="rows"><div class="prow pick" data-act="f-home"><span class="radio ${home?'on':''}"></span><span class="lbl">In your home folder<small class="path">~/SigmaFlow</small></span><span class="end"><span class="tag">Recommended</span></span></div><div class="prow pick" data-act="f-other"><span class="radio ${home?'':'on'}"></span><span class="lbl">Somewhere else<small>${other}</small></span><span class="end"><button class="btn quiet" data-act="f-choose">Choose</button></span></div></div>`;
+   const warn=!home&&R.other?`<div class="warn"><img src="${ICON('warning')}">${K('folderWarn')}</div>`:'';
+   return {title:K('folderTitle'),line:K('folderLine'),body:rows+warn,next:['Continue',home||!!R.other]};}
+  case 'done':return {title:'Ready',line:K('doneLine'),body:`<div class="sc">${shortcuts()}</div>`,next:['Open SigmaFlow',true]};
+ }
+}
+function shortcuts(n){
+ const all=[['Hold to talk','<span class="k">Right ⌘</span>'],['Hands free','<span class="k">Right ⌘</span> twice'],['Stop, nothing typed','<span class="k">Esc</span>'],['Styles','<span class="k">⌥1</span> to <span class="k">⌥5</span>'],['Record a meeting','<span class="k">⌃⌥M</span>'],['Take notes','<span class="k">⌃⌥N</span>']];
+ return all.slice(0,n||all.length).map(([a,b])=>`<div>${a}<span>${b}</span></div>`).join('');
+}
+
+// ---- frames ----
+const menubar=(app='SigmaFlow',extra='')=>`<div class="menubar"><span class="sig">${app}</span><span>File</span><span>Edit</span><span>Window</span><span class="r">${extra}<span>Sun 18 Oct 10.42 am</span></span></div>`;
+const dock=`<div class="dock"><i></i><i></i><i></i><img src="icons/appicon.png"><i></i><i></i></div>`;
+function rail(){
+ const items=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Settings','settings']];
+ return `<aside class="rail"><div class="word"><img class="logo" src="icons/appicon.png">Sigma<span>flow</span></div><div class="nav">${items.map(([t,i])=>`<div class="${t==='Transcriptions'?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div><div class="ver">1.0.0</div></aside>`;
+}
+function appPage(){
+ if(S.end==='empty')return `<div class="page"><div class="phead"><h1>Transcriptions</h1></div><div class="emptysc"><div class="sc">${shortcuts()}</div></div></div>`;
+ if(S.end==='first'&&R.landed.length)return `<div class="page"><div class="phead"><h1>Transcriptions</h1></div><div class="card">${R.landed.map((t,i)=>[t,R.times[i]]).reverse().map(([t,tm])=>`<div class="trow"><time>${tm}</time><span>${t}</span></div>`).join('')}</div></div>`;
+ return `<div class="page"><div class="phead"><h1>Transcriptions</h1></div><div class="empty">Hold <span class="k">Right ⌘</span> in any app</div></div>`;
+}
+function frame(){
+ const id=cur();
+ if(id==='app'&&S.end==='menubar')return `<div class="frame"><div class="desk"></div>${menubar('SigmaFlow','<span class="mbi">Σ</span>')}${R.mbDone?'':`<div class="mbcard"><h2>SigmaFlow is up here</h2><p>${K('mbLine')}</p><div class="sc">${shortcuts(2)}</div><div class="mbact"><button class="btn primary" data-act="mbok">Done</button></div></div>`}${dock}${hud()}${sys()}</div>`;
+ if(id==='app'){
+  const side=S.end==='panel'&&R.panel?`<div class="side"><h3>Shortcuts<button data-act="panel"><img src="${ICON('close')}"></button></h3><div class="sc">${shortcuts()}</div></div>`:'';
+  return `<div class="frame full"><div class="mwin app"><div class="lights"><i></i><i></i><i></i></div>${rail()}<div class="stage"><div class="paint"></div>${appPage()}${side}</div></div>${hud()}${sys()}</div>`;
+ }
+ const all=steps().filter(x=>x!=='app'), i=all.indexOf(id), s=step(id);
+ const back=S.tryv==='back'&&R.rec?'back':'';
+ return `<div class="frame"><div class="desk"></div>${menubar()}<div class="mwin setup ${back}"><div class="lights"><i></i><i></i><i></i></div><div class="paint"></div>
+  <div class="body"><div class="st">${s.pre?`<div class="pre">${s.pre}</div>`:''}<h2>${s.title}</h2>${s.line?`<p class="line">${s.line}</p>`:''}${s.body?`<div class="bd">${s.body}</div>`:''}</div></div>
+  <div class="foot"><div class="dots">${all.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div><span class="sp"></span>${i>0?`<button class="btn quiet" data-act="back">Back</button>`:''}<button class="btn primary" data-act="next" ${s.next[1]?'':'disabled'}>${s.next[0]}</button></div></div>${dock}${hud()}${sys()}</div>`;
+}
+function hud(){
+ if(!R.rec)return '';
+ const n=R.shown, lit=Math.min(14,4+((n*5)%11));
+ const secs=String(Math.min(59,Math.floor((Date.now()-R.t0)/1000))).padStart(2,'0');
+ const glyph=R.latched?'<span class="lock"></span>':'<span class="dot"></span>';
+ return `<div class="hud" id="hud"><div class="status2"><span class="eb"><span class="glyph">${glyph}</span>${R.latched?'Locked':'Rec'}</span><span class="ro">00:${secs}</span><span class="meter">${Array.from({length:14},(_,j)=>`<i class="${j<lit?'lit':''}"></i>`).join('')}</span></div><div class="words">${SENT[R.sent].slice(0,n).map(w=>`<span>${w}</span>`).join(' ')}</div></div>`;
+}
+function sys(){
+ if(R.sheet==='mic')return `<div class="sys"><div class="alert"><img src="icons/appicon.png"><b>“SigmaFlow” would like to access the microphone.</b><p>SigmaFlow listens while you hold the push-to-talk key so it can turn your speech into text.</p><div class="ab"><button data-act="mic-no">Don’t Allow</button><button class="def" data-act="mic-yes">Allow</button></div></div></div>`;
+ if(R.sheet==='ax')return `<div class="sys"><div class="sett"><div class="tt"><div class="lights"><i></i><i></i><i></i></div>Accessibility</div><div class="bd"><p>Allow the applications below to control your computer.</p><div class="li"><img src="icons/appicon.png">SigmaFlow<span class="tg ${R.ax?'on':''}" data-act="ax-yes"></span></div><p class="pt">This is System Settings. Click the switch.</p></div></div></div>`;
+ return '';
+}
+
+// ---- drawing ----
+function hint(){
+ const id=cur();
+ const tips={
+  welcome:'Parakeet starts downloading the moment the app opens, before Start is clicked.',
+  perm:'Click Allow: macOS asks for the microphone itself, and Accessibility opens System Settings.',
+  try:S.hands==='inline'&&R.tried?'Tap Right ⌘ twice quickly: the overlay reads LOCKED and keeps listening without a hand on the key. Tap once to stop.':`Hold <span class="k">Right ⌘</span> and keep holding while the words stream, then let go.${S.early==='wait'&&!ready()?' Waiting for Parakeet: the line in the field.':''}`,
+  hands:'Tap Right ⌘ twice quickly: the overlay reads LOCKED and keeps listening without a hand on the key. Tap once to stop; any other key also stops it, Esc throws it away.',
+  folder:'Choose picks ~/Documents to show what a synced place says; home is selected at the start.',
+  done:'Every shortcut, once, before the app.',
+  app:{panel:'The app, the shortcuts on the side until closed.',empty:'Until the first real dictation, the empty page is the shortcut list.',menubar:'The setup window has closed; the card points at the Σ in the menu bar.',first:'What they said during setup is kept as their first transcriptions.',card:'The app as it opens after setup. Holding the key works here too.'}[S.end]};
+ document.getElementById('hint').innerHTML=`<span>↳ ${tips[id]}</span><span class="dlr">Parakeet, unseen: ${DL>=100?'ready':DL+'%'}${S.early==='apple'&&DL<100?', Apple hears meanwhile':''}</span>`;
+}
+function render(){
+ document.getElementById('choices').innerHTML=PICKS.map(p=>`<div class="choice"><h3>${p.h}</h3><div class="seg">${p.o.map(([v,t],j)=>`<button class="${S[p.k]===v?'on':''}" data-pick="${p.k}" data-v="${v}"><b>${'ABCDE'[j]}</b>${t}</button>`).join('')}</div>${p.seen.length?`<p class="seen">Seen in ${p.seen.map(([n,u])=>`<a href="${u}" target="_blank">${n}</a>`).join('')}</p>`:''}</div>`).join('');
+ const all=steps(); if(at>=all.length)at=all.length-1;
+ document.getElementById('screen').innerHTML=frame();
+ document.getElementById('strip').innerHTML=all.map((x,j)=>`<button class="chip ${j===at?'on':j<at?'done':''}" data-act="go-${j}">${String(j+1).padStart(2,'0')} ${NAMES[x]}</button>`).join('')+`<span class="sp"></span><button class="chip" data-act="reset">Start over</button>`;
+ hint();
+}
+function renderHud(){const h=document.getElementById('hud');if(h)h.outerHTML=hud()}
+
+// ---- the hotkey grammar, as DictationController has it ----
+const talkable=()=>['try','hands','app'].includes(cur())&&ready()&&R.mic;
+function begin(){
+ R.rec=true;R.t0=Date.now();R.shown=0;
+ R.sent=R.latched?1:R.landed.length?2:0;
+ render();
+ R.timer=setInterval(()=>{if(R.shown<SENT[R.sent].length){R.shown++;renderHud()}else renderHud()},130);
+}
+function finish(){
+ clearInterval(R.timer);R.rec=false;
+ const was=R.latched;R.latched=false;
+ if(R.shown>0){
+  R.landed.push(partial(R.sent,R.shown));R.newest=R.landed.length-1;
+  const d=new Date();R.times.push(`${d.getHours()%12||12}.${String(d.getMinutes()).padStart(2,'0')} ${d.getHours()<12?'am':'pm'}`);
+  R.tried=true;if(was)R.handsDone=true;
+ }
+ render();
+}
+function abandon(){clearInterval(R.timer);R.rec=false;R.latched=false;render()}
+function press(){
+ if(R.down)return;R.down=true;
+ if(!talkable()){render();return}
+ if(R.latched){finish();return}            // one tap ends a locked recording
+ if(Date.now()-R.lastTap<350){R.latched=true;R.lastTap=0}
+ begin();
+}
+function release(){
+ if(!R.down)return;R.down=false;
+ if(!R.rec||R.latched){render();return}    // the tap that locked it lifts; recording goes on
+ if(Date.now()-R.t0<300){                  // a tap: thrown away, and the double-tap window opens
+  clearInterval(R.timer);R.rec=false;R.lastTap=Date.now();render();
+  setTimeout(()=>{if(!R.latched)render()},360);return;
+ }
+ finish();
+}
+addEventListener('keydown',e=>{
+ if(e.key==='Escape'){if(R.rec){e.preventDefault();abandon()}return}
+ if(e.key==='Meta'){if(!e.repeat){e.preventDefault();press()}return}
+ if(R.latched&&R.rec&&!['Shift','Control','Alt'].includes(e.key)){e.preventDefault();finish()} // typing ends hands free
+});
+addEventListener('keyup',e=>{if(e.key==='Meta'&&R.down){e.preventDefault();release()}});
+addEventListener('blur',()=>{if(R.down)release()});
+document.addEventListener('mousedown',e=>{if(e.target.closest('[data-hold]')){e.preventDefault();press()}});
+addEventListener('mouseup',()=>{if(R.down)release()});
+
+// ---- clicks ----
+document.addEventListener('click',e=>{
+ const p=e.target.closest('[data-pick]');
+ if(p){S[p.dataset.pick]=p.dataset.v;render();return}
+ const a=e.target.closest('[data-act]');if(!a||a.disabled)return;
+ const act=a.dataset.act,all=steps();
+ if(act==='next')at=Math.min(at+1,all.length-1);
+ else if(act==='back')at=Math.max(0,at-1);
+ else if(act.startsWith('go-'))at=+act.slice(3);
+ else if(act==='reset'){at=0;R=fresh();DL=0}
+ else if(act==='ask-mic')R.sheet='mic';
+ else if(act==='mic-yes'){R.mic=true;R.sheet=null}
+ else if(act==='mic-no')R.sheet=null;
+ else if(act==='ask-ax')R.sheet='ax';
+ else if(act==='ax-yes'){R.ax=true;render();setTimeout(()=>{R.sheet=null;render()},450);return}
+ else if(act==='panel')R.panel=false;
+ else if(act==='mbok')R.mbDone=true;
+ else if(act==='f-home')R.folder='home';
+ else if(act==='f-other'||act==='f-choose'){R.folder='other';if(act==='f-choose')R.other='~/Documents/SigmaFlow'}
+ render();
+});
+
+// A link can open any state: #at=2&mic=1&ax=1&said=1&dl=40&end=first&rec=locked
+for(const [k,v] of new URLSearchParams(location.hash.slice(1))){
+ if(k in S)S[k]=v;else if(k==='at')at=+v;else if(k==='dl')DL=+v;
+ else if(k==='said'){for(let j=0;j<+v;j++){R.landed.push(SENT[j===0?0:1].join(' '));R.times.push(j?'10.44 am':'10.43 am')}R.tried=true;R.handsDone=+v>1}
+ else if(k==='rec'){R.rec=true;R.t0=Date.now();R.shown=9;R.latched=v==='locked';R.sent=R.latched?1:0}
+ else if(k in R)R[k]=v==='1'?true:v;
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Correction Card</title>
+<style>
+  @font-face{font-family:"Pixel";src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+  @font-face{font-family:"GMono";src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+  :root{
+    --ink:#EDEDED; --ink2:#A1A1A1; --dim:#8F8F8F;
+    --border:rgba(255,255,255,.145); --borderStrong:rgba(255,255,255,.20);
+    --control:rgba(255,255,255,.06); --hover:rgba(255,255,255,.08); --hudGlass:rgba(16,16,16,.62);
+    --green:#32D74B; --meterOff:rgba(255,255,255,.18);
+    --pixel:"Pixel","GMono",Menlo,monospace; --mono:"GMono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0A0A0A;color:var(--ink);font-family:var(--pixel);font-size:14px;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .review{max-width:1040px;margin:0 auto;padding:40px 16px 80px}
+  h1{font-size:22px;font-weight:400;margin-bottom:8px}
+  .lead{color:var(--ink2);max-width:800px;line-height:1.55;margin-bottom:24px}
+  .bar-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .seg{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .seg button{padding:0 14px;height:32px;color:var(--ink2)}
+  .seg button.on{background:var(--ink);color:#0A0A0A}
+  .lbl2{color:var(--ink2);font-size:13px}
+  .code{font-family:var(--mono);font-size:12px;color:var(--ink)}
+
+  .together{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:36px}
+  @media (max-width:820px){.together{grid-template-columns:1fr}}
+
+  .idea{border-top:1px solid var(--border);padding:22px 0 26px}
+  .idea .head{display:flex;gap:14px;align-items:baseline;margin-bottom:6px}
+  .idea .num{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .idea .name{font-size:16px}
+  .idea .why{color:var(--ink2);font-size:13px;line-height:1.55;margin:0 0 14px 34px;max-width:820px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-left:34px}
+  @media (max-width:820px){.opts{margin-left:0}.idea .why{margin-left:0}}
+  .opt{cursor:pointer;border-radius:10px;padding:4px;border:1px solid transparent}
+  .opt:hover{border-color:var(--border)}
+  .opt.chosen{border-color:var(--ink)}
+  .opt .cap{display:flex;gap:10px;align-items:baseline;padding:8px 6px 4px}
+  .opt .cap .k{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .opt.chosen .cap .k{color:var(--ink)}
+  .opt .cap .t{font-size:14px}
+  .opt .note{color:var(--ink2);font-size:12px;line-height:1.5;padding:0 6px 8px}
+
+  .stage{position:relative;height:170px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#111}
+  .stage::before{content:"";position:absolute;inset:-8px;background:url("../../Resources/background-colour.jpg") center 70%/cover;filter:blur(3px) brightness(.42)}
+  .stage .tag{position:absolute;left:12px;top:10px;font-size:11px;letter-spacing:.44px;text-transform:uppercase;color:var(--ink2)}
+  .anchor{position:absolute;left:50%;bottom:16px;width:max-content;transform-origin:bottom center}
+  .stack{display:flex;flex-direction:column;gap:12px;align-items:center}
+
+  /* the overlay, as built */
+  .hud{position:relative;width:440px;padding:14px 18px;background:var(--hudGlass);border:1px solid var(--borderStrong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.55)}
+  .status{display:flex;align-items:center;gap:14px;height:16px}
+  .lb{display:flex;align-items:center;gap:8px}
+  .glyph{width:12px;height:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .glyph .dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+  .eyebrow{font-size:12px;letter-spacing:.72px;text-transform:uppercase;color:var(--ink);white-space:nowrap}
+  .eyebrow.grey{color:var(--ink2)}
+  .readout{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .meter{display:flex;gap:3px}
+  .meter i{width:5px;height:5px;border-radius:50%;background:var(--meterOff);display:block}
+  .meter i.lit{background:var(--green)}
+  .meter.white i.lit{background:var(--ink)}
+  .words{margin-top:10px;font-size:15px;line-height:20px}
+
+  /* the correction card */
+  .card{position:relative;width:440px;background:var(--hudGlass);border:1px solid var(--borderStrong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.55);overflow:hidden;transition:opacity .3s}
+  .card.enter{animation:enter .16s ease-out}
+  @keyframes enter{from{opacity:0}to{opacity:1}}
+  .card.padA{padding:16px}
+  .card.padB{padding:14px 18px}
+  .nrow{display:flex;align-items:center;gap:16px}
+  .ntext{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .nhead{display:flex;align-items:center;gap:8px;height:16px}
+  .nhead .meter{margin-left:6px}
+  .ic{width:12px;height:12px;filter:invert(1);display:block}
+  .npair{display:flex;align-items:center;gap:10px;font-size:15px;line-height:20px;white-space:nowrap}
+  .npair s{color:var(--ink2);text-decoration-color:var(--ink2)}
+  .npair .ic{opacity:.64}
+  .npair .grey{color:var(--ink2)}
+  .btn{flex:0 0 auto;white-space:nowrap;border-radius:6px}
+  .btn.bA{height:32px;padding:0 12px;font-size:14px;color:var(--ink);background:var(--control);border:1px solid var(--border)}
+  .btn.bA:hover{background:var(--hover);border-color:var(--borderStrong)}
+  .btn.bB{height:26px;padding:0 8px;font-size:13px;color:var(--ink);background:var(--control);border:1px solid var(--border)}
+  .btn.bB:hover{background:var(--hover);border-color:var(--borderStrong)}
+  .btn.bC{height:32px;padding:0 10px;font-size:14px;color:var(--ink2)}
+  .btn.bC:hover{background:var(--hover);color:var(--ink)}
+  .bar{height:2px}
+  .bar i{display:block;height:2px;border-radius:1px}
+  .bar.under{margin-top:12px;background:var(--border);border-radius:1px}
+  .bar.under.bA i{background:var(--ink)}
+  .bar.under.bB{background:rgba(255,255,255,.07)}
+  .bar.under.bB i{background:var(--dim)}
+  .bar.edge{position:absolute;left:12px;right:12px;bottom:0}
+  .bar.edge i{background:var(--ink);border-radius:0}
+
+  .pick{margin-top:36px;padding:16px 18px;border:1px dashed var(--borderStrong);border-radius:8px;color:var(--ink2);line-height:1.6;font-size:13px}
+  .pick b{color:var(--ink);font-weight:400}
+</style>
+</head>
+<body>
+<div class="review">
+  <h1>The correction card, matched to the overlay</h1>
+  <p class="lead"><span class="code">Picked 16 Oct 2026: 1A 2B 3A 4C 5B, with the bar counting up, left to right.</span></p>
+  <p class="lead">The card that comes up when SigmaFlow learns a word from your fix. It already shares the overlay's glass, size, spot above the Dock and type; these are the five places it still differs. Each question shows the card mid-countdown, and just after it adds the word. Click an option to try it in the card at the top, which plays at the real speed: 3.5 seconds of countdown, 2 seconds of Added, then it fades. Hover the card to hold the countdown. Not now and Undo work.</p>
+
+  <div class="bar-top">
+    <span class="lbl2">Start from</span>
+    <div class="seg" id="preset"><button data-p="today" class="on">Today</button><button data-p="mine">My pick</button></div>
+    <span class="lbl2" style="margin-left:8px">Your picks</span>
+    <span class="code" id="picks"></span>
+  </div>
+
+  <div class="together">
+    <div class="stage" data-max="1" data-fixed="1"><span class="tag">The overlay while you talk</span><div class="anchor" id="hudSlot"></div></div>
+    <div class="stage" data-max="1" data-fixed="1"><span class="tag">The card, playing</span><div class="anchor" id="liveSlot"></div></div>
+  </div>
+
+  <div id="ideas"></div>
+
+  <div class="pick"><b>My pick: 1C 2C 3B 4B 5B.</b> 1C because the call prompt, the other card that floats above the Dock, already has a text-only Not now; the bordered button is what makes this card look like a page from the main window. 2C keeps the countdown, but on the card's edge where it reads as the card running out rather than as content, and it costs no height, so the card never shrinks. 3B, 4B and 5B make the top line the overlay's top line: a 12 px mark, then a white label, at the overlay's spacing, so the word Added lands exactly where Adding was.</div>
+</div>
+
+<script>
+const ICON = n => '<img class="ic" src="../../Resources/Icons/' + n + '.svg" alt="">';
+const TODAY = { btn: "A", bar: "A", label: "A", glyph: "A", space: "A" };
+const MINE = { btn: "C", bar: "C", label: "B", glyph: "B", space: "B" };
+let picks = { ...TODAY };
+
+const QUESTIONS = [
+  { key: "btn", name: "The Not now button",
+    why: "Today it is the main window's full-size bordered button, the brightest thing on the card. The overlay has no buttons at all; the call prompt above the Dock uses plain text for its Not now. Undo, after the word is added, follows the same pick.",
+    opts: [
+      { k: "A", t: "Today", note: "32 px, bordered, 14 px label." },
+      { k: "B", t: "Small, bordered", note: "26 px, as on the live notes card." },
+      { k: "C", t: "Text only", note: "Grey text, a fill on hover, as on the call prompt." },
+    ] },
+  { key: "bar", name: "The countdown",
+    why: "Today a white 2 px bar runs the width under the words, and it is the one thing moving on screen. The overlay's only moving part is its meter.",
+    opts: [
+      { k: "A", t: "Today", note: "White bar under the words." },
+      { k: "B", t: "Grey bar", note: "The same bar, quieter." },
+      { k: "C", t: "On the bottom edge", note: "A white line along the card's lower edge. Takes no room." },
+      { k: "D", t: "Meter dots", note: "The overlay's 14 dots, white, going out one by one. Closest to the overlay, but dots there have always meant sound, and nothing is listening now." },
+    ] },
+  { key: "label", name: "The label",
+    why: "The overlay's REC is white. This card's ADDING TO DICTIONARY is grey and only turns white at ADDED.",
+    opts: [
+      { k: "A", t: "Today", note: "Grey, then white." },
+      { k: "B", t: "White from the start", note: "Like REC." },
+    ] },
+  { key: "glyph", name: "The mark in front of the label",
+    why: "The overlay always has a 12 px mark before its label. This card has none while adding; at ADDED a checkmark arrives and pushes the label to the right.",
+    opts: [
+      { k: "A", t: "Today", note: "Nothing, then a checkmark. The label moves." },
+      { k: "B", t: "Book, then checkmark", note: "One slot, always there. The label never moves." },
+      { k: "C", t: "No mark at all", note: "ADDED on its own. Nothing moves." },
+    ] },
+  { key: "space", name: "Spacing and height",
+    why: "The card is 16 px in on every side, the overlay 18 at the sides and 14 top and bottom, so the words start 2 px apart in the same spot. With a bar under the words, the card also drops 14 px when it is added.",
+    opts: [
+      { k: "A", t: "Today", note: "16 all round. Shrinks when added." },
+      { k: "B", t: "The overlay's spacing", note: "18 and 14. Keeps its height when added." },
+    ] },
+];
+
+function meter(lit, white) {
+  return '<div class="meter' + (white ? " white" : "") + '">' +
+    Array.from({ length: 14 }, (_, i) => '<i class="' + (i < lit ? "lit" : "") + '"></i>').join("") + "</div>";
+}
+
+function hud() {
+  return '<div class="hud"><div class="status"><div class="lb"><div class="glyph"><div class="dot"></div></div>' +
+    '<span class="eyebrow">Rec</span></div><span class="readout">00:03</span>' + meter(6) + "</div>" +
+    '<div class="words">Send the deck to Claude before the review on Friday</div></div>';
+}
+
+function card(p, stage, rem) {
+  const adding = stage === "adding", added = stage === "added", undone = stage === "undone";
+  const label = adding ? "Adding to dictionary" : added ? "Added to dictionary" : "Not added";
+  let slot = "";
+  if (p.glyph === "B") slot = '<span class="glyph">' + (adding ? ICON("book") : added ? ICON("checkmark") : "") + "</span>";
+  if (p.glyph === "A" && added) slot = '<span class="glyph">' + ICON("checkmark") + "</span>";
+  const dots = p.bar === "D" && adding ? meter(Math.ceil(rem * 14), true) : "";
+  const head = '<div class="nhead">' + slot + '<span class="eyebrow' + (p.label === "A" && adding ? " grey" : "") + '">' + label + "</span>" + dots + "</div>";
+  const pair = '<div class="npair"><s>clode</s>' + ICON("arrow--right") + '<span class="' + (undone ? "grey" : "") + '">Claude</span></div>';
+  const btn = undone ? "" : '<button class="btn b' + p.btn + '" data-act="' + (adding ? "decline" : "undo") + '">' + (adding ? "Not now" : "Undo") + "</button>";
+  const w = (rem * 100).toFixed(2) + "%";
+  let bar = "";
+  if ((p.bar === "A" || p.bar === "B") && (adding || p.space === "B"))
+    bar = '<div class="bar under b' + p.bar + '" style="visibility:' + (adding ? "visible" : "hidden") + '"><i style="width:' + w + '"></i></div>';
+  if (p.bar === "C" && adding) bar = '<div class="bar edge"><i style="width:' + w + '"></i></div>';
+  return '<div class="card pad' + p.space + '"><div class="nrow"><div class="ntext">' + head + pair + "</div>" + btn + "</div>" + bar + "</div>";
+}
+
+// The playing card: the real windows, the real hold under the pointer.
+const WINDOW = { adding: 3500, added: 2000, undone: 2000 };
+const live = { stage: "adding", spent: 0, since: performance.now(), held: false, gone: false };
+const liveSlot = document.getElementById("liveSlot");
+
+function liveElapsed(now) { return live.spent + (live.held || live.since === null ? 0 : now - live.since); }
+function liveStart(stage) {
+  live.stage = stage; live.spent = 0; live.since = performance.now(); live.gone = false;
+  renderLive();
+}
+function liveFade() {
+  live.gone = true; live.since = null;
+  const c = liveSlot.querySelector(".card");
+  if (c) c.style.opacity = 0;
+  setTimeout(() => { liveStart("adding"); }, 1300);
+}
+function renderLive() {
+  const rem = Math.max(0, 1 - liveElapsed(performance.now()) / WINDOW[live.stage]);
+  liveSlot.innerHTML = card(picks, live.stage, rem);
+  liveSlot.querySelector(".card").classList.add("enter");
+}
+function frame(now) {
+  if (!live.gone) {
+    const rem = Math.max(0, 1 - liveElapsed(now) / WINDOW[live.stage]);
+    const fill = liveSlot.querySelector(".bar i");
+    if (fill) fill.style.width = (rem * 100).toFixed(2) + "%";
+    const dots = liveSlot.querySelectorAll(".nhead .meter i");
+    dots.forEach((d, i) => d.classList.toggle("lit", i < Math.ceil(rem * 14)));
+    if (rem <= 0) {
+      if (live.stage === "adding") liveStart("added");
+      else liveFade();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+liveSlot.addEventListener("mouseenter", () => {
+  if (live.stage !== "adding" || live.gone || live.held) return;
+  live.spent = liveElapsed(performance.now()); live.held = true;
+});
+liveSlot.addEventListener("mouseleave", () => {
+  if (!live.held) return;
+  live.held = false; live.since = performance.now();
+});
+liveSlot.addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]");
+  if (!b || live.gone) return;
+  live.held = false;
+  if (b.dataset.act === "decline") liveFade();
+  else liveStart("undone");
+});
+
+function renderIdeas() {
+  document.getElementById("ideas").innerHTML = QUESTIONS.map((q, i) =>
+    '<div class="idea"><div class="head"><span class="num">' + String(i + 1).padStart(2, "0") + '</span><span class="name">' + q.name + "</span></div>" +
+    '<p class="why">' + q.why + '</p><div class="opts">' +
+    q.opts.map(o => {
+      const p = { ...picks, [q.key]: o.k };
+      return '<div class="opt' + (picks[q.key] === o.k ? " chosen" : "") + '" data-q="' + q.key + '" data-k="' + o.k + '">' +
+        '<div class="stage" data-max=".78"><span class="tag">Counting down, then added</span><div class="anchor"><div class="stack">' +
+        card(p, "adding", 0.6) + card(p, "added", 0) + "</div></div></div>" +
+        '<div class="cap"><span class="k">' + (i + 1) + o.k + '</span><span class="t">' + o.t + "</span></div>" +
+        '<div class="note">' + o.note + "</div></div>";
+    }).join("") + "</div></div>").join("");
+  document.getElementById("picks").textContent = QUESTIONS.map((q, i) => (i + 1) + picks[q.key]).join(" ");
+  fit();
+}
+
+function fit() {
+  document.querySelectorAll(".stage").forEach(stage => {
+    const anchor = stage.querySelector(".anchor");
+    const s = Math.min(+stage.dataset.max, (stage.clientWidth - 24) / 440);
+    anchor.style.transform = "translateX(-50%) scale(" + s + ")";
+    if (!stage.dataset.fixed) stage.style.height = Math.ceil(anchor.offsetHeight * s + 52) + "px";
+  });
+}
+
+function renderAll() { renderIdeas(); if (!live.gone) renderLive(); }
+
+document.getElementById("ideas").addEventListener("click", e => {
+  const o = e.target.closest(".opt");
+  if (!o) return;
+  picks[o.dataset.q] = o.dataset.k;
+  document.querySelectorAll("#preset button").forEach(x => x.classList.remove("on"));
+  renderAll();
+});
+document.querySelectorAll("#preset button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#preset button").forEach(x => x.classList.toggle("on", x === b));
+  picks = { ...(b.dataset.p === "mine" ? MINE : TODAY) };
+  renderAll();
+}));
+
+document.getElementById("hudSlot").innerHTML = hud();
+renderAll();
+window.addEventListener("resize", fit);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

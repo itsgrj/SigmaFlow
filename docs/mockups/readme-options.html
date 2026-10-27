@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SigmaFlow README, round 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Carbon g100 for the mockup shell */
+  --c-bg:#161616; --c-layer:#262626; --c-layer2:#393939; --c-border:#393939;
+  --c-text:#f4f4f4; --c-text2:#c6c6c6; --c-text3:#8d8d8d; --c-focus:#ffffff;
+  /* GitHub dark, for the page being mocked */
+  --gh-bg:#0d1117; --gh-bg2:#151b23; --gh-border:#30363d; --gh-text:#e6edf3;
+  --gh-muted:#9198a1; --gh-link:#4493f8; --gh-green:#238636; --gh-code:#151b23;
+  --sp-2:4px; --sp-3:8px; --sp-4:12px; --sp-5:16px; --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:48px;
+}
+*{box-sizing:border-box;border-radius:0}
+html,body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.shell{max-width:1240px;padding:var(--sp-7) var(--sp-5) var(--sp-9);text-align:left}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.32px;color:var(--c-text3);text-transform:uppercase}
+h1.title{font-size:32px;font-weight:400;margin:var(--sp-3) 0 var(--sp-4)}
+.lede{color:var(--c-text2);max-width:760px;margin:0 0 var(--sp-6)}
+.tabs{display:flex;border-bottom:1px solid var(--c-border);margin-bottom:0;flex-wrap:wrap}
+.tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--c-text2);padding:var(--sp-4) var(--sp-5);font:inherit;font-size:14px;cursor:pointer;text-align:left}
+.tab b{display:block;color:var(--c-text);font-weight:600}
+.tab[aria-selected=true]{border-bottom-color:var(--c-focus);background:var(--c-layer)}
+.tab:focus-visible{outline:2px solid var(--c-focus);outline-offset:-2px}
+.why{background:var(--c-layer);padding:var(--sp-5);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-5);border-bottom:1px solid var(--c-border)}
+.why div h4{margin:0 0 var(--sp-2);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--c-text3);font-weight:400;text-transform:uppercase;letter-spacing:.32px}
+.why div p{margin:0;color:var(--c-text2)}
+.panel[hidden]{display:none}
+
+/* ---------- GitHub page frame ---------- */
+.gh{background:var(--gh-bg);color:var(--gh-text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif;border:1px solid var(--c-border);border-top:0}
+.gh-top{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--gh-border);font-size:20px}
+.gh-top .own{color:var(--gh-link)} .gh-top .rep{color:var(--gh-link);font-weight:600}
+.pill{font-size:12px;border:1px solid var(--gh-border);color:var(--gh-muted);padding:0 7px;border-radius:2em;line-height:20px;margin-left:var(--sp-3)}
+.gh-body{display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:var(--sp-6);padding:var(--sp-6)}
+.files{border:1px solid var(--gh-border);border-radius:6px;margin-bottom:var(--sp-5);font-size:14px}
+.files .head{background:var(--gh-bg2);padding:var(--sp-4) var(--sp-5);display:flex;gap:var(--sp-3);align-items:center;color:var(--gh-muted);border-bottom:1px solid var(--gh-border);border-radius:6px 6px 0 0}
+.files .head .av{width:20px;height:20px;background:#000;border:1px solid #444;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#fff;border-radius:50%}
+.files .head strong{color:var(--gh-text)}
+.files .row{display:grid;grid-template-columns:200px 1fr 90px;padding:6px var(--sp-5);border-top:1px solid var(--gh-border);color:var(--gh-muted)}
+.files .row:first-of-type{border-top:0}
+.files .row span:first-child{color:var(--gh-text)}
+.readme{border:1px solid var(--gh-border);border-radius:6px}
+.readme .rh{padding:var(--sp-3) var(--sp-5);border-bottom:1px solid var(--gh-border);font-size:14px;font-weight:600}
+.md{padding:var(--sp-7) var(--sp-7) var(--sp-8);font-size:16px;line-height:1.5}
+.md h1{font-size:2em;font-weight:600;margin:0 0 16px;padding-bottom:.3em;border-bottom:1px solid var(--gh-border)}
+.md h2{font-size:1.5em;font-weight:600;margin:24px 0 16px;padding-bottom:.3em;border-bottom:1px solid var(--gh-border)}
+.md h3{font-size:1.25em;font-weight:600;margin:24px 0 16px}
+.md p{margin:0 0 16px}
+.md a{color:var(--gh-link);text-decoration:none}
+.md ul,.md ol{margin:0 0 16px;padding-left:2em}
+.md li+li{margin-top:.25em}
+.md code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:85%;background:rgba(101,108,118,.2);padding:.2em .4em;border-radius:6px}
+.md pre{background:var(--gh-code);padding:16px;border-radius:6px;font-size:85%;margin:0 0 16px;overflow-x:auto}
+.md pre code{background:none;padding:0;font-size:100%}
+.md table{border-collapse:collapse;margin:0 0 16px;display:block;overflow-x:auto;font-size:15px}
+.md th,.md td{border:1px solid var(--gh-border);padding:6px 13px;text-align:left;vertical-align:top}
+.md th{font-weight:600}
+.md tr:nth-child(2n) td{background:var(--gh-bg2)}
+.md blockquote{margin:0 0 16px;padding:0 1em;color:var(--gh-muted);border-left:.25em solid var(--gh-border)}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 16px}
+.bdg{display:inline-flex;font-family:Verdana,Geneva,sans-serif;font-size:11px;line-height:20px;height:20px}
+.bdg i{font-style:normal;background:#555;color:#fff;padding:0 6px}
+.bdg b{font-weight:400;color:#fff;padding:0 6px;background:#4c1}
+.bdg b.k{background:#000} .bdg b.g{background:#555;filter:brightness(1.35)} .bdg b.bl{background:#007ec6}
+.hero{display:flex;gap:16px;align-items:center;margin:0 0 8px}
+.hero .icon{width:72px;height:72px;background:#0b0b0b;display:flex;align-items:center;justify-content:center;font-size:44px;color:#fff;border:1px solid #333;flex:none}
+.hero h1{border:0;margin:0;padding:0}
+.tag{font-size:20px;color:var(--gh-text);margin:0 0 16px}
+/* screenshot stand-ins */
+.shot{background:#0a0a0a;border:1px solid #2a2a2a;margin:0 0 8px;position:relative;overflow:hidden}
+.shot .win{display:grid;grid-template-columns:150px 1fr;height:100%}
+.shot .side{background:#000;padding:14px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;line-height:1.9}
+.shot .side .wm{font-size:13px;letter-spacing:2px;margin-bottom:12px}
+.shot .side .on{background:#262626;margin:0 -12px;padding:0 12px}
+.shot .main{background:linear-gradient(#1c1a17,#1c1a17);padding:18px;color:#ddd;font-size:11px}
+.shot .main .h{font-size:18px;color:#fff;margin-bottom:10px}
+.shot .main .ln{height:9px;background:#3a3631;margin:7px 0}
+.label{position:absolute;right:8px;bottom:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;background:#fff;color:#000;padding:2px 6px}
+.caption{font-size:14px;color:var(--gh-muted);margin:0 0 16px}
+.hud{background:#0a0a0a;border:1px solid #2a2a2a;height:120px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;position:relative}
+.hud .pillhud{background:#000;border:1px solid #444;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 14px;display:flex;gap:10px;align-items:center}
+.hud .meter{display:flex;gap:3px} .hud .meter i{width:4px;height:4px;background:#30d158;display:block}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.feat{border:1px solid var(--gh-border);padding:14px 16px}
+.feat h4{margin:0 0 4px;font-size:16px}
+.feat p{margin:0;font-size:14px;color:var(--gh-muted)}
+.diagram{margin:0 0 16px;border:1px solid var(--gh-border);background:var(--gh-bg2);padding:12px;overflow-x:auto}
+.mermaidnote{font-size:12px;color:var(--gh-muted);margin:-8px 0 16px}
+/* sidebar */
+.about h3{font-size:16px;margin:0 0 16px;font-weight:600}
+.about p{margin:0 0 16px;font-size:16px}
+.topics{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.topics span{font-size:12px;font-weight:500;color:var(--gh-link);background:rgba(56,139,253,.1);padding:0 10px;line-height:22px;border-radius:2em}
+.meta{font-size:14px;color:var(--gh-muted);border-bottom:1px solid var(--gh-border);padding-bottom:16px;margin-bottom:16px}
+.meta div{margin:6px 0}
+.rel h3{font-size:16px;margin:0 0 8px;font-weight:600}
+.rel .r{font-size:14px} .rel .r b{font-weight:600}
+.rel .latest{font-size:12px;color:#3fb950;border:1px solid #238636;border-radius:2em;padding:0 7px;margin-left:6px}
+.note{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#000;background:#f1c21b;padding:2px 6px;margin:0 0 16px;width:max-content;max-width:100%}
+@media (max-width:860px){
+  .gh-body{grid-template-columns:1fr}
+  .why{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .md{padding:var(--sp-5)}
+  .files .row{grid-template-columns:1fr 70px}.files .row span:nth-child(2){display:none}
+  .shot .win{grid-template-columns:90px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="eyebrow">SigmaFlow · GitHub README · round 1</div>
+  <h1 class="title">How the repo greets a developer</h1>
+  <p class="lede">Two directions for the README, shown inside the GitHub page as it will look once public. Both share the same About box, topics, licence and release on the right. The grey frames stand in for real screenshots, which the app draws of itself. Click between the two options above the page.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" aria-controls="pA" id="tA"><b>Option A</b>Product page</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="pB" id="tB"><b>Option B</b>Engineering notebook</button>
+  </div>
+
+  <!-- ================= OPTION A ================= -->
+  <section class="panel" id="pA" role="tabpanel" aria-labelledby="tA">
+    <div class="why">
+      <div><h4>Leads with</h4><p>What the app does and how it looks. Screenshots first, a feature grid, then install.</p></div>
+      <div><h4>Who it wins</h4><p>Anyone who lands cold, including recruiters and non-Swift developers. Reads in 30 seconds.</p></div>
+      <div><h4>Trade off</h4><p>The engineering depth sits lower down. An expert has to scroll to find the hard parts.</p></div>
+    </div>
+    <div class="gh">
+      <div class="gh-top"><span class="own">itsgrj</span><span style="color:var(--gh-muted)">/</span><span class="rep">SigmaFlow</span><span class="pill">Public</span></div>
+      <div class="gh-body">
+        <div>
+          <div class="files">
+            <div class="head"><span class="av">Σ</span><strong>itsgrj</strong> Keep the launch video project and backups out of the repo<span style="margin-left:auto">127 commits</span></div>
+            <div class="row"><span>.github/workflows</span><span>CI: dictionary contract on macOS</span><span>last week</span></div>
+            <div class="row"><span>Sources</span><span>Claude Desktop gets a briefing on SigmaFlow's records</span><span>2 days ago</span></div>
+            <div class="row"><span>Tests</span><span>Transcriptions keep the corrected text</span><span>yesterday</span></div>
+            <div class="row"><span>docs</span><span>Insights mockup, round 3</span><span>today</span></div>
+            <div class="row"><span>LICENSE</span><span>MIT licence</span><span>today</span></div>
+            <div class="row"><span>README.md</span><span>README: screenshots, install, how it is built</span><span>today</span></div>
+          </div>
+          <div class="readme">
+            <div class="rh">README · MIT license</div>
+            <div class="md">
+              <div class="hero"><div class="icon">Σ</div><h1>SigmaFlow</h1></div>
+              <p class="tag">Hold a key, talk, let go. Clean text lands in whatever app you are typing in. Everything runs on your Mac.</p>
+              <div class="badges">
+                <span class="bdg"><i>macOS</i><b>passing</b></span>
+                <span class="bdg"><i>platform</i><b class="k">macOS 26</b></span>
+                <span class="bdg"><i>Swift</i><b class="bl">6.2</b></span>
+                <span class="bdg"><i>license</i><b class="bl">MIT</b></span>
+                <span class="bdg"><i>release</i><b class="bl">v0.6</b></span>
+              </div>
+
+              <div class="shot" style="height:300px"><div class="win"><div class="side"><div class="wm">SIGMAFLOW</div><div>Models</div><div class="on">Transcriptions</div><div>Meetings</div><div>Conversations</div><div>Dictionary</div><div>Snippets</div><div>Styles</div><div>Settings</div></div><div class="main"><div class="h">Transcriptions</div><div class="ln" style="width:82%"></div><div class="ln" style="width:64%"></div><div class="ln" style="width:75%"></div><div class="ln" style="width:58%"></div><div class="ln" style="width:70%"></div></div></div><span class="label">screenshot · transcriptions page</span></div>
+              <p class="caption">The app window. Dark, monochrome, IBM Plex, every size a design token.</p>
+
+              <div class="hud"><div class="pillhud">REC <span class="meter"><i></i><i></i><i style="height:8px"></i><i style="height:12px"></i><i style="height:6px"></i><i></i></span> the overlay grows one word at a time</div><span class="label" style="top:8px;bottom:auto">screen recording · overlay, 6 s loop</span></div>
+              <p class="caption">The overlay while you talk. It never takes focus away from the app you are typing into.</p>
+
+              <h2>What it does</h2>
+              <div class="grid2">
+                <div class="feat"><h4>Push to talk</h4><p>Right ⌥, Right ⌘ or your own shortcut. Double tap for hands-free. Esc throws it away.</p></div>
+                <div class="feat"><h4>A dictionary that learns</h4><p>Fix a misheard word in any app and SigmaFlow offers the rule. One click undoes it.</p></div>
+                <div class="feat"><h4>Five speech engines</h4><p>Apple SpeechAnalyzer by default, or Parakeet, Nemotron and Cohere models, all on device.</p></div>
+                <div class="feat"><h4>Styles</h4><p>Select text, press ⌥1 to ⌥5, get it rewritten in a voice you trained on your own writing.</p></div>
+                <div class="feat"><h4>Meetings and live notes</h4><p>Record a call or a room, get a transcript with speakers. Tamil and English both work.</p></div>
+                <div class="feat"><h4>Talks to Claude</h4><p>A bundled MCP server lets Claude Desktop search your dictations and meetings locally.</p></div>
+              </div>
+
+              <h2>Install</h2>
+              <ol>
+                <li>Download <code>SigmaFlow.dmg</code> from the <a href="#">latest release</a>.</li>
+                <li>Drag it to Applications. It is signed but not notarized yet, so the first launch needs <strong>Open Anyway</strong> in System Settings ▸ Privacy &amp; Security.</li>
+                <li>Grant Accessibility and Microphone, then hold Right ⌥ and talk.</li>
+              </ol>
+              <h3>Build from source</h3>
+<pre><code>git clone https://github.com/itsgrj/SigmaFlow
+cd SigmaFlow
+make install   # build, sign, copy to /Applications, launch</code></pre>
+
+              <h2>How it works</h2>
+              <div class="diagram">
+                <svg viewBox="0 0 760 120" width="760" height="120" font-family="ui-monospace,Menlo,monospace" font-size="11" role="img" aria-label="Key press to typed text pipeline">
+                  <defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#9198a1"/></marker></defs>
+                  <g fill="none" stroke="#9198a1">
+                    <rect x="4" y="40" width="92" height="40"/><rect x="128" y="40" width="96" height="40"/><rect x="256" y="40" width="96" height="40"/><rect x="384" y="40" width="96" height="40"/><rect x="512" y="40" width="96" height="40"/><rect x="640" y="40" width="112" height="40"/>
+                    <path d="M96 60H126" marker-end="url(#a)"/><path d="M224 60H254" marker-end="url(#a)"/><path d="M352 60H382" marker-end="url(#a)"/><path d="M480 60H510" marker-end="url(#a)"/><path d="M608 60H638" marker-end="url(#a)"/>
+                  </g>
+                  <g fill="#e6edf3" text-anchor="middle">
+                    <text x="50" y="64">Hotkey</text><text x="176" y="58">Microphone</text><text x="176" y="72" fill="#9198a1">AsyncStream</text>
+                    <text x="304" y="58">Speech</text><text x="304" y="72" fill="#9198a1">engine</text>
+                    <text x="432" y="58">Cleanup</text><text x="432" y="72" fill="#9198a1">rules or LLM</text>
+                    <text x="560" y="58">Dictionary</text><text x="560" y="72" fill="#9198a1">always last</text>
+                    <text x="696" y="58">Typed into</text><text x="696" y="72" fill="#9198a1">focused app</text>
+                  </g>
+                </svg>
+              </div>
+              <p class="mermaidnote">In the real README this is a Mermaid diagram, which GitHub draws natively and anyone can edit as text.</p>
+              <p>The full architecture, the invariants and why they exist are in <a href="#">CLAUDE.md</a>. The list of things that look like bugs and are not is in <a href="#">AGENTS.md</a>.</p>
+
+              <h2>Privacy</h2>
+              <p>Speech, cleanup, the dictionary and meetings all run on your Mac. Nothing leaves it unless you choose a cloud style backend and paste in your own API key, which stays in the Keychain.</p>
+
+              <h2>How this was built</h2>
+              <p>I am a product marketer, not a Swift developer. I designed SigmaFlow and wrote every spec; the code was written with Claude Code, which is why most commits carry a Claude co-author line. Every feature started as an interactive mockup (<a href="#">20 of them</a> are in <code>docs/mockups</code>) and shipped only once the design was agreed.</p>
+
+              <h2>Not built yet</h2>
+              <ul><li>Onboarding: a first-run window for both permissions</li><li>Notarization, so there is no Open Anyway step</li></ul>
+            </div>
+          </div>
+        </div>
+        <aside class="about">
+          <h3>About</h3>
+          <p>Push-to-talk dictation for macOS. On-device speech, cleanup, a learning dictionary and meeting transcripts.</p>
+          <div class="topics"><span>macos</span><span>swift</span><span>swiftui</span><span>dictation</span><span>speech-to-text</span><span>on-device-ai</span><span>parakeet</span><span>mcp</span><span>accessibility</span></div>
+          <div class="meta"><div>Readme</div><div>MIT license</div><div>Activity</div><div>0 stars · 0 forks</div></div>
+          <div class="rel"><h3>Releases 1</h3><div class="r"><b>SigmaFlow 0.6</b><span class="latest">Latest</span></div><div style="font-size:12px;color:var(--gh-muted)">today</div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= OPTION B ================= -->
+  <section class="panel" id="pB" role="tabpanel" aria-labelledby="tB" hidden>
+    <div class="why">
+      <div><h4>Leads with</h4><p>Measured numbers, the architecture and the decisions behind it. Screenshots come after.</p></div>
+      <div><h4>Who it wins</h4><p>Experienced developers. Real benchmarks and a dated decision log are what they read for.</p></div>
+      <div><h4>Trade off</h4><p>Denser and colder for a casual visitor. Feels less like a product, more like a lab notebook.</p></div>
+    </div>
+    <div class="gh">
+      <div class="gh-top"><span class="own">itsgrj</span><span style="color:var(--gh-muted)">/</span><span class="rep">SigmaFlow</span><span class="pill">Public</span></div>
+      <div class="gh-body">
+        <div>
+          <div class="readme">
+            <div class="rh">README · MIT license</div>
+            <div class="md">
+              <h1>SigmaFlow</h1>
+              <div class="badges">
+                <span class="bdg"><i>macOS</i><b>passing</b></span>
+                <span class="bdg"><i>platform</i><b class="k">macOS 26</b></span>
+                <span class="bdg"><i>Swift</i><b class="bl">6.2</b></span>
+                <span class="bdg"><i>license</i><b class="bl">MIT</b></span>
+                <span class="bdg"><i>release</i><b class="bl">v0.6</b></span>
+              </div>
+              <p>Native push-to-talk dictation and meeting transcription for macOS. Swift 6, SwiftUI, no Electron, no server. All speech runs on the Mac.</p>
+
+              <h2>By the numbers</h2>
+              <table>
+                <tr><th>What</th><th>Measured on my MacBook Pro</th></tr>
+                <tr><td>115 minute meeting, transcribed and split by speaker</td><td>about 100 s, 1 GB peak</td></tr>
+                <tr><td>12 minute Tamil and English meeting</td><td>38 s in a release build</td></tr>
+                <tr><td>Live notes, 515 s of speech decoded while talking</td><td>33 s of compute, 155 MB peak</td></tr>
+                <tr><td>Codebase</td><td>18,773 lines of Swift in 77 files</td></tr>
+                <tr><td>Correction contract</td><td>36 test vectors, run by CI on every push</td></tr>
+              </table>
+
+              <h2>Architecture</h2>
+              <div class="diagram">
+                <svg viewBox="0 0 760 120" width="760" height="120" font-family="ui-monospace,Menlo,monospace" font-size="11" role="img" aria-label="Key press to typed text pipeline">
+                  <defs><marker id="b" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#9198a1"/></marker></defs>
+                  <g fill="none" stroke="#9198a1">
+                    <rect x="4" y="40" width="92" height="40"/><rect x="128" y="40" width="96" height="40"/><rect x="256" y="40" width="96" height="40"/><rect x="384" y="40" width="96" height="40"/><rect x="512" y="40" width="96" height="40"/><rect x="640" y="40" width="112" height="40"/>
+                    <path d="M96 60H126" marker-end="url(#b)"/><path d="M224 60H254" marker-end="url(#b)"/><path d="M352 60H382" marker-end="url(#b)"/><path d="M480 60H510" marker-end="url(#b)"/><path d="M608 60H638" marker-end="url(#b)"/>
+                  </g>
+                  <g fill="#e6edf3" text-anchor="middle">
+                    <text x="50" y="64">Hotkey</text><text x="176" y="58">Microphone</text><text x="176" y="72" fill="#9198a1">AsyncStream</text>
+                    <text x="304" y="58">Speech</text><text x="304" y="72" fill="#9198a1">engine</text>
+                    <text x="432" y="58">Cleanup</text><text x="432" y="72" fill="#9198a1">rules or LLM</text>
+                    <text x="560" y="58">Dictionary</text><text x="560" y="72" fill="#9198a1">always last</text>
+                    <text x="696" y="58">Typed into</text><text x="696" y="72" fill="#9198a1">focused app</text>
+                  </g>
+                </svg>
+              </div>
+              <h3>Invariants that fail silently if broken</h3>
+              <table>
+                <tr><th>Rule</th><th>What goes wrong without it</th></tr>
+                <tr><td>One audio stream, drained by one task</td><td>Buffers arrive out of order and the transcript reads as word salad</td></tr>
+                <tr><td><code>runGeneration</code> is checked by every async tail</td><td>A cancelled run pastes over the run that replaced it</td></tr>
+                <tr><td>The dictionary runs last, always</td><td>A style pass lowercases names the dictionary just fixed</td></tr>
+                <tr><td>The overlay can never become key</td><td>The target field loses focus and nothing gets typed</td></tr>
+                <tr><td>A second press during finishing is refused</td><td>The same sentence is pasted twice</td></tr>
+              </table>
+
+              <h2>Decision log</h2>
+              <table>
+                <tr><th>Date</th><th>Decision</th><th>Why</th></tr>
+                <tr><td>6 Sep</td><td>Removed compare mode</td><td>Nobody used it past setup; the run log already holds the timings</td></tr>
+                <tr><td>10 Oct</td><td>The dictionary learns by default</td><td>Asking every time was ignored; four guardrails make silence safe</td></tr>
+                <tr><td>13 Oct</td><td>Meetings rebuilt, three features only</td><td>Do the simplest thing well, then add one ask at a time</td></tr>
+                <tr><td>13 Oct</td><td>IndicConformer for Tamil</td><td>Beat Whisper large-v3, Omnilingual and Apple on a real meeting</td></tr>
+                <tr><td>16 Oct</td><td>Deleting is hard to find</td><td>Easy delete for recordings is a product mistake, not a convenience</td></tr>
+              </table>
+
+              <h2>Screens</h2>
+              <div class="shot" style="height:220px"><div class="win"><div class="side"><div class="wm">SIGMAFLOW</div><div>Models</div><div>Transcriptions</div><div class="on">Meetings</div><div>Conversations</div><div>Dictionary</div></div><div class="main"><div class="h">Meetings</div><div class="ln" style="width:82%"></div><div class="ln" style="width:64%"></div><div class="ln" style="width:75%"></div></div></div><span class="label">screenshot · meetings page</span></div>
+              <p class="caption">Three screenshots in a row: Transcriptions, Meetings, Dictionary.</p>
+
+              <h2>Build and test</h2>
+<pre><code>make install                    # build, sign, install, launch
+swift test --filter VectorTests # the correction contract</code></pre>
+
+              <h2>How this was built</h2>
+              <p>Designed and directed by a product marketer; code written with Claude Code. The process is in the repo: <a href="#">20 mockups</a>, a <a href="#">design spec</a>, and <a href="#">CLAUDE.md</a>, which records each decision with its date and the reason.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="about">
+          <h3>About</h3>
+          <p>Push-to-talk dictation for macOS. On-device speech, cleanup, a learning dictionary and meeting transcripts.</p>
+          <div class="topics"><span>macos</span><span>swift</span><span>swiftui</span><span>dictation</span><span>speech-to-text</span><span>on-device-ai</span><span>parakeet</span><span>mcp</span><span>accessibility</span></div>
+          <div class="meta"><div>Readme</div><div>MIT license</div><div>Activity</div><div>0 stars · 0 forks</div></div>
+          <div class="rel"><h3>Releases 1</h3><div class="r"><b>SigmaFlow 0.6</b><span class="latest">Latest</span></div><div style="font-size:12px;color:var(--gh-muted)">today</div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+const tabs=[...document.querySelectorAll('.tab')];
+tabs.forEach(t=>t.addEventListener('click',()=>{
+  tabs.forEach(x=>{x.setAttribute('aria-selected',x===t);document.getElementById(x.getAttribute('aria-controls')).hidden=x!==t;});
+}));
+</script>
+</body>
+</html>

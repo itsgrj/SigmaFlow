@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dictations in the SigmaFlow folder</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;--pixel:Pixel,GMono,monospace;
+ --finder:#1e1e1e;--finder2:#262626;--finderSel:#0a5bd8;--finderText:#e8e8e8;--finderDim:#9a9a9a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+.review{max-width:1240px;margin:auto;padding:34px 30px 80px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:980px;margin:0 0 22px}
+.lead b{color:var(--ink);font-weight:500}
+.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}
+.choice{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#1a1a1a}
+.choice h3{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:0 0 10px}
+.seg{display:flex;flex-direction:column;gap:4px}
+.seg button{text-align:left;border:1px solid transparent;border-radius:6px;padding:7px 9px;color:var(--ink2);font-size:13px;line-height:1.35}
+.seg button b{font:500 10px var(--mono);margin-right:8px;color:var(--dim)}
+.seg button.on{border-color:var(--strong);background:var(--sel);color:var(--ink)}
+.seg button.on b{color:var(--ink)}
+.note{font-size:12px;color:var(--dim);line-height:1.55;margin:8px 0 0}
+.hint{font-size:12px;color:var(--dim);margin:10px 0 0;line-height:1.55;max-width:1160px}
+
+/* a Finder window */
+.finder{width:1160px;height:600px;border:1px solid rgba(255,255,255,.16);border-radius:12px;overflow:hidden;background:var(--finder);display:flex;flex-direction:column;font:13px -apple-system,var(--geist);color:var(--finderText);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.tb{height:52px;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--finder2);border-bottom:1px solid rgba(255,255,255,.08)}
+.tb .lights{display:flex;gap:8px}.tb .lights i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.2);display:block}
+.tb .title{font-weight:600}
+.tb .crumbs{margin-left:auto;color:var(--finderDim);font-size:12px}
+.fbody{flex:1;display:flex;min-height:0}
+.side{width:140px;background:#232323;border-right:1px solid rgba(255,255,255,.06);padding:12px 8px;font-size:12px;color:var(--finderDim)}
+.side h4{font-size:11px;margin:4px 8px 6px;font-weight:600;color:#7d7d7d}
+.side div{padding:4px 8px;border-radius:5px;color:var(--finderText);display:flex;gap:7px;align-items:center}
+.side div.on{background:rgba(255,255,255,.1)}
+.cols{display:flex;min-width:0;flex:0 0 auto}
+.col{width:128px;border-right:1px solid rgba(255,255,255,.07);padding:6px 0;overflow:hidden}
+.col.wide{width:190px}
+.it{display:flex;align-items:center;gap:7px;padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
+.it .ic{flex:0 0 auto;width:16px;height:13px;border-radius:2px;background:#4f9cf0;position:relative}
+.it .ic.file{width:12px;height:15px;background:#d8d8d8;border-radius:1px}
+.it .ic.file:after{content:"MD";position:absolute;bottom:1px;left:1px;font:6px var(--mono);color:#555}
+.it .ic.audio{width:12px;height:15px;background:#ff9f3a;border-radius:1px}
+.it .ic.hid{opacity:.35}
+.it span{overflow:hidden;text-overflow:ellipsis}
+.it .chev{margin-left:auto;color:#777;font-size:10px}
+.it.on{background:var(--finderSel);color:#fff}
+.it.dimmed{color:#777}
+.prev{flex:1;min-width:0;display:flex;flex-direction:column;background:#1b1b1b}
+.prevhead{white-space:nowrap;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;color:var(--finderDim);display:flex;gap:10px}
+.prevhead b{color:var(--finderText);font-weight:600}
+.prevbody{flex:1;overflow:auto;padding:14px 18px}
+pre{margin:0;font:11.5px/1.6 var(--mono);color:#dcdcdc;white-space:pre-wrap;word-break:break-word}
+.md h1{font:600 18px -apple-system,var(--geist);margin:0 0 10px}
+.md h2{font:600 14px -apple-system,var(--geist);margin:16px 0 8px}
+.md p{margin:0 0 2px;font-size:12px;color:#cfcfcf}
+.md table{border-collapse:collapse;width:100%;margin-top:12px;font-size:12px}
+.md th,.md td{border:1px solid rgba(255,255,255,.12);padding:5px 8px;text-align:left;vertical-align:top}
+.md th{background:rgba(255,255,255,.05);font-weight:600}
+.md td.t{white-space:nowrap;color:#bdbdbd;width:1%}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Dictations in the SigmaFlow folder</h1>
+<p class="lead"><b>Round 1, 19 Oct 2026.</b> Every dictation moves into <b>~/SigmaFlow/Dictations</b>, beside Meetings and Conversations, as files you can open without the app, filed by year and month the way meetings are. Below is the folder as Finder shows it. Click a file to see what is inside. The texts are made up; your real 3,459 dictations (August to today) would fill it the same way.</p>
+
+<section class="choices" id="choices"></section>
+<div id="finder"></div>
+<p class="hint" id="hint"></p>
+</main>
+
+<script>
+const PICKS=[
+ {k:'per',h:'01 One file for',o:[
+   ['day','Each day: [ 19 Oct ] Sun.md, about 25 dictations in each on a usual day'],
+   ['month','Each month: 10 October.md, a heading for every day inside'],
+   ['each','Each dictation: [ 19 Oct ] Sun 10.42 am.md, about 25 new files a day']]},
+ {k:'row',h:'02 Each dictation shows',o:[
+   ['words','The time, then the words'],
+   ['length','The time, how long you spoke, then the words']]},
+ {k:'edit',h:'03 Edit a file by hand, and',o:[
+   ['app','Transcriptions shows your edit, as with meetings'],
+   ['copy','The file is a copy: the next dictation that day writes the app’s version over it']]},
+ {k:'old',h:'04 What is already there',o:[
+   ['all','All 3,459 go into the folder now, by day, back to August'],
+   ['new','Only dictations from today on; the older ones stay where they are']]},
+];
+const S={per:'day',row:'words',edit:'app',old:'all'};
+const NOTE={
+ per:{day:'A day is the unit people remember ("what did I say Tuesday"). A busy day is one longer file, never a folder full of tiny ones.',month:'Fewest files: one a month. A month is long, about 700 dictations in September.',each:'Like a meeting, one file each; the folder fills fastest, about 3,500 files so far.'},
+ edit:{app:'The same rule as meetings: the file is the record, so fixing a word in it fixes it in Transcriptions and in what Claude reads.',copy:'Simpler, but a hand edit is lost the next time that day gets a dictation.'},
+ old:{all:'Done once, the first time the new version opens. The hidden file they come from is kept until you say it can go.',new:'Nothing old moves. Transcriptions still shows everything, but the folder starts today.'}};
+
+const SAMPLE=[
+ ['9.02 am','0:14','Remind me to send the deck to Priya before Friday, and ask her about the budget.'],
+ ['9.40 am','0:06','Sounds good, see you at eleven.'],
+ ['10.15 am','0:31','Okay, so the plan for tomorrow is to finish the onboarding screens first, then review the meeting notes with the team after lunch.'],
+ ['11.48 am','0:09','Can you share the latest numbers for the Chennai rollout?'],
+ ['2.05 pm','0:22','Thanks for the quick turnaround. The second draft reads much better; just tighten the opening paragraph and we are good to go.'],
+ ['4.30 pm','0:05','Running ten minutes late.'],
+ ['6.12 pm','0:18','Note to self: book a table for four at seven tonight, and pick up the parcel on the way home.']];
+const DAYS=[['[ 19 Oct ] Sun','Sunday 19 October 2026',7],['[ 18 Oct ] Sat','Saturday 18 October 2026',31],['[ 17 Oct ] Fri','Friday 17 October 2026',58],['[ 16 Oct ] Thu','Thursday 16 October 2026',44],['[ 15 Oct ] Wed','Wednesday 15 October 2026',39],['[ 14 Oct ] Tue','Tuesday 14 October 2026',27],['[ 13 Oct ] Mon','Monday 13 October 2026',62],['[ 12 Oct ] Sun','Sunday 12 October 2026',3]];
+let sel=0, view='text';
+
+function words(){return SAMPLE.reduce((n,r)=>n+r[2].split(' ').length,0)}
+function rows(md){
+ const len=S.row==='length';
+ if(md){
+  const head=`<tr><th>Time</th>${len?'<th>Length</th>':''}<th>Dictation</th></tr>`;
+  return `<table>${head}${SAMPLE.map(r=>`<tr><td class="t">${r[0]}</td>${len?`<td class="t">${r[1]}</td>`:''}<td>${r[2]}</td></tr>`).join('')}</table>`;
+ }
+ const head=len?'| Time | Length | Dictation |\n|---|---|---|':'| Time | Dictation |\n|---|---|';
+ return head+'\n'+SAMPLE.map(r=>len?`| ${r[0]} | ${r[1]} | ${r[2]} |`:`| ${r[0]} | ${r[2]} |`).join('\n');
+}
+function dayFile(md){
+ const [name,long]=DAYS[Math.min(sel,DAYS.length-1)];
+ if(md)return `<div class="md"><h1>${name}</h1><p>Date: ${long}</p><p>Dictations: ${SAMPLE.length}</p><p>Words: ${words()}</p>${rows(true)}</div>`;
+ return `<pre># ${name}\n\nDate: ${long}  \nDictations: ${SAMPLE.length}  \nWords: ${words()}\n\n${rows(false)}</pre>`;
+}
+function monthFile(md){
+ const others='<p style="color:#888;margin-top:10px">… and a heading for every earlier day of the month</p>';
+ if(md)return `<div class="md"><h1>October 2026</h1><p>Dictations: 1,447</p><h2>${DAYS[0][0]}</h2>${rows(true)}${others}</div>`;
+ return `<pre># October 2026\n\nDictations: 1,447\n\n## ${DAYS[0][0]}\n\n${rows(false)}\n\n## ${DAYS[1][0]}\n\n…</pre>`;
+}
+function oneFile(md){
+ const r=SAMPLE[sel%SAMPLE.length];
+ const len=S.row==='length'?(md?`<p>Length: ${r[1]}</p>`:`Length: ${r[1]}  \n`):'';
+ if(md)return `<div class="md"><h1>${DAYS[0][0]} ${r[0]}</h1><p>Date: ${DAYS[0][1]}, ${r[0]}</p>${len}<p style="margin-top:12px;font-size:13px;color:#e8e8e8">${r[2]}</p></div>`;
+ return `<pre># ${DAYS[0][0]} ${r[0]}\n\nDate: ${DAYS[0][1]}, ${r[0]}  \n${len}\n${r[2]}</pre>`;
+}
+
+function render(){
+ document.getElementById('choices').innerHTML=PICKS.map(p=>`<div class="choice"><h3>${p.h}</h3><div class="seg">${p.o.map(([v,t],j)=>`<button class="${S[p.k]===v?'on':''}" data-pick="${p.k}" data-v="${v}"><b>${'ABC'[j]}</b>${t}</button>`).join('')}</div>${NOTE[p.k]?`<p class="note">↳ ${NOTE[p.k][S[p.k]]}</p>`:''}</div>`).join('');
+ const months=S.old==='all'?['08 August','09 September','10 October']:['10 October'];
+ const folder=(n,on,chev=true)=>`<div class="it ${on?'on':''}"><span class="ic"></span><span>${n}</span>${chev?'<span class="chev">›</span>':''}</div>`;
+ const file=(n,i,kind='file')=>`<div class="it ${i===sel?'on':''}" data-sel="${i}"><span class="ic ${kind}"></span><span>${n}</span></div>`;
+ let col3, col4='', fileName, content;
+ const md=view==='md';
+ if(S.per==='month'){
+  col3=`<div class="col">${months.map((m,i)=>file(m+'.md',i===months.length-1?sel:-1)).join('')}</div>`;
+  fileName='10 October.md'; content=monthFile(md);
+ }else{
+  col3=`<div class="col">${months.map((m,i)=>folder(m,i===months.length-1)).join('')}</div>`;
+  if(S.per==='day'){
+   const list=S.old==='all'?DAYS:DAYS.slice(0,1);
+   col4=`<div class="col wide">${list.map((d,i)=>file(d[0]+'.md',i)).join('')}${S.old==='all'?'<div class="it dimmed"><span>… back to 1 Oct</span></div>':''}</div>`;
+   fileName=DAYS[Math.min(sel,DAYS.length-1)][0]+'.md'; content=dayFile(md);
+  }else{
+   col4=`<div class="col wide">${SAMPLE.slice().reverse().map((r,i)=>file(`${DAYS[0][0]} ${r[0]}.md`,i)).join('')}${S.old==='all'?'<div class="it dimmed"><span>… 1,440 more this month</span></div>':''}</div>`;
+   fileName=`${DAYS[0][0]} ${SAMPLE[SAMPLE.length-1-sel%SAMPLE.length]?.[0]||''}.md`; content=oneFile(md);
+  }
+ }
+ const crumbs=`SigmaFlow › Dictations › 2026 › ${S.per==='month'?'':'10 October › '}${fileName}`;
+ document.getElementById('finder').innerHTML=`<div class="finder">
+  <div class="tb"><span class="lights"><i></i><i></i><i></i></span><span class="title">Dictations</span><span class="crumbs">${crumbs}</span></div>
+  <div class="fbody">
+   <div class="side"><h4>Favourites</h4><div>Desktop</div><div>Documents</div><div>Downloads</div><div class="on">SigmaFlow</div><h4>Locations</h4><div>Macintosh HD</div></div>
+   <div class="cols">
+    <div class="col">${folder('Conversations',false)}${folder('Dictations',true)}${folder('Meetings',false)}</div>
+    <div class="col">${folder('2026',true)}</div>
+    ${col3}${col4}
+   </div>
+   <div class="prev"><div class="prevhead"><b>${fileName}</b><span style="margin-left:auto">Shown as</span><button data-view="text" style="color:${view==='text'?'#fff':'#888'}">text</button><button data-view="md" style="color:${view==='md'?'#fff':'#888'}">in a Markdown app</button></div><div class="prevbody">${content}</div></div>
+  </div></div>`;
+ document.getElementById('hint').innerHTML=`↳ The app's own details (how long each took, which model heard it, an id for edits) live in one small hidden file beside these, so Insights and search keep working; you never need to open it. If the SigmaFlow folder can't be found, dictating still works: new dictations wait in the app and are filed the moment the folder is back.`;
+}
+document.addEventListener('click',e=>{
+ const p=e.target.closest('[data-pick]');if(p){S[p.dataset.pick]=p.dataset.v;sel=0;render();return}
+ const s=e.target.closest('[data-sel]');if(s&&+s.dataset.sel>=0){sel=+s.dataset.sel;render();return}
+ const v=e.target.closest('[data-view]');if(v){view=v.dataset.view;render()}
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow, deleting recordings and pictures</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#878787;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--footer:rgba(255,255,255,.035);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+.review{max-width:1240px;margin:auto;padding:34px 30px 60px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:960px;margin:0 0 18px}
+.lead b{color:var(--ink);font-weight:500}
+.picks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 14px}
+.pk{border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:#1a1a1a}
+.pk h3{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:0 0 6px}
+.pk p{font-size:12.5px;line-height:1.5;color:var(--ink);margin:0}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 12px}
+.choice{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#1a1a1a}
+.choice h3{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:0 0 10px}
+.seg{display:flex;flex-direction:column;gap:4px}
+.seg button{text-align:left;border:1px solid transparent;background:none;border-radius:6px;padding:7px 9px;color:var(--ink2);font-size:13px;line-height:1.35}
+.seg button b{font:500 10px var(--mono);margin-right:8px;color:var(--dim)}
+.seg button.on{border-color:var(--strong);background:var(--sel);color:var(--ink)}
+.seg button.on b{color:var(--ink)}
+.choice .why{font-size:12.5px;line-height:1.55;color:var(--ink2);margin:0}
+.choice .why+.why{margin-top:6px}
+.switch{display:flex;gap:8px;align-items:center;margin:22px 0 12px}
+.switch span{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-right:6px}
+.switch button{border:1px solid var(--border);background:none;border-radius:6px;padding:6px 12px;font-size:13px;color:var(--ink2)}
+.switch button.on{border-color:var(--strong);background:var(--sel);color:var(--ink)}
+.switch .reset{margin-left:auto;border-color:transparent}
+.cap{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:26px 0 10px}
+.cap i{font-style:normal;text-transform:none;letter-spacing:0;color:var(--dim);margin-left:10px;font-family:var(--geist);font-size:12.5px}
+
+/* the window */
+.win{width:1160px;height:660px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;position:relative;background:#000;user-select:none}
+.rail{width:219px;flex:0 0 219px;background:#000;border-right:1px solid var(--border);padding:58px 10px 16px;display:flex;flex-direction:column}
+.word{font:28px var(--pixel);padding:0 11px;margin-bottom:34px;display:flex;align-items:center}.word span{font-family:PixelCircle,var(--pixel)}
+.word .logo{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,.2);margin-right:10px}
+.nav div{display:flex;align-items:center;gap:13px;height:37px;padding:0 11px;border-radius:6px;font:14px var(--pixel);margin-bottom:9px}
+.nav div.on{background:var(--sel)}
+.nav img{width:15px;height:15px;filter:invert(1);opacity:.75}
+.ver{margin-top:auto;padding:0 11px;font:11px var(--pixel);color:var(--dim)}
+.stage{flex:1;position:relative;overflow:hidden}
+.paint{position:absolute;inset:0;background:url("../../Resources/background-colour.jpg") center/cover}
+.paint:after{content:"";position:absolute;inset:0;background:var(--scrim)}
+.page{position:relative;height:100%;padding:30px 29px 30px;display:flex;flex-direction:column}
+.head{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px}
+.head h1{font:22px var(--pixel);font-weight:400;margin:0 0 12px}
+.head p{font:14px/1.45 var(--pixel);color:var(--ink2);margin:0;max-width:470px}
+.cta{margin-left:auto;display:flex;gap:12px;align-items:flex-start}
+.ctacol{display:flex;flex-direction:column;align-items:center;gap:8px}
+.btn{height:32px;padding:0 13px;border-radius:6px;border:1px solid var(--strong);background:var(--fill);font:13px var(--pixel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;color:var(--ink)}
+.btn:hover{background:var(--sel)}
+.btn.quiet{border-color:transparent;background:none;color:var(--ink2)}
+.btn.quiet:hover{color:var(--ink);background:var(--fill)}
+.btn.inv{background:#fff;color:#000;border-color:#fff}
+.btn.inv:hover{background:#e6e6e6}
+.btn img{width:14px;height:14px;filter:invert(1)}
+.btn.inv img{filter:none}
+.btn[disabled]{opacity:.35;cursor:default}
+.press{font:13px var(--pixel);color:var(--ink2);display:inline-flex;align-items:center;gap:6px}
+.keys{font:12px var(--mono);color:var(--ink);background:var(--fill);border:1px solid var(--border);border-radius:4px;padding:2px 8px}
+.toolbar{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.search{display:flex;align-items:center;gap:10px;height:40px;width:400px;border:1px solid var(--strong);border-radius:6px;background:var(--glass);padding:0 12px;font:14px var(--pixel);color:var(--ph)}
+.search img{width:14px;filter:invert(1);opacity:.7}
+.count{margin-left:auto;font:13px var(--pixel);color:var(--ink2)}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--glass);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.scroll{overflow:auto;min-height:0}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:4px}
+.group{padding:14px 20px 4px;font:12px var(--pixel);color:var(--ink2);letter-spacing:.06em;text-transform:uppercase}
+.row{display:flex;align-items:center;gap:14px;padding:12px 20px;border-top:1px solid var(--border);min-height:56px;position:relative}
+.group+.row{border-top:0}
+.row.picked{background:var(--sel)}
+.mode .row{cursor:default}
+.name{font:15px var(--pixel)}
+.right{margin-left:auto;display:flex;gap:10px;align-items:center}
+/* the tick box: only in delete mode; on the row under the pointer until one is ticked, then on all */
+.cb{width:16px;height:16px;flex:0 0 16px;border:1px solid rgba(255,255,255,.45);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}
+.cb.on{background:#fff;border-color:#fff}
+.cb.on:after{content:"";width:12px;height:12px;background:url("../../Resources/Icons/checkmark.svg") center/contain no-repeat}
+.cb.ghost{opacity:0}
+.row:hover .cb.ghost{opacity:1}
+/* the end of the list: where delete lives */
+.end{display:flex;justify-content:flex-end;padding:18px 20px 16px;border-top:1px solid var(--border)}
+.faint{background:none;border:0;padding:0;font:12px var(--pixel);color:var(--dim);opacity:.75;display:inline-flex;align-items:center;gap:6px}
+.faint img{width:12px;filter:invert(1);opacity:.6}
+.faint:hover{opacity:1;color:var(--ink2)}
+.foot{display:flex;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid var(--border);background:#0e0e0e;min-height:56px;flex:0 0 auto}
+.foot .hint{font:13px var(--pixel);color:var(--ink2)}
+.foot .acts{margin-left:auto;display:flex;gap:8px}
+/* photo stacks, as on the Conversations page */
+.stacks{display:flex;gap:10px;width:140px}
+.stk{position:relative;width:40px;height:24px}
+.stk i{position:absolute;width:30px;height:22px;border-radius:3px;border:1px solid var(--border);background:url("../../Resources/background-colour.jpg");background-size:800% auto;box-shadow:2px 0 0 rgba(0,0,0,.75)}
+.howmany{font:12px var(--mono);color:var(--dim);width:40px}
+
+/* the transcript */
+.back{display:inline-flex;align-items:center;gap:8px;font:14px var(--pixel);color:var(--ink2);margin:0 0 18px}
+.back img{width:14px;filter:invert(1);opacity:.7}
+.thead{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.thead h1{font:26px var(--pixel);font-weight:400;margin:0;display:flex;align-items:center;gap:6px}
+.thead h1 .btn{height:28px;width:28px;padding:0;justify-content:center}
+.thead .acts{margin-left:auto;display:flex;gap:8px;align-items:center}
+.speakers{display:flex;gap:18px;font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:6px 0 18px}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 20px;border-bottom:1px solid var(--border);flex:0 0 auto}
+.bar .col{font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.bar .col.t{width:130px}
+.bar .tools{margin-left:auto;display:flex;align-items:center;gap:6px}
+.pair{display:flex;border:1px solid var(--strong);border-radius:6px;overflow:hidden}
+.pair span{height:30px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;font:13px var(--pixel);color:var(--ink2)}
+.pair span+span{border-left:1px solid var(--strong)}
+.pair img,.bar .btn img{width:13px;filter:invert(1);opacity:.75}
+.tl{display:flex;padding:14px 20px;border-top:1px solid var(--border)}
+.tl:first-child{border-top:0}
+.tl .time{width:130px;flex:0 0 130px;display:flex;flex-direction:column;gap:8px;font:13px var(--mono);color:var(--dim)}
+.tl .say{flex:1;display:flex;flex-direction:column;gap:6px}
+.tl .who{font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.tl .txt{font:14px/1.5 var(--pixel);color:var(--ink)}
+.photos{display:flex;flex-wrap:wrap;gap:6px;width:100px}
+.pic{position:relative;width:46px;height:34px;border-radius:3px;border:1px solid var(--border);background:url("../../Resources/background-colour.jpg");background-size:700% auto;flex:0 0 auto}
+.pic.screen,.pimg.screen{background:#1b1d22;overflow:hidden}
+.pic.screen{width:200px;height:125px}
+.pic.screen:before,.pimg.screen:before{content:"";position:absolute;inset:0;background:
+ linear-gradient(#2a2d34,#2a2d34) 0 0/100% 11%  no-repeat,
+ linear-gradient(#3b3f48,#3b3f48) 6% 21%/60% 5% no-repeat,
+ linear-gradient(#30333a,#30333a) 6% 33%/80% 4% no-repeat,
+ linear-gradient(#30333a,#30333a) 6% 43%/72% 4% no-repeat,
+ linear-gradient(#30333a,#30333a) 6% 53%/76% 4% no-repeat,
+ linear-gradient(#454a55,#454a55) 6% 85%/38% 21% no-repeat}
+.gone{border:1px dashed var(--strong);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font:11px var(--mono);color:var(--ink2);background:none;padding:0;text-decoration:underline;text-underline-offset:2px}
+.gone.p{width:46px;height:34px}
+.gone.s{width:200px;height:125px;font:13px var(--pixel)}
+
+/* the hover preview, as PhotoPeek draws it: the picture, then its caption */
+.peek{position:absolute;z-index:20;padding:8px;background:rgba(8,8,8,.94);border:1px solid var(--strong);border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,.6);display:none}
+.peek.on{display:block}
+.pimg{position:relative;width:256px;height:160px;border-radius:3px;background:url("../../Resources/background-colour.jpg");background-size:420% auto}
+.pcap{display:flex;justify-content:space-between;margin-top:8px;font:11px var(--mono);color:var(--dim)}
+/* the delete, bottom right of the picture, quiet until the pointer is on it */
+.pdel{position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:4px;border:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:.55;padding:0}
+.pdel img{width:12px;filter:invert(1)}
+.pdel:hover{opacity:1;background:rgba(0,0,0,.75)}
+
+/* the question: a small window over the page, in the middle, away from where you clicked */
+.veil{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}
+.dlg{width:360px;background:#111;border:1px solid var(--strong);border-radius:10px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.7)}
+.dlg h2{font:17px var(--pixel);font-weight:400;margin:0 0 12px}
+.dlg .what{font:12.5px/1.6 var(--mono);color:var(--ink2);margin:0 0 6px}
+.dlg .thumb{width:160px;height:100px;border-radius:3px;border:1px solid var(--border);margin:2px 0 6px;position:relative}
+.dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.dlg .acts .btn{min-width:84px;justify-content:center}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Deleting meetings, conversations and their pictures</h1>
+<p class="lead"><b>Round 2, 16 Oct 2026.</b> Built to your notes: every delete sits at the very bottom, nothing on the rows or near Play, and every delete stops at a small window that asks. The word Trash appears nowhere. Things still go to the Mac's Trash behind the scenes, so a mistake can be recovered from Finder, but the app never mentions it. Everything below is live: scroll to the end of the list, hover a photo, delete, cancel.</p>
+
+<section class="picks">
+ <div class="pk"><h3>01 Several</h3><p>Delete conversations, faint, at the end of the list. Only after that press, a tick box on the row under the pointer; tick one and they all show. Delete 3 at the bottom.</p></div>
+ <div class="pk"><h3>02 One</h3><p>Nothing on the rows. One is deleted from inside it, or ticked with 01.</p></div>
+ <div class="pk"><h3>03 The one open</h3><p>Delete conversation, faint, after the last line of the transcript. You scroll to the end to find it.</p></div>
+ <div class="pk"><h3>04 Asking</h3><p>Every delete opens a small window in the middle: Cancel in white, Delete beside it, waiting a moment before it works. Return and Esc both cancel.</p></div>
+ <div class="pk"><h3>05 Pictures</h3><p>The hover preview stays as it is and now waits for the pointer. A faint bin in the bottom right corner of the larger picture.</p></div>
+</section>
+
+<section class="choices">
+ <div class="choice"><h3>06 After Delete</h3><div class="seg" data-k="after">
+  <button data-v="quiet"><b>A</b>It is simply gone; the window already asked</button>
+  <button data-v="undo"><b>B</b>The footer says "2 conversations deleted" with Undo, for a few seconds</button></div></div>
+ <div class="choice"><h3>Why the window can't be double-clicked through</h3>
+  <p class="why">It opens in the middle of the page, never under the pointer, so a second click lands on nothing. Delete is dim for half a second after it opens, then works.</p>
+  <p class="why">Cancel is the white button and the one Return presses. Delete needs its own click.</p></div>
+</section>
+
+<div class="switch"><span>Showing</span>
+ <button data-p="conversations">Conversations</button><button data-p="meetings">Meetings</button>
+ <button class="btn quiet reset" id="reset">Put everything back</button></div>
+
+<div class="cap">The list<i>scroll to the end of it</i></div>
+<div id="w1"></div>
+<div class="cap">One of them, opened<i>hover a photo or the screenshot; scroll to the end for the delete</i></div>
+<div id="w2"></div>
+</main>
+
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const S={page:'conversations',after:'quiet'};
+const SEED={
+ meetings:[['[ 16 Oct ] Fri 10.28 am - 1 min',0],['[ 16 Oct ] Fri 9.39 am - 2 min',0],['[ 16 Oct ] Fri 9.18 am - 1 min',0],['[ 15 Oct ] Thu 4.02 pm - 34 min',0],['[ 14 Oct ] Wed 5.42 pm - 17 min - Design review',0],['[ 14 Oct ] Wed 11.04 am - 17 min',0],['[ 13 Oct ] Tue 2.30 pm - 48 min',0],['[ 13 Oct ] Tue 10.18 am - 12 min',0]],
+ conversations:[['[ 16 Oct ] Fri 10.55 am - 2 min',5],['[ 16 Oct ] Fri 10.46 am - 3 min',14],['[ 16 Oct ] Fri 10.23 am - 1 min',0],['[ 15 Oct ] Thu 4.40 pm - 22 min',41],['[ 15 Oct ] Thu 11.15 am - 8 min',17],['[ 15 Oct ] Thu 9.02 am - 4 min',6],['[ 14 Oct ] Wed 6.10 pm - 31 min',58],['[ 14 Oct ] Wed 12.20 pm - 2 min',3]],
+};
+const OPENED={conversations:1,meetings:4};
+const SEEDLINES=[
+ {t:'00:00',who:'Speaker 1',txt:'Okay, so the first thing is the pricing page. I think the comparison table is doing too much.',ph:['40% 38%']},
+ {t:'00:21',who:'Speaker 2',txt:'Agreed. People only look at the first two columns anyway.'},
+ {t:'00:34',scr:true},
+ {t:'00:38',who:'Speaker 1',txt:'See, this is the one. Eleven rows and nobody reads past four.',ph:['66% 36%','52% 44%']},
+ {t:'01:02',who:'Speaker 3',txt:'Then we cut it to four and put the rest behind a link.',ph:['23% 49%']},
+ {t:'01:25',who:'Speaker 2',txt:'And the yearly toggle goes on top, not at the bottom.',ph:['80% 50%']},
+ {t:'01:48',who:'Speaker 1',txt:'Fine. I will send the new version round tonight, and we look at it again on Monday.'},
+];
+const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
+const noun=()=>S.page==='meetings'?'meeting':'conversation';
+
+let W;
+const newList=()=>({items:SEED[S.page].map(([n,p],i)=>({n,p,i})),mode:false,sel:new Set(),undo:null});
+function reset(){
+ W={l:{list:newList(),dialog:null},
+    d:{list:newList(),dialog:null,view:'transcript',lines:SEEDLINES.map(l=>({...l,ph:(l.ph||[]).map(c=>({c,gone:false})),gone:false}))}};
+}
+
+function rail(){
+ const items=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Settings','settings']];
+ const active=S.page==='meetings'?'Meetings':'Conversations';
+ return `<aside class="rail"><div class="word"><img class="logo" src="icons/appicon.png">Sigma<span>flow</span></div><div class="nav">${items.map(([t,i])=>`<div class="${t===active?'on':''}"><img src="${ICON(i)}">${t}</div>`).join('')}</div><div class="ver">1.0.0</div></aside>`}
+
+function stacks(n){
+ if(!n)return `<span class="stacks"></span><span class="howmany"></span>`;
+ const crops=['66% 36%','80% 50%','23% 49%','40% 38%','52% 44%','34% 46%','71% 40%','58% 48%','45% 35%'];
+ const nine=crops.slice(0,Math.min(n,9));
+ const st=[0,1,2].map(k=>nine.filter((_,i)=>i%3===k)).filter(c=>c.length);
+ return `<span class="stacks">${st.map(c=>`<span class="stk">${c.slice().reverse().map((x,i,a)=>`<i style="background-position:${x};left:${(a.length-1-i)*4}px;top:${(a.length-1-i)*-3+2}px;z-index:${i+1}"></i>`).join('')}</span>`).join('')}</span><span class="howmany">${n>9?'+'+(n-9):''}</span>`}
+
+// ---------- the list ----------
+function listPage(w){
+ const L=W[w].list,isConv=S.page==='conversations';
+ const head=isConv
+  ?`<div class="head"><div><h1>Conversations</h1><p>Write down a conversation in the room as it happens.</p></div><div class="cta"><div class="ctacol"><button class="btn"><img src="${ICON('camera')}">Take notes</button><span class="press">Press <span class="keys">⌃⌥N</span></span></div></div></div>`
+  :`<div class="head"><div><h1>Meetings</h1><p>Record a meeting and read it back the moment it ends.</p></div><div class="cta"><div class="ctacol"><button class="btn"><img src="${ICON('microphone')}">Record meeting</button><span class="press">Press <span class="keys">⌃⌥M</span></span></div></div></div>`;
+ const tool=`<div class="toolbar"><div class="search"><img src="${ICON('search')}">Search ${noun()}s</div><span class="count">${plural(L.items.length,noun())}</span></div>`;
+ const any=L.sel.size>0;
+ const rows=L.items.map((it,k)=>{
+  const picked=L.sel.has(k);
+  const box=L.mode?`<span class="cb ${picked?'on':''} ${!any?'ghost':''}"></span>`:'';
+  const open=L.mode?'':`<button class="btn quiet" data-a="open" data-w="${w}">Open transcript<img src="${ICON('arrow--right')}"></button>`;
+  return `<div class="row ${picked?'picked':''}" data-a="row" data-w="${w}" data-i="${k}">${box}<span class="name">${it.n}</span><div class="right">${isConv?stacks(it.p):''}${open}</div></div>`}).join('');
+ const empty=!L.items.length?`<div class="row" style="justify-content:center;color:var(--ink2);font:14px var(--pixel)">No ${noun()}s</div>`:'';
+ // The one way in to deleting from the list: at the very end, after the last row.
+ const end=!L.mode&&L.items.length?`<div class="end"><button class="faint" data-a="mode" data-w="${w}"><img src="${ICON('trash-can')}">Delete ${noun()}s</button></div>`:'';
+ let foot='';
+ if(L.mode){const n=L.sel.size;foot=`<div class="foot"><span class="hint">${n?n+' selected':`Tick the ${noun()}s to delete`}</span><div class="acts"><button class="btn" data-a="cancelmode" data-w="${w}">Cancel</button><button class="btn" ${n?'':'disabled'} data-a="ask" data-w="${w}"><img src="${ICON('trash-can')}">Delete${n?' '+n:''}</button></div></div>`}
+ else if(L.undo)foot=`<div class="foot"><span class="hint">${L.undo.label} deleted</span><div class="acts"><button class="btn" data-a="undo" data-w="${w}">Undo</button></div></div>`;
+ return head+tool+`<div class="card ${L.mode?'mode':''}" style="flex:1"><div class="scroll" data-scroll="${w}"><div class="group">October 2026</div>${rows}${empty}${end}</div>${foot}</div>`}
+
+// ---------- one opened ----------
+function docPage(){
+ const D=W.d;
+ if(D.view==='list')return listPage('d');
+ const isConv=S.page==='conversations';
+ const name=SEED[S.page][OPENED[S.page]][0];
+ const head=`<div class="back"><img src="${ICON('arrow--left')}">${isConv?'Conversations':'Meetings'}</div>
+  <div class="thead"><h1>${name}<button class="btn quiet"><img src="${ICON('edit')}"></button></h1><div class="acts"><button class="btn"><img src="${ICON('play')}">Play ${isConv?'3':'17'} min</button></div></div>
+  <div class="speakers"><span>Speaker 1</span><span>Speaker 2</span><span>Speaker 3</span></div>`;
+ const bar=`<div class="bar"><span class="col t">Time</span><span class="col">Transcription</span><div class="tools"><button class="btn quiet"><img src="${ICON('renew')}">Transcribe again</button><div class="pair"><span><img src="${ICON('copy')}">Copy (.md)</span><span><img src="${ICON('download')}">Download (.md)</span></div></div></div>`;
+ const lines=D.lines.map((l,li)=>{
+  if(!isConv&&l.scr)return '';
+  if(l.scr&&l.gone==='done')return '';
+  const ph=isConv?l.ph:[];
+  const photos=ph.some(p=>p.gone!=='done')?`<div class="photos">${ph.map((p,pi)=>p.gone==='done'?'':p.gone?`<button class="gone p" data-a="picundo" data-l="${li}" data-p="${pi}">Undo</button>`:`<span class="pic" style="background-position:${p.c}" data-l="${li}" data-p="${pi}"></span>`).join('')}</div>`:'';
+  const say=l.scr?(l.gone?`<button class="gone s" data-a="picundo" data-l="${li}" data-p="-1">Undo</button>`:`<span class="pic screen" data-l="${li}" data-p="-1"></span>`):`<span class="who">${l.who}</span><span class="txt">${l.txt}</span>`;
+  return `<div class="tl"><div class="time">[${l.t}]${photos}</div><div class="say">${say}</div></div>`}).join('');
+ // The only delete for the whole recording: after its last line.
+ const end=`<div class="end"><button class="faint" data-a="askdoc"><img src="${ICON('trash-can')}">Delete ${noun()}</button></div>`;
+ return head+`<div class="card" style="flex:1">${bar}<div class="scroll" data-scroll="d">${lines}${end}</div></div><div class="peek" id="peek"></div>`}
+
+// ---------- the question ----------
+function dialog(w){
+ const g=W[w].dialog;if(!g)return '';
+ let title,body='';
+ if(g.kind==='list'){
+  const L=W[w].list,names=[...L.sel].sort((a,b)=>a-b).map(k=>L.items[k].n);
+  title=names.length===1?`Delete this ${noun()}?`:`Delete ${plural(names.length,noun())}?`;
+  body=`<p class="what">${names.slice(0,4).join('<br>')}${names.length>4?`<br>and ${names.length-4} more`:''}</p>`;
+ }else if(g.kind==='doc'){
+  title=`Delete this ${noun()}?`;
+  body=`<p class="what">${SEED[S.page][OPENED[S.page]][0]}</p>`;
+ }else{
+  const l=W.d.lines[g.l],screen=g.p<0;
+  title=screen?'Delete this screenshot?':'Delete this photo?';
+  body=`<div class="thumb ${screen?'pimg screen':''}" style="${screen?'':`background:url('../../Resources/background-colour.jpg');background-size:420% auto;background-position:${l.ph[g.p].c}`}"></div><p class="what">[${l.t}]</p>`;
+ }
+ return `<div class="veil" data-a="veil" data-w="${w}"><div class="dlg"><h2>${title}</h2>${body}<div class="acts"><button class="btn inv" data-a="no" data-w="${w}">Cancel</button><button class="btn" disabled data-a="yes" data-w="${w}" data-wait>Delete</button></div></div></div>`}
+
+function render(){
+ const keep={};document.querySelectorAll('[data-scroll]').forEach(s=>keep[s.dataset.scroll]=s.scrollTop);
+ document.querySelectorAll('.seg').forEach(g=>g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',S[g.dataset.k]===b.dataset.v)));
+ document.querySelectorAll('.switch [data-p]').forEach(b=>b.classList.toggle('on',S.page===b.dataset.p));
+ const win=(w,inner)=>`<div class="win">${rail()}<section class="stage"><div class="paint"></div><div class="page">${inner}</div>${dialog(w)}</section></div>`;
+ document.querySelector('#w1').innerHTML=win('l',listPage('l'));
+ document.querySelector('#w2').innerHTML=win('d',docPage());
+ document.querySelectorAll('[data-scroll]').forEach(s=>{if(keep[s.dataset.scroll]!=null)s.scrollTop=keep[s.dataset.scroll]});
+ // Delete waits a moment, so a double-click that opened the window can't also confirm it.
+ document.querySelectorAll('[data-wait]').forEach(b=>setTimeout(()=>b.disabled=false,500));
+}
+
+function deleteFromList(L){
+ const idx=[...L.sel].sort((a,b)=>a-b),removed=idx.map(k=>({k,it:L.items[k]}));
+ L.items=L.items.filter((_,k)=>!L.sel.has(k));
+ L.sel.clear();L.mode=false;
+ L.undo=S.after==='undo'?{removed,label:plural(removed.length,noun())}:null;
+}
+
+document.addEventListener('click',e=>{
+ const seg=e.target.closest('.seg button');
+ if(seg){S[seg.parentElement.dataset.k]=seg.dataset.v;reset();render();return}
+ const sw=e.target.closest('.switch [data-p]');
+ if(sw){S.page=sw.dataset.p;reset();render();return}
+ if(e.target.closest('#reset')){reset();render();return}
+ const el=e.target.closest('[data-a]');if(!el)return;
+ const a=el.dataset.a,w=el.dataset.w,X=w?W[w]:null,L=X?X.list:null;
+ switch(a){
+  case 'mode':L.mode=true;L.undo=null;break;
+  case 'cancelmode':L.mode=false;L.sel.clear();break;
+  case 'row':if(!L.mode)return;{const k=+el.dataset.i;L.sel.has(k)?L.sel.delete(k):L.sel.add(k)}break;
+  case 'ask':if(L.sel.size)X.dialog={kind:'list'};break;
+  case 'askdoc':W.d.dialog={kind:'doc'};break;
+  case 'veil':if(e.target!==el)return;X.dialog=null;break;
+  case 'no':X.dialog=null;break;
+  case 'yes':{
+   const g=X.dialog;X.dialog=null;
+   if(g.kind==='list')deleteFromList(L);
+   else if(g.kind==='doc'){const D=W.d;D.view='list';const k=OPENED[S.page];D.list.sel=new Set([k]);deleteFromList(D.list)}
+   else{const l=W.d.lines[g.l],v=S.after==='undo'?true:'done';g.p<0?l.gone=v:l.ph[g.p].gone=v}
+   break}
+  case 'undo':L.undo.removed.forEach(({k,it})=>L.items.splice(k,0,it));L.undo=null;break;
+  case 'open':if(w==='d'){W.d.view='transcript';W.d.list.undo=null}break;
+  case 'picundo':{const l=W.d.lines[+el.dataset.l],p=+el.dataset.p;p<0?l.gone=false:l.ph[p].gone=false;break}
+  case 'peekdel':hidePeek(true);W.d.dialog={kind:'pic',l:+el.dataset.l,p:+el.dataset.p};break;
+  default:return;
+ }
+ render();
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'||e.key==='Enter'){for(const w of ['l','d'])if(W[w].dialog){W[w].dialog=null;e.preventDefault();render();return}}
+ if(e.key==='Escape'){for(const w of ['l','d']){W[w].list.mode=false;W[w].list.sel.clear()}render()}
+});
+
+// ---------- the hover preview ----------
+// It opens beside the picture as it does today, and now stays while the pointer travels onto it.
+let hideTimer=null,peekFor=null;
+function showPeek(pic){
+ clearTimeout(hideTimer);
+ const peek=document.querySelector('#peek');if(!peek)return;
+ const l=+pic.dataset.l,p=+pic.dataset.p,line=W.d.lines[l],screen=p<0;
+ const key=l+':'+p;
+ if(peekFor!==key){
+  peek.innerHTML=`<div class="pimg ${screen?'screen':''}" style="${screen?'':`background-position:${line.ph[p].c}`}"><button class="pdel" title="Delete" data-a="peekdel" data-l="${l}" data-p="${p}"><img src="${ICON('trash-can')}"></button></div><div class="pcap"><span>${screen?'Screenshot':'Photo'}</span><span>${line.t}</span></div>`;
+  peekFor=key;
+ }
+ const page=peek.parentElement.getBoundingClientRect(),r=pic.getBoundingClientRect();
+ const h=160+16+8+15;
+ let y=r.top+r.height/2-h/2-page.top;y=Math.max(8,Math.min(y,page.height-h-8));
+ peek.style.left=(r.right-page.left+12)+'px';peek.style.top=y+'px';
+ peek.classList.add('on');
+}
+function hidePeek(now){
+ clearTimeout(hideTimer);
+ const go=()=>{const p=document.querySelector('#peek');if(p)p.classList.remove('on');peekFor=null};
+ now?go():hideTimer=setTimeout(go,250);
+}
+document.addEventListener('mouseover',e=>{
+ const pic=e.target.closest('#w2 .pic');
+ if(pic&&!W.d.dialog)return showPeek(pic);
+ if(e.target.closest('#peek'))return clearTimeout(hideTimer);
+});
+document.addEventListener('mouseout',e=>{
+ const from=e.target.closest('#w2 .pic, #peek');if(!from)return;
+ const to=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest('#w2 .pic, #peek');
+ if(to)return;
+ hidePeek(false);
+});
+
+const Q=new URLSearchParams(location.search);for(const k of Object.keys(S))if(Q.get(k))S[k]=Q.get(k);
+reset();
+// For snapshots: ?state=end scrolls both to the end; mode ticks two rows; ask shows the question; peek opens a preview.
+const st=Q.get('state');
+if(st==='mode'||st==='ask'){W.l.list.mode=true;W.l.list.sel=new Set([1,3])}
+if(st==='ask')W.l.dialog={kind:'list'};
+if(st==='askpic')W.d.dialog={kind:'pic',l:3,p:0};
+render();
+if(st==='end'||st==='mode'||st==='ask')document.querySelectorAll('[data-scroll]').forEach(s=>s.scrollTop=1e5);
+if(st==='peek'){const p=document.querySelectorAll('#w2 .pic')[2];showPeek(p)}
+</script>
+</body></html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>SigmaFlow</string>
+	<key>CFBundleDisplayName</key>
+	<string>SigmaFlow</string>
+	<!-- Deliberately space-free and distinct from the existing app's `sigmaflow`, so that
+	     `pkill`/`killall` on either app can never match the other. -->
+	<key>CFBundleExecutable</key>
+	<string>SigmaFlow</string>
+	<!-- Separate from the existing SigmaFlow's com.sigmaflow.client: distinct TCC identity,
+	     distinct preferences domain, no shared state of any kind. -->
+	<key>CFBundleIdentifier</key>
+	<string>com.grj.sigmaflow</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>7</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<!-- Geist Pixel, Geist Mono and Geist ship in Contents/Resources/Fonts; this key makes macOS register the
+	     faces for this app automatically, no code needed. -->
+	<key>ATSApplicationFontsPath</key>
+	<string>Fonts</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>26.0</string>
+	<!-- A regular app: dock icon, app menu, standard windows. The menu bar item remains
+	     for status and the hotkey while you're working elsewhere, but it is secondary. -->
+	<key>LSUIElement</key>
+	<false/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SigmaFlow listens while you hold the push-to-talk key so it can turn your speech into text.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>SigmaFlow takes a photo every 30 seconds while live notes are on.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>SigmaFlow uses this to hear the other people on your calls.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SigmaFlow transcribes your speech on-device to insert text where you're typing.</string>
+</dict>
+</plist>

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow, when a call starts</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);--fill:rgba(255,255,255,.06);--hover:rgba(255,255,255,.08);--sel:rgba(255,255,255,.10);
+ --hud:rgba(16,16,16,.86);--green:#30d158;
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px}
+.review{max-width:1300px;margin:auto;padding:34px 30px 70px}
+.review h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.review h2{font-size:17px;font-weight:500;margin:46px 0 6px}
+.review h2 b{font:500 12px var(--mono);color:var(--dim);margin-right:10px}
+.lead{color:var(--ink2);line-height:1.55;max-width:940px;margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 22px}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.opt h3{font-size:14px;font-weight:500;margin:0 0 4px}
+.opt h3 b{font:500 11px var(--mono);color:var(--dim);margin-right:8px}
+.opt h3 i{font-style:normal;font:11px var(--mono);color:var(--dim);margin-left:8px;border:1px solid var(--border);border-radius:4px;padding:1px 6px}
+.opt p{font-size:13px;line-height:1.5;color:var(--ink2);margin:0 0 12px;min-height:40px}
+.switch{display:flex;align-items:center;gap:8px;margin:0 0 20px;font-size:12px;color:var(--dim)}
+.switch button{border:1px solid var(--border);background:none;border-radius:6px;padding:5px 10px;color:var(--ink2);font:13px var(--geist);cursor:pointer}
+.switch button.on{background:var(--sel);color:var(--ink);border-color:var(--strong)}
+.cap{position:absolute;left:12px;top:10px;font:11px var(--mono);color:var(--dim);z-index:4}
+
+/* behind the card: a call, dimmed */
+.desk{position:relative;height:250px;border-radius:10px;border:1px solid var(--border);overflow:hidden;background:#24262b}
+.tiles{position:absolute;inset:14px 14px 70px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;opacity:.55}
+.tiles i{background:#33363c;border-radius:6px}
+.dock{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:6px;padding:5px 8px;border-radius:10px;background:rgba(255,255,255,.08)}
+.dock i{width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.22)}
+.slot{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);transition:opacity .3s}
+.grid.three .slot{transform:translateX(-50%) scale(.84);transform-origin:bottom center}
+
+/* the card, at its real size */
+.card{width:440px;background:var(--hud);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--strong);border-radius:12px;padding:14px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);position:relative;overflow:hidden}
+.eyebrow{font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.q{font:15px/1.35 var(--pixel);color:var(--ink)}
+.stack{display:flex;flex-direction:column;gap:8px}
+.btns{display:flex;gap:8px;margin-top:12px}
+.btn{height:32px;padding:0 12px;border-radius:6px;font:14px var(--pixel);display:inline-flex;align-items:center;gap:8px;color:var(--ink);border:1px solid var(--border);background:var(--fill);white-space:nowrap;transition:background .15s,border-color .15s}
+.btn.quiet{background:none;border-color:transparent;color:var(--ink2);padding:0 10px}
+.btn.hover{background:var(--hover);border-color:var(--strong)}
+.btn img{width:16px;height:16px;filter:invert(1)}
+.kbd{font:11px var(--mono);color:var(--ink2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-left:2px}
+.row{display:flex;align-items:center;gap:12px}
+.appicon{width:20px;height:20px;border-radius:5px;filter:grayscale(1) contrast(1.5);flex:0 0 auto}
+body.colour .appicon{filter:none}
+.tile{width:38px;height:38px;border-radius:9px;border:1px solid var(--strong);flex:0 0 auto}
+.opt h3 i.pick{color:var(--ink);border-color:var(--strong)}
+.appicon.big{width:38px;height:38px;border-radius:9px}
+.spacer{flex:1}
+.rec{display:flex;align-items:center;gap:14px;height:24px}
+.rec .dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.rec .timer{font:13px var(--mono);color:var(--ink2)}
+.meter{display:flex;gap:3px}
+.meter i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18)}
+.meter i.on{background:var(--green)}
+.left{position:absolute;left:0;bottom:0;height:2px;background:var(--ink2)}
+.cursor{position:absolute;width:14px;height:20px;z-index:6;pointer-events:none;transition:left .5s ease,top .5s ease}
+
+/* 03: the whole screen, scaled */
+.screen{position:relative;aspect-ratio:16/10;border-radius:8px;border:1px solid var(--border);overflow:hidden;background:#1e2024}
+.menubar{position:absolute;left:0;right:0;top:0;height:16px;background:rgba(255,255,255,.07);display:flex;align-items:center;gap:8px;padding:0 10px}
+.menubar i{height:5px;width:22px;border-radius:2px;background:rgba(255,255,255,.25)}
+.browser{position:absolute;left:5%;right:5%;top:24px;bottom:44px;border-radius:6px;background:#2a2c31;border:1px solid rgba(255,255,255,.08)}
+.browser .tabs{height:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.browser .call{position:absolute;inset:22px 12px 34px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.browser .call i{background:#3a3d43;border-radius:4px}
+.browser .ctrl{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:6px}
+.browser .ctrl i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2)}
+.browser .ctrl i.end{background:#c9473d;width:24px;border-radius:8px}
+.screen .dock{bottom:6px}
+.scaled{position:absolute;transform-origin:0 0}
+.note{font:11px var(--mono);color:var(--dim);margin-top:8px}
+.opt{cursor:pointer;border-radius:12px;padding:10px;margin:-10px;border:1px solid transparent;transition:border-color .15s,background .15s}
+.opt:hover{background:rgba(255,255,255,.025)}
+.opt.picked{border-color:var(--ink2);background:rgba(255,255,255,.04)}
+.opt.picked h3:after{content:"Picked";font:11px var(--mono);color:#111;background:var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px}
+.bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:14px;min-width:420px;padding:10px 12px 10px 18px;border-radius:12px;background:rgba(20,20,22,.94);border:1px solid var(--strong);box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:50;font:14px var(--mono)}
+.bar .lbl{font:13px var(--geist);color:var(--dim)}
+.bar #pk span{margin-right:14px}.bar #pk span.none{color:var(--dim)}
+.bar button{border:1px solid var(--strong);background:var(--fill);color:var(--ink);border-radius:6px;padding:6px 14px;font:13px var(--geist);cursor:pointer}
+.foot{margin-top:46px;color:var(--ink2);font-size:13px;line-height:1.55;max-width:940px;border-top:1px solid var(--border);padding-top:16px}
+</style>
+</head>
+<body><main class="review">
+
+<h1>When a call starts, round 3</h1>
+<p class="lead">Click the option you want under each question. Your picks gather in the bar at the bottom; copy them into the chat and I'll build them. What you have today is marked Today. Question 01 now holds every card from rounds 1 and 2, and 02 and 03 draw whichever card you pick there.</p>
+
+<h2><b>01</b>The card</h2>
+<div class="switch" id="ic"><span>App icon in B and C</span><button data-c="grey" class="on">Grey</button><button data-c="colour">Colour</button></div>
+<section class="grid three" data-q="01">
+ <div class="opt" data-k="A" data-shape-key="w:today"><h3><b>A</b>The app's name on top<i>Today</i></h3><p>Dia small on top, then the question. Dia reads as the one asking.</p><div class="desk" data-shape="w:today" data-run="click"></div></div>
+ <div class="opt" data-k="B" data-shape-key="B"><h3><b>B</b>One line, the app's icon</h3><p>Half the height. The app shown by its own icon; Record and Not now.</p><div class="desk" data-shape="B" data-run="click"></div></div>
+ <div class="opt" data-k="C" data-shape-key="C"><h3><b>C</b>Today's card with the app's icon</h3><p>The same card with the app's own icon on the left.</p><div class="desk" data-shape="C" data-run="click"></div></div>
+ <div class="opt" data-k="D" data-shape-key="D"><h3><b>D</b>Today's card with the key</h3><p>⌃⌥M on the Record button, the key that already starts a recording.</p><div class="desk" data-shape="D" data-run="click"></div></div>
+ <div class="opt" data-k="E" data-shape-key="w:tile"><h3><b>E</b>SigmaFlow's mark, the app in the question<i class="pick">Recommended</i></h3><p>The Σ tile says who is asking; "in Dia" says where the meeting is.</p><div class="desk" data-shape="w:tile" data-run="click"></div></div>
+ <div class="opt" data-k="F" data-shape-key="w:both"><h3><b>F</b>SigmaFlow on top, the app in the question</h3><p>Like today's card, with SigmaFlow where Dia was. All type.</p><div class="desk" data-shape="w:both" data-run="click"></div></div>
+ <div class="opt" data-k="G" data-shape-key="w:name"><h3><b>G</b>SigmaFlow on top, no app</h3><p>The app isn't named; there's almost always one call at a time.</p><div class="desk" data-shape="w:name" data-run="click"></div></div>
+ <div class="opt" data-k="H" data-shape-key="w:tileonly"><h3><b>H</b>SigmaFlow's mark, no app</h3><p>The Σ tile and the plainest question.</p><div class="desk" data-shape="w:tileonly" data-run="click"></div></div>
+ <div class="opt" data-k="I" data-shape-key="w:with"><h3><b>I</b>Said in the sentence</h3><p>"With SigmaFlow" in the question itself. Clear, but longer.</p><div class="desk" data-shape="w:with" data-run="click"></div></div>
+</section>
+
+<h2><b>02</b>If you don't answer</h2>
+<p class="lead">Nobody clicks anything here.</p>
+<section class="grid three" data-q="02">
+ <div class="opt" data-k="A"><h3><b>A</b>It waits until the call ends<i>Today</i></h3><p>The card stays over the call until you answer or the call ends.</p><div class="desk" data-run="stay"></div></div>
+ <div class="opt" data-k="B"><h3><b>B</b>It leaves after 15 seconds</h3><p>A thin line runs out along the bottom, then the card goes, as Not now would. The pointer on the card holds it. Real speed.</p><div class="desk" data-run="leave"></div></div>
+ <div class="opt" data-k="C"><h3><b>C</b>It records after 5 seconds</h3><p>Silence is yes. The line runs out and the recording starts; Not now stops it before then.</p><div class="desk" data-run="auto"></div></div>
+</section>
+
+<h2><b>03</b>Where it appears</h2>
+<p class="lead">The whole screen, small, with a Meet call in Dia.</p>
+<section class="grid three" data-q="03">
+ <div class="opt" data-k="A"><h3><b>A</b>Above the Dock<i>Today</i></h3><p>Where dictation shows. Over the lower part of the call, just above its buttons.</p><div class="screen" data-pos="dock"></div></div>
+ <div class="opt" data-k="B"><h3><b>B</b>Top right, under the menu bar</h3><p>Where the Mac's own notifications appear, away from the faces and the call's buttons.</p><div class="screen" data-pos="right"></div></div>
+ <div class="opt" data-k="C"><h3><b>C</b>Top centre, under the menu bar</h3><p>In the middle, high up, over the browser's tabs rather than the call.</p><div class="screen" data-pos="top"></div></div>
+</section>
+<div style="height:90px"></div>
+</main>
+<div class="bar" id="picks"><span class="lbl">Your picks</span><span id="pk"></span><span class="spacer"></span><button id="copy">Copy</button></div>
+
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const DIA='icons/dia.png';
+let SHAPE='w:today';
+const meter=n=>`<span class="meter">${Array.from({length:10},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>`;
+const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+// One card. state: ask | rec. opts: hover (Record lit), left (0..1 of the line), countdown (seconds), recFor (seconds)
+// 04: whose card it is
+function who(v,state,o){
+ if(state==='rec')return card('A','rec',o);
+ const auto=o.countdown!=null,n=auto?Math.max(1,Math.ceil(o.countdown)):0;
+ const rec=`<span class="btn ${o.hover?'hover':''}" data-rec><img src="${ICON('microphone')}">${auto?'Record now':'Record meeting'}</span>`,no=`<span class="btn quiet">Not now</span>`;
+ const line=o.left!=null?`<div class="left" style="width:${o.left*100}%"></div>`:'';
+ const tile=`<img class="tile" src="icons/appicon.png">`,q=t=>`<span class="q">${t}</span>`,eye=t=>`<span class="eyebrow">${t}</span>`;
+ const ask=(named)=>auto?`Recording ${named?'the meeting in Dia':'this meeting'} in ${n}`:`Record ${named?'the meeting in Dia':'this meeting'}?`;
+ const stacked=(top,question)=>`<div class="card"><div class="stack">${top}${question}</div><div class="btns">${rec}${no}</div>${line}</div>`;
+ const withTile=question=>`<div class="card"><div class="row" style="align-items:flex-start;gap:14px">${tile}<div><div style="min-height:38px;display:flex;align-items:center">${question}</div><div class="btns" style="margin-top:6px">${rec}${no}</div></div></div>${line}</div>`;
+ switch(v){
+  case 'today':return stacked(eye('Dia'),q(ask(false)));
+  case 'tile':return withTile(q(ask(true)));
+  case 'both':return stacked(eye('SigmaFlow'),q(ask(true)));
+  case 'name':return stacked(eye('SigmaFlow'),q(ask(false)));
+  case 'tileonly':return withTile(q(ask(false)));
+  case 'with':return `<div class="card"><div class="q">${auto?`Recording with SigmaFlow in ${n}`:'Record this meeting with SigmaFlow?'}</div><div class="btns">${rec}${no}</div>${line}</div>`;
+ }
+}
+function card(shape,state,o={}){
+ if(shape.startsWith('w:'))return who(shape.slice(2),state,o);
+ if(state==='rec')return `<div class="card"><div class="rec"><span class="row" style="gap:8px"><span class="dot"></span><span class="eyebrow" style="color:var(--ink)">Rec</span></span><span class="timer">${clock(o.recFor||0)}</span>${meter(3+Math.floor(Math.random()*6))}</div></div>`;
+ const auto=o.countdown!=null;
+ const q=auto?`Recording this meeting in ${Math.max(1,Math.ceil(o.countdown))}`:'Record this meeting?';
+ const recLabel=auto?'Record now':(shape==='B'?'Record':'Record meeting');
+ const rec=`<span class="btn ${o.hover?'hover':''}" data-rec><img src="${ICON('microphone')}">${recLabel}${shape==='D'?'<span class="kbd">⌃⌥M</span>':''}</span>`;
+ const no=`<span class="btn quiet">Not now</span>`;
+ const line=o.left!=null?`<div class="left" style="width:${o.left*100}%"></div>`:'';
+ if(shape==='B')return `<div class="card" style="padding:10px 12px 10px 16px"><div class="row" style="gap:10px"><img class="appicon" src="${DIA}"><span class="q" style="${auto?'font-size:14px':''}">${q}</span><span class="spacer"></span>${rec}${no}</div>${line}</div>`;
+ const text=`<div class="stack"><span class="eyebrow">Dia</span><span class="q">${q}</span></div>`;
+ const body=shape==='C'?`<div class="row" style="align-items:flex-start;gap:14px"><img class="appicon big" src="${DIA}"><div>${text}<div class="btns">${rec}${no}</div></div></div>`:`${text}<div class="btns">${rec}${no}</div>`;
+ return `<div class="card">${body}${line}</div>`;
+}
+
+function backdrop(){return `<div class="tiles"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="dock">${'<i></i>'.repeat(9)}</div>`}
+const CURSOR=`<svg class="cursor" viewBox="0 0 14 20"><path d="M1 1v15l4-4 3 7 2-1-3-7h6z" fill="#fff" stroke="#000" stroke-width="1"/></svg>`;
+
+function play(el,t){
+ const run=el.dataset.run, shape=el.dataset.shape||SHAPE;
+ let html='',op=1,state='ask',o={},cur=null,cap='';
+ if(run==='click'){ // 10 s: in, ask, hover, click, rec 3 s, out
+  const T=t%10;
+  if(T<0.4)op=T/0.4;
+  if(T>=3.2&&T<4)o.hover=true,cur='rec';
+  else if(T<3.2)cur='far';
+  if(T>=4){state='rec';o.recFor=T-4}
+  if(T>=7)op=Math.max(0,1-(T-7)/0.4);
+  cap=T>=4&&T<7?'clicked Record':'';
+ }else if(run==='stay'){
+  const T=t%12; if(T<0.4)op=T/0.4; cap=`call ${clock(8+T)}`;
+ }else if(run==='leave'){
+  const T=t%19; if(T<0.4)op=T/0.4; o.left=Math.max(0,1-(T-0.4)/15);
+  if(T>15.4)op=Math.max(0,1-(T-15.4)/0.4); cap=T<15.4?`${Math.ceil(15.4-T)} s left`:'gone, as Not now';
+ }else if(run==='auto'){
+  const T=t%11; if(T<0.4)op=T/0.4;
+  if(T<5.4){o.left=Math.max(0,1-(T-0.4)/5);o.countdown=5.4-T}
+  else{state='rec';o.recFor=T-5.4}
+  if(T>8.4)op=Math.max(0,1-(T-8.4)/0.4); cap=T>=5.4&&T<8.4?'recording started by itself':'';
+ }
+ el.innerHTML=`${backdrop()}${cap?`<span class="cap">${cap}</span>`:''}<div class="slot" style="opacity:${op}">${card(shape,state,o)}</div>${cur?CURSOR:''}`;
+ if(cur){const c=el.querySelector('.cursor'),r=el.querySelector('[data-rec]');if(r){const d=el.getBoundingClientRect(),b=r.getBoundingClientRect();
+  const x=b.left-d.left+b.width*0.55,y=b.top-d.top+b.height*0.55;c.style.left=(cur==='far'?x+120:x)+'px';c.style.top=(cur==='far'?y+40:y)+'px'}}
+}
+
+function screen(el){
+ const pos=el.dataset.pos;
+ el.innerHTML=`<div class="menubar"><i></i><i></i><i></i><span style="flex:1"></span><i style="width:30px"></i></div>
+ <div class="browser"><div class="tabs"></div><div class="call"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="ctrl"><i></i><i></i><i></i><i class="end"></i></div></div>
+ <div class="dock">${'<i></i>'.repeat(9)}</div><div class="scaled">${card(SHAPE,'ask')}</div>`;
+ // A 1440 x 900 point screen drawn at this width.
+ const W=el.clientWidth,k=W/1440,c=el.querySelector('.scaled'),cw=440*k,ch=c.firstElementChild.offsetHeight*k;
+ c.style.transform=`scale(${k})`;
+ const menu=16,dockTop=el.clientHeight-44; // the visible frame, in drawn pixels
+ let x,y;
+ if(pos==='dock'){x=(W-cw)/2;y=dockTop-96*k-ch}
+ else if(pos==='right'){x=W-cw-16*k-6;y=menu+12*k+4}
+ else{x=(W-cw)/2;y=menu+12*k+4}
+ c.style.left=x+'px';c.style.top=y+'px';
+}
+
+document.getElementById('ic').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;document.body.classList.toggle('colour',b.dataset.c==='colour');document.querySelectorAll('#ic [data-c]').forEach(x=>x.classList.toggle('on',x===b))});
+// Picking: one option per question; 01's pick draws the cards in 02 and 03.
+const PICKS={};
+try{Object.assign(PICKS,JSON.parse(localStorage.getItem('callCardPicks')||'{}'))}catch(e){}
+function showPicks(){
+ document.querySelectorAll('[data-q]').forEach(sec=>sec.querySelectorAll('.opt').forEach(o=>o.classList.toggle('picked',PICKS[sec.dataset.q]===o.dataset.k)));
+ document.getElementById('pk').innerHTML=['01','02','03'].map(q=>PICKS[q]?`<span>${q} ${PICKS[q]}</span>`:`<span class="none">${q} not yet</span>`).join('');
+ const o1=document.querySelector(`[data-q="01"] .opt[data-k="${PICKS['01']||'A'}"]`);SHAPE=o1?o1.dataset.shapeKey:'w:today';
+ document.querySelectorAll('.screen').forEach(screen);
+ try{localStorage.setItem('callCardPicks',JSON.stringify(PICKS))}catch(e){}
+}
+document.querySelectorAll('[data-q] .opt').forEach(o=>o.addEventListener('click',()=>{const q=o.closest('[data-q]').dataset.q;PICKS[q]=PICKS[q]===o.dataset.k?undefined:o.dataset.k;showPicks()}));
+document.getElementById('copy').addEventListener('click',async e=>{const t=['01','02','03'].filter(q=>PICKS[q]).map(q=>q+' '+PICKS[q]).join(', ');
+ try{await navigator.clipboard.writeText(t);e.target.textContent='Copied'}catch(_){e.target.textContent=t}setTimeout(()=>e.target.textContent='Copy',1500)});
+const t0=performance.now();
+function tick(){const t=(performance.now()-t0)/1000;document.querySelectorAll('.desk').forEach(d=>play(d,t))}
+setInterval(tick,100);tick();
+showPicks();
+addEventListener('resize',()=>document.querySelectorAll('.screen').forEach(screen));
+</script>
+</body></html>
