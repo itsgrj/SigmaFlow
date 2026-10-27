@@ -55,11 +55,7 @@ struct OnboardingView: View {
 
     private var welcome: some View {
         VStack(spacing: 0) {
-            // The icon carries its own rounded edge at this size; no tile around it.
-            Image(nsImage: NSApplication.shared.applicationIconImage)
-                .resizable()
-                .frame(width: DS.Material.welcomeIcon, height: DS.Material.welcomeIcon)
-                .accessibilityHidden(true)
+            AppIconTile(size: DS.Material.welcomeIcon)
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text("Sigma").font(DS.Font.welcomeWordmark)
                 Text("flow").font(DS.Font.welcomeWordmarkAccent)

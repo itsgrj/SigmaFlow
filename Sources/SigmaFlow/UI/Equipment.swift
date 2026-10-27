@@ -289,14 +289,22 @@ struct Readout: View {
 
 /// The app's own icon, as a rounded tile with a thin edge (Gokul, 16 Oct 2026,
 /// docs/mockups/notes-home.html 05 A): on black its black square would otherwise vanish.
-/// Beside the wordmark, and on the card that asks to record a call.
+/// Beside the wordmark, on the card that asks to record a call, and on the first open.
+///
+/// Drawn from AppIcon.icns itself, rounded the way the Dock rounds it (Gokul, 27 Oct 2026).
+/// `applicationIconImage` is macOS 26's rendering: the square icon shrunk inside its own
+/// rounded plate, so a tile around it showed a small sigma inside two edges.
 struct AppIconTile: View {
     var size: CGFloat = DS.Material.logoSize
-    var radius: CGFloat = DS.Radius.logo
+
+    private static let artwork: NSImage = Bundle.main.image(forResource: "AppIcon")
+        ?? NSApplication.shared.applicationIconImage
 
     var body: some View {
-        Image(nsImage: NSApplication.shared.applicationIconImage)
+        let radius = size * DS.Radius.appIconCorner
+        Image(nsImage: Self.artwork)
             .resizable()
+            .interpolation(.high)
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
             .overlay(

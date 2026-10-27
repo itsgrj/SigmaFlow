@@ -659,9 +659,9 @@ enum DS {
         static let card: CGFloat = 8
         static let window: CGFloat = 11
         static let hud: CGFloat = 12
-        /// The app icon beside the wordmark.
-        static let logo: CGFloat = 7
-        static let callPromptIcon: CGFloat = 9
+        /// The app icon's corners as a share of its width, the Dock's proportion (185 of 824
+        /// on Apple's icon grid), so the icon looks the same at every size it is drawn.
+        static let appIconCorner: CGFloat = 0.225
         /// The frame of the first open's drawn keyboard.
         static let keyboard: CGFloat = 10
 

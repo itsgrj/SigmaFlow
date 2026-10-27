@@ -148,7 +148,7 @@ struct CallPromptView: View {
             switch model.stage {
             case .asking:
                 HStack(alignment: .top, spacing: DS.Space.roomy - DS.Space.hair) {
-                    AppIconTile(size: DS.Material.callPromptIcon, radius: DS.Radius.callPromptIcon)
+                    AppIconTile(size: DS.Material.callPromptIcon)
                     VStack(alignment: .leading, spacing: DS.Space.snug - DS.Space.hair) {
                         // As tall as the icon, so the question sits level with its middle.
                         Text("Record this meeting?")
