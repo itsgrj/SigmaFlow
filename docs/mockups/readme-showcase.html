@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>README Showcase, round 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Pixel';src:url('../../Resources/Fonts/GeistPixel-Square.ttf')}
+@font-face{font-family:'Geist';src:url('../../Resources/Fonts/Geist-Regular.otf')}
+@font-face{font-family:'Geist';font-weight:500;src:url('../../Resources/Fonts/Geist-Medium.otf')}
+:root{
+  --c-bg:#161616; --c-layer:#262626; --c-border:#393939;
+  --c-text:#f4f4f4; --c-text2:#c6c6c6; --c-text3:#8d8d8d; --c-focus:#ffffff;
+  --gh-bg:#0d1117; --gh-bg2:#151b23; --gh-border:#30363d; --gh-text:#e6edf3;
+  --gh-muted:#9198a1; --gh-link:#4493f8; --gh-accent:#f78166;
+  --ink:#ededed; --ink2:#a1a1a1; --dim:#8f8f8f; --faint:#3a3a3a; --meter:#30d158;
+  --sp-2:4px; --sp-3:8px; --sp-4:12px; --sp-5:16px; --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:48px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.shell{max-width:1280px;padding:var(--sp-7) var(--sp-5) var(--sp-9)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.32px;color:var(--c-text3);text-transform:uppercase}
+h1.title{font-size:32px;font-weight:400;margin:var(--sp-3) 0 var(--sp-4)}
+.lede{color:var(--c-text2);max-width:820px;margin:0 0 var(--sp-5)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px;margin:0 0 var(--sp-6);max-width:900px}
+.facts div{outline:1px solid var(--c-border);padding:var(--sp-4) var(--sp-5)}
+.facts b{display:block;font-weight:600;margin-bottom:2px}
+.facts span{color:var(--c-text3);font-size:13px}
+.picks{font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--c-layer);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-6);border-left:2px solid var(--c-focus)}
+.picks b{font-weight:500}
+.qs{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1px;margin-bottom:var(--sp-7)}
+.q{background:var(--c-bg);padding:var(--sp-5);outline:1px solid var(--c-border)}
+.q h3{margin:0 0 var(--sp-2);font-size:14px;font-weight:600}
+.q h3 span{font-family:'IBM Plex Mono',monospace;color:var(--c-text3);font-weight:400;margin-right:var(--sp-3)}
+.q p.why{margin:0 0 var(--sp-4);color:var(--c-text3);font-size:13px}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--c-border);width:fit-content}
+.seg button{background:transparent;color:var(--c-text2);border:0;border-right:1px solid var(--c-border);padding:var(--sp-3) var(--sp-4);font:inherit;font-size:13px;cursor:pointer;text-align:left}
+.seg button:last-child{border-right:0}
+.seg button b{font-family:'IBM Plex Mono',monospace;font-weight:500;margin-right:6px;color:var(--c-text)}
+.seg button[aria-pressed=true]{background:var(--c-text);color:var(--c-bg)}
+.seg button[aria-pressed=true] b{color:var(--c-bg)}
+.seg button:focus-visible{outline:2px solid var(--c-focus);outline-offset:-2px}
+.note{margin-top:var(--sp-4);font-size:13px;color:var(--c-text2);background:var(--c-layer);padding:var(--sp-3) var(--sp-4)}
+.framebar{display:flex;align-items:center;gap:var(--sp-4);margin-bottom:var(--sp-3)}
+.framebar .eyebrow{flex:1}
+
+/* GitHub frame */
+.gh{background:var(--gh-bg);color:var(--gh-text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif;border:1px solid var(--c-border);font-size:16px;padding:var(--sp-6);max-width:1012px}
+.gh.light{--gh-bg:#ffffff;--gh-bg2:#f6f8fa;--gh-border:#d1d9e0;--gh-text:#1f2328;--gh-muted:#59636e;--gh-link:#0969da}
+.gh a{color:var(--gh-link);text-decoration:none}
+.readme{border:1px solid var(--gh-border);border-radius:6px}
+.rtabs{display:flex;gap:var(--sp-2);border-bottom:1px solid var(--gh-border);padding:0 var(--sp-4)}
+.rtabs span{color:var(--gh-text);font-weight:600;font-size:14px;padding:12px 8px;border-bottom:2px solid var(--gh-accent)}
+.md{padding:var(--sp-7) var(--sp-7) var(--sp-8)}
+.md h1{font-size:32px;font-weight:600;margin:12px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--gh-border)}
+.md h2{font-size:24px;font-weight:600;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--gh-border);clear:both}
+.md h3{font-size:20px;font-weight:600;margin:0 0 8px}
+.md p,.md li{line-height:1.6}
+.md ol,.md ul{padding-left:2em}
+.md code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:85%;background:rgba(101,108,118,.2);padding:.2em .4em;border-radius:6px}
+.md table{border-collapse:collapse;margin:16px 0;width:100%;table-layout:fixed}
+.md td{border:1px solid var(--gh-border);padding:6px 13px;vertical-align:top}
+.md .center{text-align:center}
+.md .center p{margin:8px 0}
+.badges{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.badge{display:inline-flex;font:11px Verdana,sans-serif;line-height:20px;border-radius:3px;overflow:hidden}
+.badge i{font-style:normal;background:#555;color:#fff;padding:0 6px}
+.badge u{text-decoration:none;color:#fff;padding:0 6px}
+.dl{display:inline-block;background:#007ec6;color:#fff;font:600 12px Verdana,sans-serif;letter-spacing:1px;padding:12px 18px;border-radius:3px;text-transform:uppercase}
+.banner{width:100%;display:block}
+.rest{color:var(--gh-muted);font-size:14px;border-top:1px dashed var(--gh-border);padding-top:var(--sp-5);margin-top:var(--sp-7)}
+
+/* zig-zag: GitHub honours align on img, so the picture floats */
+.zz{overflow:hidden;margin:0 0 28px}
+.zz .pic{width:60%}
+.zz.r .pic{float:right;margin:0 0 8px 24px}
+.zz.l .pic{float:left;margin:0 24px 8px 0}
+.zz .words{padding-top:24px}
+.grid td{width:50%}
+.grid td .pic{margin:6px 0 10px}
+.grid td b{display:block}
+details{border-top:1px solid var(--gh-border);padding:10px 0}
+details:last-of-type{border-bottom:1px solid var(--gh-border)}
+summary{cursor:pointer}
+details .pic{margin:12px 0 4px}
+
+/* the moving pictures */
+.pic{position:relative;width:100%;aspect-ratio:960/600;overflow:hidden;border-radius:6px;background:#000}
+.pic.reel{aspect-ratio:960/660}
+.inner{position:absolute;left:0;top:0;width:960px;height:600px;transform-origin:0 0;overflow:hidden;transition:opacity .3s;font-family:'Geist',system-ui,sans-serif;color:#e8e8e8}
+.reel .inner{height:660px}
+.inner.out{opacity:0}
+.tag{position:absolute;right:8px;top:8px;z-index:9;font:11px 'IBM Plex Mono',monospace;background:#fff;color:#000;padding:1px 6px}
+.bd-A,.bd-C{background:url('../../Resources/background-colour.jpg') center/cover}
+.bd-B{background:#000}
+.menubar{position:absolute;left:0;right:0;top:0;height:24px;background:rgba(0,0,0,.45);backdrop-filter:blur(20px);display:flex;align-items:center;gap:18px;padding:0 14px;font-size:13px;color:#eee}
+.menubar b{font-weight:500}
+.menubar .sp{flex:1}
+.dock{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);height:52px;padding:6px 8px;background:rgba(40,40,40,.45);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:16px;display:flex;gap:8px}
+.dock i{width:40px;height:40px;border-radius:10px;background:#5a5a5a}
+.dock i:nth-child(2){background:#8a8a8a}.dock i:nth-child(4){background:#3c3c3c}.dock i:nth-child(6){background:#111;outline:1px solid #555}
+
+.win{position:absolute;background:#1d1d1f;border:1px solid #3a3a3c;border-radius:10px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.55);font-size:21px}
+.win .tb{height:40px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #2c2c2e;color:#bbb;font-size:16px}
+.win .tb i{width:12px;height:12px;border-radius:50%;background:#4a4a4c}
+.win .tb span{flex:1;text-align:center;margin-right:52px}
+.wb{padding:0}
+.fld{padding:9px 18px;border-bottom:1px solid #2c2c2e;color:#ddd}
+.fld span{color:#888;display:inline-block;width:96px}
+.mbody{padding:16px 18px;line-height:1.55;white-space:pre-wrap;min-height:120px}
+.caret{display:inline-block;width:2px;height:24px;background:#e8e8e8;vertical-align:-3px;margin-left:1px}
+.sel{background:#3a5ccc;color:#fff}
+.hit{border-bottom:2px solid #ededed}
+
+.key{position:absolute;left:24px;bottom:24px;font:16px 'Pixel',monospace;letter-spacing:.7px;text-transform:uppercase;color:#a1a1a1;border:1px solid #555;background:rgba(0,0,0,.6);padding:8px 12px;transition:all .12s}
+.bd-C .key{bottom:72px}
+.key.on{background:#ededed;color:#000;border-color:#ededed;transform:translateY(2px)}
+
+.hud{position:absolute;left:50%;bottom:28px;width:560px;transform:translateX(-50%) translateY(12px);opacity:0;transition:opacity .2s,transform .2s;padding:14px 18px;background:rgba(16,16,16,.62);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 32px rgba(0,0,0,.55);font-family:'Pixel',monospace}
+.bd-C .hud{bottom:76px}
+.hud.show{opacity:1;transform:translateX(-50%)}
+.hrow{display:flex;align-items:center;gap:10px;height:18px}
+.eb{font:15px 'Pixel',monospace;letter-spacing:.72px;text-transform:uppercase;color:var(--ink)}
+.ro{font:16px 'Pixel',monospace;color:var(--ink2);margin-left:10px}
+.vu{display:flex;gap:3px;margin-left:10px}
+.vu i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.vu i.lit{background:var(--meter)}
+.g{width:11px;height:11px;flex:none}
+.g.dot{border-radius:50%;background:var(--ink)}
+.g.busy{border-radius:50%;border:1.5px solid var(--ink)}
+.g.pen,.g.done{background:none}
+.hwords{margin-top:12px;font:20px/1.4 'Pixel',monospace;color:var(--ink);display:flex;gap:10px}
+.hwords:empty{display:none}
+.hwords .t{flex:1}
+.w{animation:wf .34s ease-out both}
+@keyframes wf{from{opacity:0;filter:blur(5px)}to{opacity:1;filter:none}}
+.ask{color:var(--dim);display:block;margin-bottom:6px}
+.thumb{width:92px;height:58px;flex:none;border:1px solid #444;background:#1d1d1f;padding:5px}
+.thumb i{display:block;height:3px;background:#555;margin-bottom:4px}
+.thumb i:nth-child(2){width:70%}.thumb i:nth-child(4){width:50%;background:#888}
+.spot{position:absolute;border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.6);opacity:0;transition:opacity .35s;pointer-events:none}
+.spot.on{opacity:1}
+
+.card{position:absolute;left:50%;bottom:28px;width:560px;transform:translateX(-50%);padding:14px 18px;background:rgba(16,16,16,.62);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 32px rgba(0,0,0,.55);font-family:'Pixel',monospace;opacity:0;transition:opacity .2s}
+.bd-C .card{bottom:76px}
+.card.show{opacity:1}
+.card .rule{font:21px 'Pixel',monospace;margin:10px 0 12px;color:var(--ink)}
+.card .rule s{color:var(--dim);text-decoration:none}
+.card .btn{float:right;margin-top:-4px;font:15px 'Pixel',monospace;border:1px solid #555;padding:3px 10px;color:var(--ink)}
+.bar{height:2px;background:#333}.bar i{display:block;height:100%;background:var(--ink);width:100%}
+
+.msg{display:flex;gap:12px;padding:16px 18px}
+.av{width:44px;height:44px;border-radius:6px;background:#5a5a5a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:500;flex:none}
+.who{font-weight:500;margin-bottom:2px}.who span{color:#888;font-weight:400;font-size:15px;margin-left:6px}
+.reply{position:absolute;left:18px;right:18px;bottom:16px;border:1px solid #48484a;border-radius:8px;padding:12px 14px;min-height:52px;line-height:1.5}
+.reply .ph{color:#777}
+
+.pane{position:absolute;background:rgba(10,10,10,.72);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.12);font-family:'Pixel',monospace;color:var(--ink)}
+.pane .h{font-size:28px;padding:22px 26px 6px}
+.pane .meta{font-size:16px;color:var(--ink2);padding:0 26px 14px;display:flex;gap:18px}
+.prog{margin:0 26px 10px;height:2px;background:#333}.prog i{display:block;height:100%;width:0;background:var(--ink);transition:width 1.4s linear}
+.trow{display:grid;grid-template-columns:100px 1fr;gap:6px;padding:10px 26px;font-size:19px;line-height:1.45;border-top:1px solid rgba(255,255,255,.07);animation:wf .4s ease-out both}
+.trow .tm{color:var(--ink2);font-size:16px;padding-top:2px}
+.trow .tm img{display:block;width:64px;height:42px;object-fit:cover;margin-top:6px}
+.trow b{font-weight:400;color:var(--ink2)}
+.trow.fill{background:rgba(255,255,255,.12)}
+.sbox{margin:4px 26px 14px;border:1px solid #555;padding:10px 14px;font-size:20px;display:flex;gap:10px;align-items:center}
+.sbox .mg{width:11px;height:11px;border:1.5px solid var(--ink2);border-radius:50%}
+.res{padding:10px 26px;border-top:1px solid rgba(255,255,255,.07);animation:wf .4s ease-out both}
+.res .rt{font-size:19px;margin-bottom:8px}
+.mom{display:flex;gap:14px;align-items:center;margin:6px 0 6px 12px;font-size:17px;color:var(--ink2)}
+.mom img{width:110px;height:70px;object-fit:cover;border:1px solid #444}
+.mom em{font-style:normal;color:var(--ink)}
+.notes{right:24px;top:40px;width:500px;padding:14px 18px 6px}
+.bd-B .notes{top:24px}
+.notes .hrow .sp{flex:1}
+.notes .nb{width:26px;height:26px;border:1px solid #555;display:flex;align-items:center;justify-content:center}
+.notes .nb i{width:11px;height:8px;border:1.5px solid var(--ink);border-radius:2px}
+.nline{display:grid;grid-template-columns:76px 1fr;gap:6px;font-size:19px;line-height:1.45;padding:9px 0;border-top:1px solid rgba(255,255,255,.07)}
+.nline .tm{color:var(--ink2);font-size:16px;padding-top:2px}
+.nline .tm img{display:block;width:66px;height:44px;object-fit:cover;margin-top:6px;animation:wf .4s ease-out both}
+.big{font-size:38px;line-height:1.25;padding:28px 30px 8px}
+.sum{font-size:19px;color:var(--ink2);padding:0 30px 18px}
+.sum b{font-weight:400;color:var(--ink)}
+.sq{display:grid;grid-template-columns:repeat(52,11px);grid-auto-rows:11px;grid-auto-flow:column;grid-template-rows:repeat(7,11px);gap:3px;padding:6px 30px 26px}
+.sq i{background:#1f1f1f;transition:background .25s}
+.sq i.l1{background:#0e4429}.sq i.l2{background:#006d32}.sq i.l3{background:#26a641}.sq i.l4{background:#39d353}
+.strip{position:absolute;left:0;right:0;bottom:0;height:60px;background:#000;display:flex;align-items:center;gap:26px;padding:0 26px;font:13px 'Pixel',monospace;letter-spacing:.7px;text-transform:uppercase;color:#5c5c5c;border-top:1px solid #222}
+.strip span{position:relative;padding:6px 0;white-space:nowrap}
+.strip span.on{color:var(--ink)}
+.strip span.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--ink)}
+.strip .n{margin-left:auto;color:var(--ink2)}
+h2+p.lead{color:var(--gh-muted);margin-top:-6px}
+.md .headline{font-size:22px;font-weight:600;margin:6px 0 4px}
+.md .sub{color:var(--gh-muted);margin:0 0 12px}
+.md th{border:1px solid var(--gh-border);padding:6px 13px;text-align:left;background:var(--gh-bg2)}
+.md table.three td{width:33%;text-align:center}
+.md table.ba td:first-child{color:var(--gh-muted);font-style:italic}
+.smallh{font-weight:600;margin:4px 0 0}
+.closer{margin-top:40px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px;height:340px}
+.tiles i{background:#2a2a2c;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:30px;color:#888}
+.ask-card{position:absolute;left:50%;bottom:28px;width:560px;transform:translateX(-50%);padding:14px 18px 16px;background:rgba(16,16,16,.62);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.14);font-family:'Pixel',monospace;opacity:0;transition:opacity .2s}
+.bd-C .ask-card{bottom:76px}
+.ask-card.show{opacity:1}
+.ask-card .rule{font-size:21px;margin:8px 0 14px;color:var(--ink)}
+.ask-card span{display:inline-block;font-size:15px;padding:6px 14px;border:1px solid #555;margin-right:8px;color:var(--ink)}
+.ask-card .b1{background:var(--ink);color:#000}
+.ask-card .b1.press{background:#bbb}
+.crumbs{padding:10px 16px;color:#999;font-size:16px;border-bottom:1px solid #2c2c2e}
+.frow{display:flex;gap:10px;align-items:center;padding:7px 16px;font-size:17px;animation:wf .3s ease-out both}
+.frow i{width:16px;height:13px;background:#6aa0e0;border-radius:2px;flex:none}
+.frow.m4a i{background:#999;border-radius:50%;width:13px}.frow.md i{background:#ddd;width:12px;height:15px}
+.frow.fsel{background:#3a5ccc}
+.peek{position:absolute;right:30px;bottom:40px;width:470px;background:#f5f5f5;color:#222;font:14px/1.5 ui-monospace,Menlo,monospace;padding:16px 18px;border-radius:8px;box-shadow:0 20px 50px rgba(0,0,0,.6);opacity:0;transform:translateY(10px);transition:all .3s}
+.peek.show{opacity:1;transform:none}
+.peek .pk{font-weight:600}
+.chat{padding:24px 30px;font-size:19px;line-height:1.5}
+.you{margin-left:auto;width:fit-content;max-width:70%;background:#2f2f31;padding:10px 16px;border-radius:14px;margin-bottom:20px}
+.tool{font-size:15px;color:#999;border:1px solid #3a3a3c;border-radius:8px;padding:6px 12px;width:fit-content;opacity:0;transition:opacity .3s;margin-bottom:16px}
+.tool.show{opacity:1}
+.ic{width:20px;height:20px;fill:currentColor;flex:none;vertical-align:-4px;margin-right:8px}
+.icl p{display:flex;gap:4px;align-items:flex-start;margin:8px 0}
+.icl .ic{margin-top:3px}
+.md table.three td .ic{display:block;margin:4px auto 6px;width:24px;height:24px}
+.md table.models td:first-child{width:52%}
+.md table.models td:last-child{color:var(--gh-muted)}
+.md pre{background:var(--gh-bg2);padding:16px;border-radius:6px;overflow:auto;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+.md pre code{background:none;padding:0;font-size:inherit}
+.md pre .c,.md pre .h{color:var(--gh-link)}
+.ide{display:grid;grid-template-columns:1fr 340px;height:336px}
+.ide .code{padding:18px;font:16px/1.7 ui-monospace,Menlo,monospace;color:#9a9a9a;border-right:1px solid #2c2c2e}
+.agent{position:relative;padding:14px}
+.ah{font-size:15px;color:#999;margin-bottom:10px}
+.abox{position:absolute;left:14px;right:14px;bottom:14px;border:1px solid #48484a;border-radius:8px;padding:12px;min-height:110px;line-height:1.5;font-size:19px}
+.pic.real img{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="eyebrow">README, round 5</div>
+  <h1 class="title">Every SigmaFlow picture, drawn by SigmaFlow itself</h1>
+  <p class="lede">All eleven pictures are now drawn by SigmaFlow itself: its real overlay, cards and pages, played with made-up words and a made-up SigmaFlow folder of meetings, conversations and dictations. Your own recordings were never read. The desktop, the other apps’ windows and the key in the corner are stand-ins. Finder and Claude Desktop are stand-ins too; the meeting file open in Finder’s picture is the real file SigmaFlow wrote.</p>
+  <div class="picks">Round 2 picks <b>01 B&nbsp;&nbsp;02 your line&nbsp;&nbsp;03 A&nbsp;&nbsp;04 A</b></div>
+  <div class="framebar">
+    <div class="eyebrow">github.com/itsgrj/SigmaFlow, the README</div>
+    <div class="seg" id="theme"><button aria-pressed="true" data-t="dark">GitHub dark</button><button aria-pressed="false" data-t="light">GitHub light</button></div>
+  </div>
+  <div class="gh" id="gh"><div class="readme"><div class="rtabs"><span>README</span></div><div class="md" id="md"></div></div></div>
+</div>
+
+<script>
+const ICONS = {"apps": "<path d=\"M8,4V8H4V4Zm2-2H2v8h8Zm8,2V8H14V4Zm2-2H12v8h8Zm8,2V8H24V4Zm2-2H22v8h8ZM8,14v4H4V14Zm2-2H2v8h8Zm8,2v4H14V14Zm2-2H12v8h8Zm8,2v4H24V14Zm2-2H22v8h8ZM8,24v4H4V24Zm2-2H2v8h8Zm8,2v4H14V24Zm2-2H12v8h8Zm8,2v4H24V24Zm2-2H22v8h8Z\"/>", "chart--line": "<path d=\"M4.67,28l6.39-12,7.3,6.49a2,2,0,0,0,1.7.47,2,2,0,0,0,1.42-1.07L27,10.9,25.18,10,19.69,21l-7.3-6.49A2,2,0,0,0,10.71,14a2,2,0,0,0-1.42,1L4,25V2H2V28a2,2,0,0,0,2,2H30V28Z\"/>", "chat": "<path d=\"M17.74,30,16,29l4-7h6a2,2,0,0,0,2-2V8a2,2,0,0,0-2-2H6A2,2,0,0,0,4,8V20a2,2,0,0,0,2,2h9v2H6a4,4,0,0,1-4-4V8A4,4,0,0,1,6,4H26a4,4,0,0,1,4,4V20a4,4,0,0,1-4,4H21.16Z\"/><path d=\"M8 10H24V12H8zM8 16H18V18H8z\"/>", "cloud--offline": "<path d=\"M24.8008 12.1362a8.8694 8.8694 0 00-.9795-2.5434L30 3.4142 28.5872 2 2 28.5872 3.4142 30l5-5H23.5a6.4974 6.4974 0 001.3008-12.8638zM23.5 23H10.4141L22.3418 11.0723a6.9049 6.9049 0 01.6006 2.0708l.0986.812.8154.0639A4.4975 4.4975 0 0123.5 23zM4.2964 23.4487l1.4313-1.4311A4.4774 4.4774 0 018.144 14.019l.8155-.0639.0991-.812a6.9867 6.9867 0 0110.63-5.0865l1.4431-1.4428A8.9859 8.9859 0 007.2 12.1362 6.4891 6.4891 0 004.2964 23.4487z\"/>", "data--structured": "<circle cx=\"9\" cy=\"7\" r=\"1\"/><path d=\"M27,22.14V18a2,2,0,0,0-2-2H17V12h9a2,2,0,0,0,2-2V4a2,2,0,0,0-2-2H6A2,2,0,0,0,4,4v6a2,2,0,0,0,2,2h9v4H7a2,2,0,0,0-2,2v4.14a4,4,0,1,0,2,0V18h8v4H12v8h8V22H17V18h8v4.14a4,4,0,1,0,2,0ZM8,26a2,2,0,1,1-2-2A2,2,0,0,1,8,26Zm10-2v4H14V24ZM6,10V4H26v6ZM26,28a2,2,0,1,1,2-2A2,2,0,0,1,26,28Z\"/>", "document": "<path d=\"M25.7,9.3l-7-7C18.5,2.1,18.3,2,18,2H8C6.9,2,6,2.9,6,4v24c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V10C26,9.7,25.9,9.5,25.7,9.3\tz M18,4.4l5.6,5.6H18V4.4z M24,28H8V4h8v6c0,1.1,0.9,2,2,2h6V28z\"/><path d=\"M10 22H22V24H10zM10 16H22V18H10z\"/>", "edit": "<path d=\"M2 26H30V28H2zM25.4 9c.8-.8.8-2 0-2.8 0 0 0 0 0 0l-3.6-3.6c-.8-.8-2-.8-2.8 0 0 0 0 0 0 0l-15 15V24h6.4L25.4 9zM20.4 4L24 7.6l-3 3L17.4 7 20.4 4zM6 22v-3.6l10-10 3.6 3.6-10 10H6z\"/>", "folder": "<path d=\"M11.17,6l3.42,3.41.58.59H28V26H4V6h7.17m0-2H4A2,2,0,0,0,2,6V26a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2H16L12.59,4.59A2,2,0,0,0,11.17,4Z\"/>", "gift": "<path d=\"M26,10H23.2383A4.4867,4.4867,0,0,0,16,4.7065,4.4873,4.4873,0,0,0,8.7617,10H6a2.0025,2.0025,0,0,0-2,2v4a2.0025,2.0025,0,0,0,2,2V28a2.0025,2.0025,0,0,0,2,2H24a2.0025,2.0025,0,0,0,2-2V18a2.0025,2.0025,0,0,0,2-2V12A2.0025,2.0025,0,0,0,26,10ZM17,7.5A2.5,2.5,0,1,1,19.5,10H17ZM12.5,5A2.503,2.503,0,0,1,15,7.5V10H12.5a2.5,2.5,0,0,1,0-5ZM6,12h9v4H6Zm2,6h7V28H8ZM24.0012,28H17V18h7ZM17,16V12h9l.0012,4Z\"/>", "image": "<path d=\"M19,14a3,3,0,1,0-3-3A3,3,0,0,0,19,14Zm0-4a1,1,0,1,1-1,1A1,1,0,0,1,19,10Z\"/><path d=\"M26,4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4Zm0,22H6V20l5-5,5.59,5.59a2,2,0,0,0,2.82,0L21,19l5,5Zm0-4.83-3.59-3.59a2,2,0,0,0-2.82,0L18,19.17l-5.59-5.59a2,2,0,0,0-2.82,0L6,17.17V6H26Z\"/>", "language": "<path d=\"M18 19H24V21H18zM18 15H30V17H18zM18 11H30V13H18zM14 21V19H9V17H7v2H2v2h8.2148a8.5914 8.5914 0 01-2.2159 3.9771A9.2731 9.2731 0 016.5521 23H4.3334a10.8553 10.8553 0 002.1451 3.2966A14.6584 14.6584 0 013 28.127L3.7021 30a16.42 16.42 0 004.2907-2.3362A16.4883 16.4883 0 0012.2979 30L13 28.127A14.664 14.664 0 019.5228 26.3 10.3132 10.3132 0 0012.2516 21zM11.1666 13H13.333L8.75 2H6.5832L2 13H4.1664L5 11h5.3335zM5.8331 9L7.6665 4.6 9.5 9z\"/>", "laptop": "<path d=\"M26,24H6a2.0023,2.0023,0,0,1-2-2V8A2.002,2.002,0,0,1,6,6H26a2.0023,2.0023,0,0,1,2,2V22A2.0027,2.0027,0,0,1,26,24ZM6,8V22H26V8Z\" transform=\"translate(0 .005)\"/><path d=\"M2 26.005H30V28.005H2z\"/>", "locked": "<path d=\"M24,14H22V8A6,6,0,0,0,10,8v6H8a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V16A2,2,0,0,0,24,14ZM12,8a4,4,0,0,1,8,0v6H12ZM24,28H8V16H24Z\"/>", "magic-wand": "<path d=\"M29.4141,24,12,6.5859a2.0476,2.0476,0,0,0-2.8281,0l-2.586,2.586a2.0021,2.0021,0,0,0,0,2.8281L23.999,29.4141a2.0024,2.0024,0,0,0,2.8281,0l2.587-2.5865a1.9993,1.9993,0,0,0,0-2.8281ZM8,10.5859,10.5859,8l5,5-2.5866,2.5869-5-5ZM25.4131,28l-11-10.999L17,14.4141l11,11Z\"/><path d=\"M2.586 14.586H5.414V17.414H2.586z\" transform=\"rotate(-45 4 16)\"/><path d=\"M14.586 2.586H17.414V5.414H14.586z\" transform=\"rotate(-45 16 4)\"/><path d=\"M2.586 2.586H5.414V5.414H2.586z\" transform=\"rotate(-45 4 4)\"/>", "microphone": "<path d=\"M23,14v3A7,7,0,0,1,9,17V14H7v3a9,9,0,0,0,8,8.94V28H11v2H21V28H17V25.94A9,9,0,0,0,25,17V14Z\"/><path d=\"M16,22a5,5,0,0,0,5-5V7A5,5,0,0,0,11,7V17A5,5,0,0,0,16,22ZM13,7a3,3,0,0,1,6,0V17a3,3,0,0,1-6,0Z\"/>", "notebook": "<path d=\"M19 10H26V12H19zM19 15H26V17H19zM19 20H26V22H19z\"/><path d=\"M28,5H4A2.002,2.002,0,0,0,2,7V25a2.0023,2.0023,0,0,0,2,2H28a2.0027,2.0027,0,0,0,2-2V7A2.0023,2.0023,0,0,0,28,5ZM4,7H15V25H4ZM17,25V7H28l.002,18Z\"/>", "paste": "<path d=\"M26,20H17.83l2.58-2.59L19,16l-5,5,5,5,1.41-1.41L17.83,22H26v8h2V22A2,2,0,0,0,26,20Z\"/><path d=\"M23.71,9.29l-7-7A1,1,0,0,0,16,2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2h8V28H6V4h8v6a2,2,0,0,0,2,2h6v2h2V10A1,1,0,0,0,23.71,9.29ZM16,4.41,21.59,10H16Z\"/>", "play": "<path d=\"M7,28a1,1,0,0,1-1-1V5a1,1,0,0,1,1.4819-.8763l20,11a1,1,0,0,1,0,1.7525l-20,11A1.0005,1.0005,0,0,1,7,28ZM8,6.6909V25.3088L24.9248,16Z\"/>", "recording": "<path d=\"M16,4A12,12,0,1,1,4,16,12,12,0,0,1,16,4m0-2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Z\"/><path d=\"M16,12a4,4,0,1,1-4,4,4,4,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z\"/>", "search": "<path d=\"M29,27.5859l-7.5521-7.5521a11.0177,11.0177,0,1,0-1.4141,1.4141L27.5859,29ZM4,13a9,9,0,1,1,9,9A9.01,9.01,0,0,1,4,13Z\"/>", "send": "<path d=\"M27.45,15.11l-22-11a1,1,0,0,0-1.08.12,1,1,0,0,0-.33,1L7,16,4,26.74A1,1,0,0,0,5,28a1,1,0,0,0,.45-.11l22-11a1,1,0,0,0,0-1.78Zm-20.9,10L8.76,17H18V15H8.76L6.55,6.89,24.76,16Z\"/>", "text--creation": "<path d=\"M27,22.14V9.86A4,4,0,1,0,22.14,5H9.86A4,4,0,1,0,5,9.86V22.14A4,4,0,1,0,9.86,27H22.14A4,4,0,1,0,27,22.14ZM26,4a2,2,0,1,1-2,2A2,2,0,0,1,26,4ZM4,6A2,2,0,1,1,6,8,2,2,0,0,1,4,6ZM6,28a2,2,0,1,1,2-2A2,2,0,0,1,6,28Zm16.14-3H9.86A4,4,0,0,0,7,22.14V9.86A4,4,0,0,0,9.86,7H22.14A4,4,0,0,0,25,9.86V22.14A4,4,0,0,0,22.14,25ZM26,28a2,2,0,1,1,2-2A2,2,0,0,1,26,28Z\"/><path d=\"M21 11L11 11 11 13 15 13 15 22 17 22 17 13 21 13 21 11z\"/>", "time": "<path d=\"M16,30A14,14,0,1,1,30,16,14,14,0,0,1,16,30ZM16,4A12,12,0,1,0,28,16,12,12,0,0,0,16,4Z\"/><path d=\"M20.59 22L15 16.41 15 7 17 7 17 15.58 22 20.59 20.59 22z\"/>", "translate": "<path d=\"M27.85 29H30L24 14H21.65l-6 15H17.8l1.6-4h6.85zM20.2 23l2.62-6.56L25.45 23zM18 7V5H11V2H9V5H2V7H12.74a14.71 14.71 0 01-3.19 6.18A13.5 13.5 0 017.26 9H5.16a16.47 16.47 0 003 5.58A16.84 16.84 0 013 18l.75 1.86A18.47 18.47 0 009.53 16a16.92 16.92 0 005.76 3.84L16 18a14.48 14.48 0 01-5.12-3.37A17.64 17.64 0 0014.8 7z\"/>", "upload": "<path d=\"M6 18L7.41 19.41 15 11.83 15 30 17 30 17 11.83 24.59 19.41 26 18 16 8 6 18zM6 8V4H26V8h2V4a2 2 0 00-2-2H6A2 2 0 004 4V8z\"/>", "user--multiple": "<path d=\"M30 30H28V25a5.0057 5.0057 0 00-5-5V18a7.0078 7.0078 0 017 7zM22 30H20V25a5.0059 5.0059 0 00-5-5H9a5.0059 5.0059 0 00-5 5v5H2V25a7.0082 7.0082 0 017-7h6a7.0082 7.0082 0 017 7zM20 2V4a5 5 0 010 10v2A7 7 0 0020 2zM12 4A5 5 0 117 9a5 5 0 015-5m0-2a7 7 0 107 7A7 7 0 0012 2z\"/>", "user--speaker": "<path d=\"M29.4146,19,27.7,17.2852A2.97,2.97,0,0,0,28,16a3,3,0,1,0-3,3,2.97,2.97,0,0,0,1.2864-.3L28,20.4141V28H22V25a7.0078,7.0078,0,0,0-7-7H9a7.008,7.008,0,0,0-7,7v5H30V20.4141A1.988,1.988,0,0,0,29.4146,19ZM4,25a5.006,5.006,0,0,1,5-5h6a5.0059,5.0059,0,0,1,5,5v3H4Z\"/><path d=\"M12,4A5,5,0,1,1,7,9a5,5,0,0,1,5-5m0-2a7,7,0,1,0,7,7A7,7,0,0,0,12,2Z\"/>", "volume--mute": "<path d=\"M31 12.41L29.59 11 26 14.59 22.41 11 21 12.41 24.59 16 21 19.59 22.41 21 26 17.41 29.59 21 31 19.59 27.41 16 31 12.41zM18 30a1 1 0 01-.71-.3L9.67 22H3a1 1 0 01-1-1H2V11a1 1 0 011-1H9.67l7.62-7.7a1 1 0 011.41 0A1 1 0 0119 3V29A1 1 0 0118 30zM4 20h6a1.17 1.17 0 01.79.3L17 26.57V5.43L10.79 11.7A1.17 1.17 0 0110 12H4z\"/>"};
+
+const ico = n => `<svg class="ic" viewBox="0 0 32 32" aria-hidden="true">${ICONS[n]}</svg>`;
+const P = {2:'A', 3:'C'};
+
+const F = {
+  dictation:{app:'Code', t:'Talk the way you think', fn:sDictation, img:'../readme/dictation.png',
+    d:'Hold Right ⌘ and talk to Cursor, Claude Code, Mail or Slack. Say um, pause, change your mind halfway. Let go, and SigmaFlow writes what you meant where your cursor is. All on your Mac.'},
+  autowrite:{app:'Slack', t:'Replies, written for you', fn:sAutowrite, img:'../readme/autowrite.png',
+    d:'Click in the reply box, hold Right ⌥ and say what you want: “tell Maya 40 seats is the Team plan, SSO included, quote by tomorrow.” SigmaFlow reads the message on your screen and writes the reply. You read it and press send.'},
+  learns:{app:'Notes', t:'Names come out right', fn:sLearns, img:'../readme/learns.png',
+    d:'Fix a name once and SigmaFlow learns it. Vercel stays Vercel, Northwind stays Northwind, every time after. Don’t want it learned? One click says no.'},
+  styles:{app:'Notes', t:'Rewrite anything with one key', fn:sStyles, img:'../readme/styles.png',
+    d:'Select text and press ⌥2. SigmaFlow rewrites it in place, as a launch post, a formal email, or the way you write, learned from examples of your own.'},
+  meetings:{app:'Zoom', t:'No bots in your meetings', fn:sMeetings, img:'../readme/meetings.png',
+    d:'When a call starts in Zoom, Teams, Google Meet or FaceTime, SigmaFlow asks to record it. It hears both sides, even through AirPods. When the call ends, SigmaFlow has written down who said what and given the meeting a title, all on your Mac. A two-hour call takes about two minutes.'},
+  notes:{app:'Keynote', t:'Notes for the meetings in a room', fn:sNotes, img:'../readme/notes.png',
+    d:'Press ⌃⌥N and a small card writes the conversation down as it happens. Photos of the whiteboard and screenshots of your screen land beside the words said at that moment.'},
+  tamil:{app:'SigmaFlow', t:'Tamil and English, as you speak them', fn:sTamil, img:'../readme/tamil.png',
+    d:'Meetings in Tamil, in English, or both at once. SigmaFlow hears which is which, and writes Tamil in Tamil and English in English.'},
+  search:{app:'SigmaFlow', t:'Find it by what was said, or shown', fn:sSearch, img:'../readme/search.png',
+    d:'Search every meeting and conversation by meaning, not just exact words. Photos and screenshots are searched by what is in them: type “whiteboard” and every whiteboard comes up.'},
+  files:{app:'Finder', t:'Saved on your Mac, ready for any AI', fn:sFiles, img:'../readme/files.png',
+    d:'Every meeting, conversation and dictation is saved on your Mac as a Markdown file, beside its audio and photos. Folders go by year and month. Every name starts with the date, the time and the length, then the title. Inside, each file says when it was, how long, who was there and in what language, then every line with its time and its speaker.'},
+  claude:{app:'Claude', t:'Ask Claude about any meeting', fn:sClaude, img:'../readme/claude.png',
+    d:'Add SigmaFlow to Claude Desktop with one click. Then ask “what did Northwind need before they’d sign?” and Claude reads your meetings, notes and dictations to answer.'},
+  insights:{app:'SigmaFlow', t:'See the time you got back', fn:sInsights, img:'../readme/insights.png',
+    d:'SigmaFlow counts the words it wrote for you today, and how long they would have taken to type. No streaks, no goals. Just the number.'},
+};
+const GROUPS = [
+  {h:'Write anywhere', lead:'Hold a key, talk, let go. SigmaFlow writes it where your cursor is.', ks:['dictation','autowrite','learns','styles'], table:true,
+   small:[['locked','Hands free','Tap Right ⌘ twice and keep talking, with nothing held down.'],['paste','Snippets','Say “my calendar link” and SigmaFlow types it.'],['send','Sends it for you','Turn on Power mode, hold Right ⌥ as you let go, and SigmaFlow presses Return too.'],['volume--mute','Quiet while you talk','Music and videos pause while you dictate, and play again after.']]},
+  {h:'Every conversation, written down', lead:'Sales calls, standups and planning sessions, in English and Tamil, written down on your Mac the moment they end.', ks:['meetings','notes','tamil','search'],
+   small:[['upload','Drop a recording','Drag any audio or video file onto Meetings, and SigmaFlow writes it down the same way.'],['play','Play from any line','Click a line in a transcript and hear that moment.'],['user--speaker','Name a speaker once','Click Speaker 2, type a name, and every line of theirs follows.']]},
+];
+
+/* ---------- the README ---------- */
+let epoch = 0;
+function render(){
+  epoch++;
+  const md = document.getElementById('md');
+  let i = 0;
+  const pic = k => F[k].img ? `<div class="pic real"><img src="${F[k].img}" alt=""></div>` : `<div class="pic" data-k="${k}"></div>`;
+  const zz = k => `<div class="zz ${(i++)%2?'l':'r'}">${pic(k)}<div class="words"><h3>${F[k].t}</h3><p>${F[k].d}</p></div></div>`;
+  const smalls = s => `<p class="smallh">And the small things</p><div class="icl">${s.map(([ic,t,d]) => `<p>${ico(ic)}<span><strong>${t}.</strong> ${d}</span></p>`).join('')}</div>`;
+  const groups = GROUPS.map(g => `<h2>${g.h}</h2><p class="lead">${g.lead}</p>` + g.ks.map(zz).join('') +
+    (g.table ? `<table class="ba"><tr><th>What you say</th><th>What SigmaFlow writes</th></tr>
+      <tr><td>um so add rate limiting to the signup endpoint five requests no make it ten a minute</td><td>Add rate limiting to the signup endpoint, 10 requests a minute.</td></tr>
+      <tr><td>let’s send northwind the quote tuesday, actually wednesday</td><td>Let’s send Northwind the quote Wednesday.</td></tr>
+      <tr><td>deploy the preview to ver sell</td><td>Deploy the preview to Vercel.</td></tr>
+      <tr><td>my calendar link</td><td>cal.example.com/you</td></tr></table>` : '') +
+    (g.small ? smalls(g.small) : '')).join('');
+
+  md.innerHTML = `
+  <div class="center">
+    <p><img src="../readme/icon.png" width="128" height="128" alt=""></p>
+    <h1 style="border:0;margin:0">SigmaFlow</h1>
+    <p class="headline">Write at the speed of your thought</p>
+    <p class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source.</p>
+    <div class="badges">
+      <span class="badge"><i>license</i><u style="background:#007ec6">GPL v3</u></span>
+      <span class="badge"><i>platform</i><u style="background:#4c1">macOS 26+</u></span>
+      <span class="badge"><i>release</i><u style="background:#007ec6">v1.0.0</u></span>
+      <span class="badge"><i>downloads</i><u style="background:#97ca00">0</u></span>
+    </div>
+    <p style="margin-top:14px"><span class="dl"> Download for Mac</span></p>
+    <img class="banner" src="../readme/banner.jpg" alt="">
+  </div>
+  <table class="three"><tr>
+    <td>${ico('gift')}<strong>Free</strong><br>No account, no subscription.</td>
+    <td>${ico('laptop')}<strong>Local AI</strong><br>Every model runs on your Mac.</td>
+    <td>${ico('apps')}<strong>In every app</strong><br>Anywhere you can type.</td></tr></table>
+  <p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+  ${groups}
+
+  <h2>Yours, and ready for any AI</h2>
+  <p class="lead">What SigmaFlow writes down isn’t locked in an app. It’s a tidy folder on your Mac that any AI can read.</p>
+  ${zz('files')}
+  <p>Hand the folder to Claude, ChatGPT, Cursor or Obsidian and they understand it right away: who said what, when, and what was on the whiteboard. Move to another app one day, and every meeting still makes sense.</p>
+  <pre><code><span class="c">~/SigmaFlow</span>
+├── Meetings/2026/10 October/
+│   └── [ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call/
+│       ├── [ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call.md
+│       └── [ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call.m4a
+├── Conversations/2026/10 October/
+│   └── [ 20 Oct ] Tue 11.05 am - 48 min - Q1 launch plan/
+│       ├── [ 20 Oct ] Tue 11.05 am - 48 min - Q1 launch plan.md
+│       ├── [ 20 Oct ] Tue 11.05 am - 48 min - Q1 launch plan.m4a
+│       └── Photos/[ 20 Oct ] Tue 11.05 am - 03-09.jpg
+└── Dictations/2026/10 October.md</code></pre>
+  <pre><code><span class="h"># [ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call</span>
+
+Date: Thursday 22 October 2026, 2.30 pm
+Length: 32 min
+From: Zoom
+Speakers: 3
+Language: English
+Audio: [ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call.m4a
+
+| Time | Transcription |
+|---|---|
+| [00:00] | **Speaker 1:** Thanks for making time. What’s slowing your team down today? |
+| [00:38] | **Speaker 2:** Our reps spend about an hour a day writing up calls in the CRM. |
+| [01:12] | **Speaker 3:** And security won’t sign off on anything without SSO. |</code></pre>
+  ${zz('claude')}
+  ${zz('insights')}
+
+  <h2>AI that runs on your Mac</h2>
+  <p class="lead">Every model SigmaFlow needs runs on your Mac. Nothing you say is uploaded unless you choose Claude, and dictation, meetings and search work without the internet.</p>
+  <table class="models">
+    <tr><td>${ico('microphone')}Hears you, as you speak</td><td>NVIDIA Parakeet</td></tr>
+    <tr><td>${ico('user--multiple')}Tells the speakers apart</td><td>FluidAudio speaker separation</td></tr>
+    <tr><td>${ico('translate')}Hears Tamil, and knows when it is Tamil</td><td>AI4Bharat IndicConformer, SpeechBrain VoxLingua107</td></tr>
+    <tr><td>${ico('magic-wand')}Cleans up, names meetings, writes replies</td><td>Apple Intelligence, or Claude with your own key</td></tr>
+    <tr><td>${ico('image')}Reads photos and screenshots</td><td>Google Gemma 4, Apple Vision</td></tr>
+    <tr><td>${ico('search')}Searches by meaning</td><td>Google EmbeddingGemma</td></tr>
+  </table>
+  <p>No account. No subscription. No bots in your calls.</p>
+
+  <h2>Get started</h2>
+  <ol><li>Download <code>SigmaFlow.dmg</code> from the <a>latest release</a> and drag SigmaFlow into Applications.</li>
+  <li>Open it. The first time, macOS asks you to confirm: System Settings ▸ Privacy &amp; Security ▸ Open Anyway.</li>
+  <li>SigmaFlow walks you through two quick permissions.</li>
+  <li>Hold Right ⌘ and talk. Let go, and SigmaFlow writes it where your cursor is.</li></ol>
+  <div class="rest">Requirements, Build from source, Contributing, License and Acknowledgements follow, as they are now.</div>
+  <div class="center closer"><p class="headline">You talk faster than you type.<br>Now SigmaFlow keeps up.</p><p><span class="dl"> Download for Mac</span></p></div>`;
+
+  md.querySelectorAll('.pic[data-k]').forEach(pic => loop(pic, pic.dataset.k));
+}
+document.querySelectorAll('#theme button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#theme button').forEach(x => x.setAttribute('aria-pressed', x===b));
+  document.getElementById('gh').classList.toggle('light', b.dataset.t==='light');
+});
+
+/* the whiteboards are drawn, so no borrowed photos */
+const board = (title, lines) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200"><rect width="320" height="200" fill="#8a8f96"/><rect x="10" y="10" width="300" height="180" fill="#f4f4f0" stroke="#c9c9c9" stroke-width="4"/><g font-family="Marker Felt, Chalkboard, Comic Sans MS, cursive" fill="#1d4fa8"><text x="28" y="48" font-size="26" fill="#b3261e">${title}</text>${lines.map((l,j) => `<text x="34" y="${84+j*30}" font-size="20">${l}</text>`).join('')}</g></svg>`);
+const WB1 = board('Q1 LAUNCH', ['1. Email, a week before', '2. Webinar, 14 Jan', '3. LinkedIn post, same day']);
+const WB2 = board('PRICING PAGE', ['Free: 1 seat', 'Team: SSO, 40+ seats', 'Enterprise: talk to us']);
+
+/* ---------- picture machinery ---------- */
+function E(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+function mount(pic){
+  pic.innerHTML=''; pic.dataset.on='1';
+  const bd = pic.dataset.bd || P[3];
+  const inner = E('div','inner bd-'+bd); inner.dataset.bd = bd; pic.appendChild(inner);
+  const fit = () => inner.style.transform = `scale(${pic.clientWidth/960})`;
+  new ResizeObserver(fit).observe(pic); fit();
+  return inner;
+}
+function scene(inner, k){
+  const s = E('div'); s.style.cssText='position:absolute;left:0;top:0;width:960px;height:600px';
+  inner.appendChild(s);
+  if (inner.dataset.bd==='C'){ s.appendChild(E('div','menubar','<b>'+(F[k]?.app||'Finder')+'</b><span>File</span><span>Edit</span><span>View</span><span class="sp"></span><span>Thu 24 Oct  2:30 PM</span>')); s.appendChild(E('div','dock','<i></i><i></i><i></i><i></i><i></i><i></i>')); }
+  return s;
+}
+const sleeper = ep => ms => new Promise((ok, no) => setTimeout(() => ep===epoch ? ok() : no('gone'), ms));
+async function loop(pic, k){
+  const ep = epoch, S = sleeper(ep), inner = mount(pic);
+  try { for(;;){ const s = scene(inner, k); inner.classList.remove('out'); await F[k].fn(s, S); inner.classList.add('out'); await S(320); s.remove(); } } catch(e){}
+}
+async function playReel(pic){
+  pic.dataset.k='reel';
+  const ep = epoch, S = sleeper(ep), inner = mount(pic), ks = moving();
+  const strip = E('div','strip'); inner.appendChild(strip);
+  try { for(let i=0;;i=(i+1)%ks.length){
+    strip.innerHTML = ks.map((k,j) => `<span class="${j===i?'on':''}">${F[k].t}</span>`).join('') + `<span class="n">0${i+1} / 0${ks.length}</span>`;
+    const s = scene(inner, ks[i]); inner.classList.remove('out'); await F[ks[i]].fn(s, S); inner.classList.add('out'); await S(320); s.remove();
+  } } catch(e){}
+}
+function win(s, {x,y,w,h,title}){
+  const wd = E('div','win'); wd.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+  wd.innerHTML = `<div class="tb"><i></i><i></i><i></i><span>${title}</span></div>`;
+  const b = E('div','wb'); wd.appendChild(b); s.appendChild(wd); return b;
+}
+function key(s, label){ const k=E('div','key',label); s.appendChild(k); return k; }
+const PEN = '<svg class="g pen" viewBox="0 0 10 10"><path d="M1 9l1.2-3.4L7.4.4l2.2 2.2-5.2 5.2z" fill="none" stroke="#ededed" stroke-width="1.2"/></svg>';
+function hud(s){
+  const h = E('div','hud'); s.appendChild(h);
+  let t0=0, timer=null, meter=null; const ep=epoch;
+  const alive = () => { if (ep!==epoch){ clearInterval(timer); clearInterval(meter); return false; } return true; };
+  const api = {
+    el:h,
+    show(glyph, label, {timer:withTimer=true}={}){
+      h.innerHTML = `<div class="hrow">${glyph==='pen'?PEN:`<span class="g ${glyph}"></span>`}<span class="eb">${label}</span>${withTimer?'<span class="ro">00:00</span><span class="vu">'+'<i></i>'.repeat(8)+'</span>':''}</div><div class="hwords"></div>`;
+      api.words = h.querySelector('.hwords');
+      h.classList.add('show');
+      if (withTimer){
+        t0 = Date.now(); clearInterval(timer); clearInterval(meter);
+        timer = setInterval(() => { if(!alive()) return; const ro=h.querySelector('.ro'); if(ro){ const n=Math.floor((Date.now()-t0)/1000); ro.textContent='00:'+String(n).padStart(2,'0'); } }, 250);
+        meter = setInterval(() => { if(!alive()) return; const n = 2+Math.floor(Math.random()*6); h.querySelectorAll('.vu i').forEach((d,i) => d.classList.toggle('lit', i<n)); }, 110);
+      }
+    },
+    status(glyph, label){
+      clearInterval(meter); h.querySelectorAll('.vu i').forEach(d => d.classList.remove('lit'));
+      const row = h.querySelector('.hrow'); row.firstElementChild.outerHTML = glyph==='pen'?PEN:`<span class="g ${glyph}"></span>`;
+      row.querySelector('.eb').textContent = label;
+    },
+    stop(){ clearInterval(timer); clearInterval(meter); },
+    hide(){ api.stop(); h.classList.remove('show'); },
+  };
+  return api;
+}
+async function flow(target, text, S, gap=130){
+  for (const w of text.split(' ')){ target.appendChild(E('span','w', w+' ')); await S(gap); }
+}
+async function type(target, text, S, gap=45){
+  for (const c of text){ target.textContent += c; await S(gap); }
+}
+
+/* ---------- the pictures ---------- */
+async function sDictation(s, S){
+  const b = win(s,{x:90,y:44,w:780,h:370,title:'signup.ts  api'});
+  b.innerHTML = `<div class="ide"><div class="code">${['export async function signup(req) {','  const { email } = await req.json()','  const user = await db.users.create({ email })','  await sendWelcome(user)','  return Response.json(user)','}'].map(l => `<div>${l.replace(/ /g,'&nbsp;')}</div>`).join('')}</div>
+    <div class="agent"><div class="ah">Agent</div><div class="abox"><span class="txt"></span><i class="caret"></i></div></div></div>`;
+  const k = key(s,'Right ⌘'), h = hud(s);
+  await S(700); k.classList.add('on'); await S(200);
+  h.show('dot','Rec'); const t = E('span','t'); h.words.appendChild(t);
+  await flow(t, 'um so add rate limiting to the signup endpoint five requests no make it ten a minute per IP and write a test for it', S);
+  await S(450); k.classList.remove('on'); h.status('busy','Processing'); t.style.color='var(--ink2)';
+  await S(800); h.hide(); await S(150);
+  b.querySelector('.txt').textContent = 'Add rate limiting to the signup endpoint, 10 requests a minute per IP, and write a test for it.';
+  await S(3200);
+}
+async function sAutowrite(s, S){
+  const geo = {x:110,y:40,w:740,h:360};
+  const b = win(s,{...geo,title:'Maya Chen, Northwind'});
+  b.innerHTML = `<div class="msg"><div class="av">M</div><div><div class="who">Maya Chen <span>Northwind  10:42</span></div>Thanks for the demo. Two things before I take it to my boss: pricing for 40 seats, and is SSO included?</div></div>
+    <div class="reply"><span class="ph">Message Maya Chen</span><span class="txt"></span><i class="caret"></i></div>`;
+  const spot = E('div','spot'); spot.style.cssText=`left:${geo.x}px;top:${geo.y}px;width:${geo.w}px;height:${geo.h}px`; s.appendChild(spot);
+  const k = key(s,'Right ⌥'), h = hud(s);
+  await S(700); k.classList.add('on'); await S(300); spot.classList.add('on');
+  h.show('pen','Autowrite'); h.words.innerHTML = '<div class="thumb"><i></i><i></i><i></i><i></i></div>'; const t = E('span','t'); h.words.appendChild(t);
+  await flow(t, 'tell maya forty seats is the team plan, SSO is included, quote by tomorrow', S);
+  await S(400); k.classList.remove('on'); h.stop(); h.el.querySelector('.ro')?.remove(); h.el.querySelector('.vu')?.remove(); h.status('busy','Autowrite');
+  t.innerHTML = `<span class="ask">${t.textContent}</span>`; const out = E('span'); t.appendChild(out);
+  const reply = 'Hi Maya, glad the demo landed. 40 seats puts you on our Team plan, and SSO is included. I’ll send the full quote by tomorrow.';
+  await flow(out, reply, S, 70);
+  await S(700); h.hide(); spot.classList.remove('on');
+  b.querySelector('.ph').remove(); b.querySelector('.reply .txt').textContent = reply;
+  await S(3200);
+}
+async function sLearns(s, S){
+  const b = win(s,{x:150,y:50,w:660,h:330,title:'Launch checklist'});
+  b.innerHTML = `<div class="mbody" style="font-size:23px"><span>Deploy the preview to </span><span class="n">Ver sell</span><span> before the demo.</span>\n<span class="two"></span></div>`;
+  const n = b.querySelector('.n'), card = E('div','card'); s.appendChild(card);
+  await S(900); n.classList.add('sel'); await S(600); n.classList.remove('sel'); n.textContent='';
+  await type(n, 'Vercel', S, 110); await S(500);
+  card.innerHTML = `<span class="eb">Adding to dictionary</span><span class="btn">Not now</span><div class="rule"><s>Ver sell</s> → Vercel</div><div class="bar"><i></i></div>`;
+  card.classList.add('show'); const bar = card.querySelector('.bar i');
+  bar.style.transition='width 2.2s linear'; await S(50); bar.style.width='0';
+  await S(2250);
+  card.innerHTML = `<span class="eb">Added to dictionary</span><span class="btn">Undo</span><div class="rule"><s>Ver sell</s> → Vercel</div><div class="bar"><i></i></div>`;
+  await S(1500); card.classList.remove('show'); await S(700);
+  const k = key(s,'Right ⌘'), h = hud(s);
+  k.classList.add('on'); await S(200); h.show('dot','Rec'); const t = E('span','t'); h.words.appendChild(t);
+  await flow(t, 'the ver sell build is green', S); await S(400); k.classList.remove('on'); h.status('busy','Processing'); await S(600); h.hide(); await S(150);
+  b.querySelector('.two').innerHTML = '\nThe <span class="hit">Vercel</span> build is green.';
+  await S(3000);
+}
+async function sStyles(s, S){
+  const b = win(s,{x:150,y:50,w:660,h:330,title:'Launch post, draft'});
+  b.innerHTML = `<div class="mbody" style="font-size:23px"><span class="txt">so we shipped the new onboarding today. signups are up 18% in the first week which is wild. huge thanks to the design team</span></div>`;
+  const txt = b.querySelector('.txt'), k = key(s,'⌥ 2'), h = hud(s);
+  await S(1000); txt.classList.add('sel'); await S(700); k.classList.add('on'); await S(250); k.classList.remove('on');
+  h.show('busy','Launch post',{timer:false}); h.words.innerHTML='<span class="t">Rewriting your selection</span>';
+  await S(1400); h.hide(); txt.classList.remove('sel');
+  txt.textContent = 'We shipped a new onboarding this week, and signups are up 18% in the first seven days. Huge thanks to our design team for making it happen.';
+  await S(3400);
+}
+async function sMeetings(s, S){
+  const call = win(s,{x:60,y:50,w:620,h:380,title:'Zoom Meeting'});
+  call.innerHTML = '<div class="tiles"><i>M</i><i>J</i><i>A</i><i>You</i></div>';
+  const ask = E('div','ask-card','<div class="eb" style="color:var(--ink2)">Zoom</div><div class="rule">Record this meeting?</div><span class="b1">Record meeting</span><span class="b2">Not now</span>'); s.appendChild(ask);
+  await S(500); ask.classList.add('show'); await S(1300); ask.querySelector('.b1').classList.add('press'); await S(300); ask.classList.remove('show');
+  const h = hud(s); h.show('dot','Rec'); h.words.innerHTML='<span class="t" style="color:var(--ink2)">Recording this meeting</span>'; await S(1600); h.hide();
+  call.parentNode.style.transition='opacity .3s'; call.parentNode.style.opacity='0'; await S(350); call.parentNode.remove();
+  const p = E('div','pane'); p.style.cssText='left:90px;top:44px;width:780px;height:470px'; s.appendChild(p);
+  p.innerHTML = `<div class="h"><span class="ti">[ 24 Oct ] Thu 2.30 pm - 32 min</span></div><div class="meta"><span>Speakers 3</span><span>Language English</span></div><div class="prog"><i></i></div><div class="rows"></div>`;
+  const rows = p.querySelector('.rows');
+  await S(400); p.querySelector('.prog i').style.width='100%'; await S(1500); p.querySelector('.prog').style.visibility='hidden';
+  const L = [['00:00','Speaker 1','Thanks for making time. What’s slowing your team down today?'],['00:38','Speaker 2','Our reps spend about an hour a day writing up calls.'],['01:12','Speaker 3','And security won’t sign off without SSO.'],['01:40','Speaker 1','Both are on the Team plan. I’ll send pricing for 40 seats by Friday.'],['02:05','Speaker 2','Great. Can you add a two-week pilot to it?']];
+  for (const [tm,who,txt] of L){ rows.appendChild(E('div','trow',`<span class="tm">[${tm}]</span><span><b>${who}:</b> ${txt}</span>`)); await S(260); }
+  await S(700); await type(p.querySelector('.ti'), ' - Northwind discovery call', S, 50);
+  await S(3000);
+}
+async function sNotes(s, S){
+  if (s.parentNode.dataset.bd!=='B'){ const b = win(s,{x:40,y:70,w:470,h:300,title:'Q1 launch.key'}); b.innerHTML='<div style="padding:40px;color:#666;font-size:28px">Three channels,<br>one launch.</div>'; }
+  const p = E('div','pane notes'); s.appendChild(p);
+  p.innerHTML = `<div class="hrow" style="margin-bottom:8px"><span class="g dot"></span><span class="eb">Rec</span><span class="ro">11:02</span><span class="vu">${'<i></i>'.repeat(6)}</span><span class="sp"></span><span class="nb"><i></i></span><span class="nb" style="margin-left:6px"><i style="border-radius:0;width:12px"></i></span></div><div class="lines"></div>`;
+  const lines = p.querySelector('.lines'), vu = p.querySelectorAll('.vu i');
+  const ep = epoch; const m = setInterval(() => { if (ep!==epoch) return clearInterval(m); const n=1+Math.floor(Math.random()*5); vu.forEach((d,i)=>d.classList.toggle('lit',i<n)); }, 110);
+  const L = [['11:02','So the launch runs on three channels: email, LinkedIn and the webinar.'],['11:09','Email goes out a week before the webinar.',WB1],['11:15','Take a photo of the board before we wipe it.'],['11:22','And the LinkedIn post goes out on webinar day.']];
+  try {
+    for (const [tm,txt,ph] of L){
+      const line = E('div','nline',`<span class="tm">${tm}</span><span class="t"></span>`); lines.appendChild(line);
+      await flow(line.querySelector('.t'), txt, S);
+      if (ph){ await S(300); line.querySelector('.tm').appendChild(Object.assign(E('img'),{src:ph})); }
+      await S(700);
+    }
+    await S(2200);
+  } finally { clearInterval(m); }
+}
+async function sTamil(s, S){
+  const p = E('div','pane'); p.style.cssText='left:90px;top:44px;width:780px;height:470px'; s.appendChild(p);
+  p.innerHTML = `<div class="h">[ 21 Oct ] Mon 10.00 am - 26 min - Campaign plan review</div><div class="meta"><span>Speakers 2</span><span class="lang">Language English</span></div><div class="rows"></div>`;
+  const rows = p.querySelector('.rows');
+  await S(900); p.querySelector('.lang').textContent = 'Language Tamil and English';
+  const L = [['00:00','Speaker 1','சரி, இந்த வாரத்துக்குள்ள கேம்பெயின் பிளானை முடிச்சிடலாம்.'],['00:12','Speaker 2','Sounds good. I’ll draft the launch emails tonight.'],['00:19','Speaker 1','வெபினார் தேதியை தர்ஸ்டேக்குள்ள கன்ஃபர்ம் பண்ணிடுங்க.'],['00:31','Speaker 2','Sure, by Thursday.'],['00:36','Speaker 1','நல்லது. அப்போ லிங்க்ட்இன் போஸ்ட்டையும் ரெடி பண்ணிடலாம்.']];
+  for (const [tm,who,txt] of L){ rows.appendChild(E('div','trow',`<span class="tm">[${tm}]</span><span><b>${who}:</b> ${txt}</span>`)); await S(420); }
+  await S(3600);
+}
+async function sSearch(s, S){
+  const p = E('div','pane'); p.style.cssText='left:90px;top:44px;width:780px;height:470px'; s.appendChild(p);
+  p.innerHTML = `<div class="h">Conversations</div><div class="sbox"><span class="mg"></span><span class="q"></span><i class="caret" style="height:16px"></i></div><div class="out"></div>`;
+  const out = p.querySelector('.out');
+  out.innerHTML = ['[ 23 Oct ] Wed 9.10 am - 15 min - Standup','[ 20 Oct ] Tue 11.05 am - 48 min - Q1 launch plan','[ 15 Oct ] Wed 4.00 pm - 31 min - Pricing page workshop'].map(t => `<div class="res"><div class="rt" style="color:var(--ink2)">${t}</div></div>`).join('');
+  await S(800); await type(p.querySelector('.q'), 'the launch plan on the whiteboard', S, 55); await S(700);
+  out.innerHTML = `
+    <div class="res"><div class="rt">[ 20 Oct ] Tue 11.05 am - 48 min - Q1 launch plan</div>
+      <div class="mom"><img src="${WB1}"><span>[11:09] <em>a whiteboard with the Q1 launch plan in three steps</em></span></div>
+      <div class="mom"><span style="width:110px"></span><span>[11:02] so the <em>launch</em> runs on three channels: email, LinkedIn and the webinar</span></div></div>
+    <div class="res" style="animation-delay:.15s"><div class="rt">[ 15 Oct ] Wed 4.00 pm - 31 min - Pricing page workshop</div>
+      <div class="mom"><img src="${WB2}"><span>[06:40] <em>a whiteboard listing three pricing plans</em></span></div></div>`;
+  await S(3800);
+}
+async function sFiles(s, S){
+  const b = win(s,{x:60,y:40,w:840,h:430,title:'10 October'});
+  b.innerHTML = `<div class="crumbs">SigmaFlow ▸ Meetings ▸ 2026 ▸ 10 October</div><div class="flist"></div>`;
+  const list = b.querySelector('.flist');
+  const n = '[ 22 Oct ] Thu 2.30 pm - 32 min - Northwind discovery call';
+  const items = [['dir',n,0],['md',n+'.md',1],['m4a',n+'.m4a',1],['dir','[ 23 Oct ] Wed 10.00 am - 45 min - Pipeline review',0],['dir','[ 21 Oct ] Mon 3.00 pm - 28 min - Acme renewal call',0],['dir','[ 17 Oct ] Fri 11.30 am - 52 min - Agent evals sync',0]];
+  for (const [kind,name,ind] of items){ const r = list.appendChild(E('div','frow '+kind,`<i></i><span>${name}</span>`)); r.style.paddingLeft = ind ? '44px' : '16px'; await S(180); }
+  await S(700); list.children[1].classList.add('fsel'); await S(500);
+  const peek = E('div','peek',`<div class="pk"># ${n}</div><br><div>Date: Thursday 22 October 2026, 2.30 pm</div><div>Length: 32 min</div><div>From: Zoom</div><div>Speakers: 3</div><div>Language: English</div><br><div>| [00:00] | <b>**Speaker 1:**</b> Thanks for making time. |</div><div>| [00:38] | <b>**Speaker 2:**</b> Our reps spend an hour a day... |</div><div>| [01:12] | <b>**Speaker 3:**</b> And security won’t sign off... |</div>`);
+  s.appendChild(peek); await S(50); peek.classList.add('show');
+  await S(3600);
+}
+async function sClaude(s, S){
+  const b = win(s,{x:110,y:40,w:740,h:440,title:'Claude'});
+  b.innerHTML = `<div class="chat"><div class="you">What did Northwind need before they’d sign?</div><div class="tool"></div><div class="ans"></div></div>`;
+  await S(900); const tool = b.querySelector('.tool'); tool.textContent = 'SigmaFlow: searched meetings for “Northwind”'; tool.classList.add('show');
+  await S(900); tool.textContent = 'SigmaFlow: read [ 24 Oct ] Northwind discovery call';
+  await S(700);
+  await flow(b.querySelector('.ans'), 'Two things, from the 24 Oct discovery call: SSO, because their security team won’t sign off without it, and a faster way for reps to write up calls. You said both are on the Team plan, promised pricing for 40 seats by Friday, and they asked for a two-week pilot.', S, 55);
+  await S(3400);
+}
+async function sInsights(s, S){
+  const p = E('div','pane'); p.style.cssText='left:90px;top:44px;width:780px;height:470px'; s.appendChild(p);
+  p.innerHTML = `<div class="eb" style="padding:24px 30px 0;color:var(--ink2)">Today</div><div class="big">SigmaFlow wrote <span class="pc">0</span>% of your words today</div>
+    <div class="sum"><b>2,140</b> written with SigmaFlow + <b>66</b> typed by you = <b>2,206</b> words</div>
+    <div class="eb" style="padding:10px 30px 4px">34 min back a day</div><div class="sq">${'<i></i>'.repeat(364)}</div>`;
+  const pc = p.querySelector('.pc'); const cells = [...p.querySelectorAll('.sq i')];
+  await S(400);
+  for (let i=0;i<=97;i+=4){ pc.textContent=Math.min(i,97); await S(25); } pc.textContent='97';
+  for (let i=0;i<cells.length;i+=12){
+    for (let j=i;j<Math.min(i+12,cells.length);j++){ const r=Math.random(); const w = j>120 ? 1 : 0.15; if (r<w*.9) cells[j].className = 'l'+(1+Math.floor(Math.random()*4*Math.min(1,j/260+.3))); }
+    await S(30);
+  }
+  await S(3200);
+}
+
+render();
+</script>
+</body>
+</html>
