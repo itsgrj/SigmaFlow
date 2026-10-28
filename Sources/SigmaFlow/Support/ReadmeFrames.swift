@@ -68,6 +68,12 @@ enum ReadmeFrames {
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             for scene in scenes {
                 let started = Date()
+                if scene == .promises {
+                    let file = directory.appendingPathComponent("promises.png")
+                    PromisesStrip.write(to: file)
+                    print("readme frames: promises.png, a still")
+                    continue
+                }
                 do {
                     let take = Take()
                     try await take.record { try await scene.play(on: take, controller: controller) }
@@ -492,6 +498,52 @@ private struct WhiteboardView: View {
     }
 }
 
+/// The three promises under the banner, a still the app draws on its own ground in its own
+/// type (Gokul, 28 Oct 2026, docs/mockups/readme-promises.html, pick D).
+private struct PromisesStrip: View {
+    static let promises = [
+        ("code", "Free and open source", "No account, no subscription."),
+        ("security", "100% privacy", "Your data stays on your Mac, and only there."),
+        ("keyboard", "Wherever you type", "Email, chat, docs, code and the browser."),
+    ]
+    static let cellWidth: CGFloat = 260
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(Self.promises.enumerated()), id: \.offset) { index, promise in
+                VStack(alignment: .leading, spacing: DS.Space.snug) {
+                    CarbonIcon(name: promise.0, size: DS.Control.hudGlyph * 2).foregroundStyle(DS.Color.ink)
+                        .padding(.bottom, DS.Space.hair)
+                    Text(promise.1).font(DS.Font.transcript).foregroundStyle(DS.Color.ink)
+                    Text(promise.2).font(DS.Font.caption).foregroundStyle(DS.Color.inkSecondary)
+                }
+                .padding(.horizontal, DS.Space.hudPadX)
+                .padding(.vertical, DS.Space.hudPadY + DS.Space.hair)
+                .frame(width: Self.cellWidth, alignment: .leading)
+                // Every cell as tall as the tallest, its words from the top.
+                .frame(maxHeight: .infinity, alignment: .top)
+                if index < Self.promises.count - 1 {
+                    Rectangle().fill(DS.Color.border).frame(width: DS.Border.hairline)
+                }
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .background(DS.Color.chassis)
+        .overlay(Rectangle().strokeBorder(DS.Color.borderStrong, lineWidth: DS.Border.hairline))
+        .environment(\.colorScheme, .dark)
+    }
+
+    /// At twice the size it shows on the page, so it stays sharp on a Retina screen.
+    @MainActor
+    static func write(to url: URL) {
+        let renderer = ImageRenderer(content: PromisesStrip())
+        renderer.scale = 2
+        guard let image = renderer.cgImage,
+              let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else { return }
+        try? data.write(to: url)
+    }
+}
+
 // MARK: - The made-up SigmaFlow folder
 
 /// Meetings, conversations and a year of dictations for the pages to read: a sales team, a
@@ -826,7 +878,7 @@ private final class Take {
 // MARK: - The scenes
 
 private enum ReadmeScene: String, CaseIterable {
-    case dictation, autowrite, learns, styles, meetings, notes, tamil, search, insights, files, claude
+    case dictation, autowrite, learns, styles, meetings, notes, tamil, search, insights, files, claude, promises
 
     @MainActor
     func play(on take: Take, controller: DictationController) async throws {
@@ -842,6 +894,7 @@ private enum ReadmeScene: String, CaseIterable {
         case .insights: try await Self.insights(take, controller)
         case .files: try await Self.files(take)
         case .claude: try await Self.claude(take)
+        case .promises: break
         }
     }
 

@@ -866,6 +866,8 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
   Smart cleanup kept "five, no, ten" and "Tuesday, actually Wednesday" as said (only its own
   prompt's example worked), so the README does not claim changing your mind mid-sentence.
   Icons are Carbon SVGs in `docs/readme/icons/`, a `-dark` and `-light` copy behind `<picture>`.
+  The three promises under the banner (Free and open source, 100% privacy, Wherever you type;
+  never "app", which reads as a phone app) are a still the tool draws, `--scenes promises`.
 - **Public since 27 Oct 2026, from a fresh start** (Gokul's pick). The 190 commits before it
   held colleagues' names, work topics and a work email in old mockups, so they live only in the
   private `itsgrj/SigmaFlow-history` (remote `private`, local branch `history`); the public

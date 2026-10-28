@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>README Promises, round 2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Pixel';src:url('../../Resources/Fonts/GeistPixel-Square.ttf')}
+@font-face{font-family:'Geist';src:url('../../Resources/Fonts/Geist-Regular.otf')}
+:root{--c-bg:#161616;--c-layer:#262626;--c-border:#393939;--c-text:#f4f4f4;--c-text2:#c6c6c6;--c-text3:#8d8d8d;
+--gh-bg:#0d1117;--gh-border:#3d444d;--gh-text:#f0f6fc;--gh-muted:#9198a1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c-bg);color:var(--c-text);font:14px/1.5 'IBM Plex Sans',system-ui,sans-serif}
+.shell{max-width:1100px;padding:32px 16px 48px}
+.eyebrow{font:12px 'IBM Plex Mono',monospace;letter-spacing:.32px;color:var(--c-text3);text-transform:uppercase}
+h1.title{font-size:32px;font-weight:400;margin:8px 0 12px}
+.lede{color:var(--c-text2);max-width:820px;margin:0 0 20px}
+.bar{display:flex;gap:12px;align-items:center;margin:0 0 24px}
+.seg{display:flex;border:1px solid var(--c-border)}
+.seg button{background:transparent;color:var(--c-text2);border:0;border-right:1px solid var(--c-border);padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--c-text);color:var(--c-bg)}
+.opt{margin:0 0 40px}
+.oh{display:flex;gap:10px;align-items:baseline;font-size:15px}
+.oh .k{font:500 13px 'IBM Plex Mono',monospace;background:var(--c-text);color:var(--c-bg);padding:1px 7px}
+.oh .mine{color:var(--c-text3)}
+.on{color:var(--c-text2);margin:6px 0 12px;max-width:820px}
+.gh{background:var(--gh-bg);color:var(--gh-text);border:1px solid var(--c-border);font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif}
+body.light .gh{--gh-bg:#ffffff;--gh-border:#d1d9e0;--gh-text:#1f2328;--gh-muted:#59636e}
+.md{max-width:880px;margin:0 auto;padding:24px 32px 8px}
+.md p{margin:0 0 16px}
+.md .headline{font-size:16px;margin-bottom:8px}
+.md .sub{margin-bottom:16px}
+.banner img{display:block;width:100%}
+.banner{margin:0 0 16px}
+.md h2{font-size:24px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--gh-border);margin:24px 0 0}
+.gtable{display:block;width:max-content;max-width:100%;border-collapse:collapse;margin:0 0 16px}
+.gtable[align=center]{margin-left:auto;margin-right:auto}
+.gtable td{border:1px solid var(--gh-border);padding:6px 13px}
+.ic{vertical-align:-3px}
+.inline .ic{vertical-align:-2px}
+.strip{display:inline-flex;background:#101010;border:1px solid #333;color:#ededed;text-align:left}
+.cell{width:250px;padding:16px 18px;border-right:1px solid #2a2a2a;display:flex;flex-direction:column;gap:6px}
+.cell:last-child{border-right:0}
+.st{font:15px 'Pixel',monospace;letter-spacing:.3px}
+.sd{font:13px 'Geist',system-ui;color:#a1a1a1}
+</style></head>
+<body><div class="shell">
+<div class="eyebrow">README promises, round 1</div>
+<h1 class="title">Five ways to say Free, Local AI, In every app</h1>
+<p class="lede">Each option is drawn the way GitHub shows it, under the banner, down to the first heading. The gift is gone in every option: Free becomes Free and open source, with Carbon’s code icon. The boxes were off-centre because GitHub draws a table only as wide as its words and pins it left; A uses GitHub’s own centring for tables, which it keeps.</p>
+<div class="bar"><span class="eyebrow">GitHub theme</span><div class="seg"><button aria-pressed="true" data-t="dark">Dark</button><button aria-pressed="false" data-t="light">Light</button></div></div>
+<section class="opt"><div class="oh"><span class="k">A</span><b>Boxes, fixed</b><span class="mine"></span></div><p class="on">The same three boxes, centred, all the same width, icons level. Free becomes Free and open source, with the code icon from the same Carbon set.</p>
+<div class="gh"><div class="md">
+<p align="center" class="headline"><b>Write at the speed of your thought</b></p>
+<p align="center" class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source.</p>
+<div class="banner"><img src="../readme/banner.jpg" alt=""></div>
+<table class="gtable" align="center"><tr><td align="center" valign="top" width="240"><svg class="ic" width="24" height="24" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M31 16L24 23 22.59 21.59 28.17 16 22.59 10.41 24 9 31 16zM1 16L8 9 9.41 10.41 3.83 16 9.41 21.59 8 23 1 16z"/><path d="M5.91 15H26.080000000000002V17H5.91z" transform="rotate(-75 15.996 16)"/></svg><br><b>Free and open source</b><br>No account, no subscription.</td><td align="center" valign="top" width="240"><svg class="ic" width="24" height="24" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M26,24H6a2.0023,2.0023,0,0,1-2-2V8A2.002,2.002,0,0,1,6,6H26a2.0023,2.0023,0,0,1,2,2V22A2.0027,2.0027,0,0,1,26,24ZM6,8V22H26V8Z" transform="translate(0 .005)"/><path d="M2 26.005H30V28.005H2z"/></svg><br><b>Local AI</b><br>Every model runs on your Mac.</td><td align="center" valign="top" width="240"><svg class="ic" width="24" height="24" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M8,4V8H4V4Zm2-2H2v8h8Zm8,2V8H14V4Zm2-2H12v8h8Zm8,2V8H24V4Zm2-2H22v8h8ZM8,14v4H4V14Zm2-2H2v8h8Zm8,2v4H14V14Zm2-2H12v8h8Zm8,2v4H24V14Zm2-2H22v8h8ZM8,24v4H4V24Zm2-2H2v8h8Zm8,2v4H14V24Zm2-2H12v8h8Zm8,2v4H24V24Zm2-2H22v8h8Z"/></svg><br><b>In every app</b><br>Anywhere you can type.</td></tr></table>
+<p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+<h2>Write anywhere</h2>
+</div></div></section><section class="opt"><div class="oh"><span class="k">B</span><b>One line with icons</b><span class="mine"> (my pick)</span></div><p class="on">No boxes. One centred line, each promise a small icon and a few bold words, like the small things further down.</p>
+<div class="gh"><div class="md">
+<p align="center" class="headline"><b>Write at the speed of your thought</b></p>
+<p align="center" class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source.</p>
+<div class="banner"><img src="../readme/banner.jpg" alt=""></div>
+<p align="center" class="inline"><svg class="ic" width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M31 16L24 23 22.59 21.59 28.17 16 22.59 10.41 24 9 31 16zM1 16L8 9 9.41 10.41 3.83 16 9.41 21.59 8 23 1 16z"/><path d="M5.91 15H26.080000000000002V17H5.91z" transform="rotate(-75 15.996 16)"/></svg>&nbsp; <b>Free and open source</b>&emsp;&emsp;<svg class="ic" width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M26,24H6a2.0023,2.0023,0,0,1-2-2V8A2.002,2.002,0,0,1,6,6H26a2.0023,2.0023,0,0,1,2,2V22A2.0027,2.0027,0,0,1,26,24ZM6,8V22H26V8Z" transform="translate(0 .005)"/><path d="M2 26.005H30V28.005H2z"/></svg>&nbsp; <b>Every model runs on your Mac</b>&emsp;&emsp;<svg class="ic" width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M8,4V8H4V4Zm2-2H2v8h8Zm8,2V8H14V4Zm2-2H12v8h8Zm8,2V8H24V4Zm2-2H22v8h8ZM8,14v4H4V14Zm2-2H2v8h8Zm8,2v4H14V14Zm2-2H12v8h8Zm8,2v4H24V14Zm2-2H22v8h8ZM8,24v4H4V24Zm2-2H2v8h8Zm8,2v4H14V24Zm2-2H12v8h8Zm8,2v4H24V24Zm2-2H22v8h8Z"/></svg>&nbsp; <b>Works in every app</b></p>
+<p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+<h2>Write anywhere</h2>
+</div></div></section><section class="opt"><div class="oh"><span class="k">C</span><b>One line of words</b><span class="mine"></span></div><p class="on">No boxes, no icons. Three short sentences, centred. The quietest; it reads like a promise, not a feature grid.</p>
+<div class="gh"><div class="md">
+<p align="center" class="headline"><b>Write at the speed of your thought</b></p>
+<p align="center" class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source.</p>
+<div class="banner"><img src="../readme/banner.jpg" alt=""></div>
+<p align="center"><b>Free and open source.</b>&emsp;<b>Every model runs on your Mac.</b>&emsp;<b>Works in every app.</b></p>
+<p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+<h2>Write anywhere</h2>
+</div></div></section><section class="opt"><div class="oh"><span class="k">D</span><b>A strip drawn by the app</b><span class="mine"></span></div><p class="on">A picture SigmaFlow draws itself, like the feature pictures: three equal cells on its dark glass, its pixel type and icons, centred exactly. Stays dark on a light GitHub page.</p>
+<div class="gh"><div class="md">
+<p align="center" class="headline"><b>Write at the speed of your thought</b></p>
+<p align="center" class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source.</p>
+<div class="banner"><img src="../readme/banner.jpg" alt=""></div>
+<p align="center"><img src="../readme/promises.png" width="782" alt=""></p>
+<p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+<h2>Write anywhere</h2>
+</div></div></section><section class="opt"><div class="oh"><span class="k">E</span><b>Folded into the subtitle</b><span class="mine"></span></div><p class="on">No separate section. The line under the headline carries it: “Dictation, meeting notes and replies, with AI that runs on your Mac. Free and open source, in every app you type in.”</p>
+<div class="gh"><div class="md">
+<p align="center" class="headline"><b>Write at the speed of your thought</b></p>
+<p align="center" class="sub">Dictation, meeting notes and replies, with AI that runs on your Mac.<br>Free and open source, in every app you type in.</p>
+<div class="banner"><img src="../readme/banner.jpg" alt=""></div>
+
+<p>Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.</p>
+<h2>Write anywhere</h2>
+</div></div></section>
+</div>
+<script>
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));document.body.classList.toggle('light',b.dataset.t==='light');});
+</script></body></html>

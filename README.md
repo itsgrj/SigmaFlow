@@ -27,22 +27,9 @@
   <img src="docs/readme/banner.jpg" alt="SigmaFlow, push-to-talk dictation for macOS">
 </p>
 
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/icons/gift-dark.svg"><img src="docs/readme/icons/gift-light.svg" width="24" height="24" alt=""></picture><br>
-      <b>Free</b><br>No account, no subscription.
-    </td>
-    <td align="center" width="33%">
-      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/icons/laptop-dark.svg"><img src="docs/readme/icons/laptop-light.svg" width="24" height="24" alt=""></picture><br>
-      <b>Local AI</b><br>Every model runs on your Mac.
-    </td>
-    <td align="center" width="33%">
-      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/icons/apps-dark.svg"><img src="docs/readme/icons/apps-light.svg" width="24" height="24" alt=""></picture><br>
-      <b>In every app</b><br>Anywhere you can type.
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/readme/promises.png" width="782" alt="Free and open source: no account, no subscription. 100% privacy: your data stays on your Mac, and only there. Wherever you type: email, chat, docs, code and the browser.">
+</p>
 
 Most people pay for three apps to do this: one to dictate, one to take meeting notes, one to
 turn recordings into text. SigmaFlow is all three, it’s free, and it runs on your Mac.
