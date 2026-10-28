@@ -237,6 +237,18 @@ MeetingLibrary.file ─► MeetingLibrary.transcribe (one at a time) ─► Meet
   (`MeetingAudio.isTwoSided`) and would be split down the middle. Ogg and Opus can't be
   opened and say so. The drop target is left off in snapshot runs (the renderer paints it as
   its "unsupported" stand-in over the whole page).
+- **Four ways in besides the drop** (28 Oct 2026, [docs/mockups/meeting-drop-discover.html](docs/mockups/meeting-drop-discover.html),
+  picks 05 15 16 17 19; Figma 3.1 to 3.22, 3.7, 0.19): **Upload meeting** (Carbon `upload`) beside
+  Record meeting opens a file picker into `MeetingLibrary.add(recordings:)`; the drop veil names
+  the held file and its length, read off the system's drag pasteboard (`MeetingImport.dragged`);
+  a file dropped on the **Dock icon** or opened with SigmaFlow (`CFBundleDocumentTypes`, audio and
+  video at Alternate rank, so never the default app) and Finder's right-click **Transcribe with
+  SigmaFlow** (an `NSServices` entry; `AppDelegate.transcribeRecordings`) both file it and bring
+  Meetings forward, opening the window through `openMainWindow` if it was closed; and the first
+  open ends on a Meetings step whose right tile takes a real drop. `make install` re-registers the
+  app with Launch Services and refreshes the Services menu, or neither shows up. Where Finder lists
+  the service (Quick Actions or Services) depends on macOS; a true Quick Action needs an app
+  extension, which SwiftPM can't build.
 - **Names**: `[ 13 Oct ] Tue 2.30 pm - 48 min`, English, en_US_POSIX; a rename keeps that and
   adds ` - <title>` (`MeetingNaming`). Renaming moves the folder, both files, and the .md's
   heading and Audio line.
@@ -575,8 +587,9 @@ test case: ten conversations, two with a red t-shirt, "red t-shirt" must find bo
 3A 8E. A fresh install opens on a setup window of its own (`UI/OnboardingView.swift`, logic in
 `Support/FirstOpen.swift`), a SwiftUI `Window` scene with id `welcome`; the main window's
 launch is suppressed until `Settings.firstOpenDone`. Steps: Welcome, Two quick permissions,
-Hold Right ⌘ and talk, Tap Right ⌘ twice (hands free), the folder, then Open SigmaFlow lands
-on Transcriptions. Onboarding is the one place a step carries a line or two under its title.
+Hold Right ⌘ and talk, Tap Right ⌘ twice (hands free), the folder, Meetings, two ways (28 Oct
+2026: record one, or drop a file on the right tile to file it as a meeting), then Open SigmaFlow
+lands on Transcriptions, or on Meetings when a recording was dropped. Onboarding is the one place a step carries a line or two under its title.
 
 - **The talking steps are real dictations**, not previews: SigmaFlow is in front, so the
   overlay shows, nothing is typed, and each run is saved, which is why the app opens with
@@ -592,7 +605,7 @@ on Transcriptions. Onboarding is the one place a step carries a line or two unde
 - An install that already has a remembered page counts as set up. App menu: Welcome to
   SigmaFlow opens the window again, changing nothing.
 - Draw it: `--snapshot-dir DIR --pages welcome/welcome,welcome/talk` (steps: welcome,
-  permissions, talk, handsFree, folder). Run it as a fresh install without touching settings:
+  permissions, talk, handsFree, folder, meetings). Run it as a fresh install without touching settings:
   `-firstOpenDone NO -ApplePersistenceIgnoreState YES` on the staged binary (restored windows
   skip the launch rules).
 
@@ -865,4 +878,4 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - `log` is shadowed in this shell. Use `/usr/bin/log show --predicate 'subsystem == "com.grj.sigmaflow"'`.
 - `tccutil reset Accessibility com.grj.sigmaflow` — **always with the bundle ID**; a bare
   reset wipes every app on the machine.
-- `CFBundleShortVersionString` is `1.0.0` since the 1.0 build; the sidebar foot reads it.
+- `CFBundleShortVersionString` is `1.0.1` since 28 Oct 2026 (1.0.0 was the first public build); the sidebar foot reads it.

@@ -128,6 +128,19 @@ final class MeetingLibrary {
         choose(url)
     }
 
+    /// Upload meeting (docs/mockups/meeting-drop-discover.html, pick 05): the file picker,
+    /// then exactly what a drop does.
+    func pickRecordings() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = true
+        panel.allowedContentTypes = MeetingImport.fileTypes
+        panel.prompt = "Upload"
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
+        add(recordings: panel.urls)
+    }
+
     func revealRoot() {
         guard let root else { return }
         NSWorkspace.shared.activateFileViewerSelecting([root])

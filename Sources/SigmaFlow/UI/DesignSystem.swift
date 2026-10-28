@@ -310,6 +310,8 @@ enum DS {
         static let welcomeRowsWidth: CGFloat = 470
         static let welcomeLineMeasure: CGFloat = 600
         static let welcomeFieldHeight: CGFloat = 96
+        /// The two tiles on the Meetings step: record one, drop one.
+        static let welcomeTileHeight: CGFloat = 150
         static let welcomeStepDot: CGFloat = 6
         static let welcomeTapDot: CGFloat = 8
         /// The keyboard on the talking step: four rows of blank keys over a bottom row whose
@@ -679,6 +681,8 @@ enum DS {
         static let disabledOpacity: Double = 0.35
         /// The filling bar under the correction notice.
         static let bar: CGFloat = 2
+        /// The dashed edge of a place to drop a file.
+        static let dropDash: [CGFloat] = [4, 3]
 
         // Aliases (compile bridge)
         static let seam: CGFloat = 1

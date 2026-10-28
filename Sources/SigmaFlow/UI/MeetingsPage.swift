@@ -66,6 +66,8 @@ struct MeetingsPage: View {
     @State private var listHeight: CGFloat = 0
     /// A recording is being dragged over the list (Gokul, 15 Oct 2026, 1A).
     @State private var isDropTargeted = false
+    /// The held file's name and length, under "Drop to transcribe" (pick 15).
+    @State private var dropLabel: String?
     /// Deleting several: tick boxes are out, and these are ticked.
     @State private var isPicking = false
     @State private var ticked: Set<String> = []
@@ -220,6 +222,15 @@ struct MeetingsPage: View {
             }
             Card { cardBody } footer: { footer }
                 .overlay { if isDropTargeted { dropFrame } }
+                .onChange(of: isDropTargeted) { _, isOver in
+                    dropLabel = nil
+                    guard isOver else { return }
+                    let files = MeetingImport.dragged()
+                    Task { @MainActor in
+                        let label = await MeetingImport.dropLabel(for: files)
+                        if isDropTargeted { dropLabel = label }
+                    }
+                }
             // Until Claude Desktop has SigmaFlow: at the foot of the page, under the list
             // (docs/mockups/ask-claude.html, 1B 2A). Nothing when Claude isn't on this Mac.
             if claude.status != .connected, claude.status != .claudeNotInstalled {
@@ -242,18 +253,24 @@ struct MeetingsPage: View {
         })
     }
 
-    /// Record meeting, and the hotkey under it. While a meeting records the Stop button is
-    /// in its row, so this steps aside without the header changing height.
+    /// Upload meeting, then Record meeting with the hotkey under it (docs/mockups/
+    /// meeting-drop-discover.html, pick 05, Gokul's words and icon). While a meeting records
+    /// the Stop button is in its row, so both step aside without the header changing height.
     private var recordControl: some View {
-        VStack(spacing: DS.Space.snug) {
-            AppButton(title: "Record meeting", kind: .secondary, icon: "microphone") {
-                session.start()
+        HStack(alignment: .top, spacing: DS.Space.snug) {
+            AppButton(title: "Upload meeting", kind: .secondary, icon: "upload") {
+                library.pickRecordings()
             }
-            HStack(spacing: DS.Space.tight + DS.Space.hair) {
-                Text("Press")
-                    .font(DS.Font.caption)
-                    .foregroundStyle(DS.Color.inkSecondary)
-                KeyChip(text: "⌃⌥M")
+            VStack(spacing: DS.Space.snug) {
+                AppButton(title: "Record meeting", kind: .secondary, icon: "microphone") {
+                    session.start()
+                }
+                HStack(spacing: DS.Space.tight + DS.Space.hair) {
+                    Text("Press")
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.inkSecondary)
+                    KeyChip(text: "⌃⌥M")
+                }
             }
         }
         .opacity(session.isRecording ? 0 : 1)
@@ -278,7 +295,8 @@ struct MeetingsPage: View {
         .disabled(notes.isOpen)
     }
 
-    /// Over the list while a recording is dragged onto the page: a white edge and one line.
+    /// Over the list while a recording is dragged onto the page: a white edge, one line,
+    /// and under it the file's name and length once they are read.
     private var dropFrame: some View {
         ZStack {
             DS.Color.dropVeil
@@ -286,8 +304,16 @@ struct MeetingsPage: View {
                 CarbonIcon(name: "add", size: DS.Control.iconSize)
                 Text("Drop to transcribe")
                     .font(DS.Font.transcript)
+                if let dropLabel {
+                    Text(dropLabel)
+                        .font(DS.Font.mono)
+                        .foregroundStyle(DS.Color.inkSecondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
             .foregroundStyle(DS.Color.ink)
+            .padding(.horizontal, DS.Space.wide)
         }
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.card))
         .overlay(RoundedRectangle(cornerRadius: DS.Radius.card).strokeBorder(DS.Color.ink, lineWidth: DS.Border.hairline))

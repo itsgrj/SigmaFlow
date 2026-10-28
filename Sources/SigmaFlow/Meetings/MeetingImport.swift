@@ -1,6 +1,8 @@
 import AVFoundation
+import AppKit
 import CoreMedia
 import Foundation
+import UniformTypeIdentifiers
 
 /// A recording dropped onto the Meetings page, made into a meeting's audio file.
 ///
@@ -84,5 +86,31 @@ enum MeetingImport {
         if reader.status == .failed { throw reader.error ?? Failure.noSound }
         guard written > 0 else { throw Failure.noSound }
         return Double(written) / MeetingRecorder.sampleRate
+    }
+}
+
+// MARK: - Before the drop
+
+extension MeetingImport {
+    /// What the Upload meeting panel offers: any audio or video file.
+    static let fileTypes: [UTType] = [.audiovisualContent]
+
+    /// The files being dragged right now, read off the system's drag pasteboard, which any
+    /// app may read while a drag is on (SwiftUI's drop target only says whether it is over).
+    static func dragged() -> [URL] {
+        let urls = NSPasteboard(name: .drag).readObjects(
+            forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL]
+        return urls ?? []
+    }
+
+    /// Under "Drop to transcribe" while a recording is held over the page (docs/mockups/
+    /// meeting-drop-discover.html, pick 15): "Weekly sync.mp4, 42 min", or the name alone
+    /// when the length can't be read, or "3 recordings".
+    static func dropLabel(for urls: [URL]) async -> String? {
+        guard let url = urls.first else { return nil }
+        guard urls.count == 1 else { return "\(urls.count) recordings" }
+        let name = url.lastPathComponent
+        guard let seconds = try? await length(of: url) else { return name }
+        return "\(name), \(max(1, Int((seconds / 60).rounded()))) min"
     }
 }

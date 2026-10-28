@@ -52,6 +52,7 @@ struct SigmaFlowApp: App {
             MenuBarGlyph(
                 isDictating: delegate.controller.state.isActive,
                 isRecordingMeeting: delegate.meetings.isRecording)
+                .modifier(MainWindowOpener(delegate: delegate))
         }
     }
 }
@@ -63,6 +64,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hud: HUDPanel?
     private let spotlight = Spotlight()
     private var stateObservation: NSObjectProtocol?
+    /// Recordings opened before the SigmaFlow folder was looked for (a drop on the Dock icon
+    /// that launched the app); filed once it has been.
+    private var waitingRecordings: [URL] = []
+    private var isLaunched = false
+    /// Opens the main window when it is closed. Set by the menu bar icon, the one SwiftUI
+    /// view that is always drawn, since `openWindow` only exists inside SwiftUI.
+    var openMainWindow: (() -> Void)?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Before anything else starts: no hotkeys, no call watching, no SigmaFlow folder.
@@ -86,6 +94,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // recording left behind by a quit mid-meeting is filed now rather than lost.
         MeetingLibrary.shared.locate()
         meetings.recoverUnfiled()
+        // Recordings from the Dock and Finder (docs/mockups/meeting-drop-discover.html, 16, 17).
+        NSApp.servicesProvider = self
+        NSUpdateDynamicServices()
+        isLaunched = true
+        if !waitingRecordings.isEmpty { addRecordings(waitingRecordings) }
+        waitingRecordings = []
         // Dictations sit in the same folder: the first time, the whole history moves in.
         RunLog.settle()
         // Search: lines and pictures not yet read, from recordings made before or while away.
@@ -116,6 +130,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observeState()
         Log.app.info("SigmaFlow ready — hold \(Settings.shared.pushToTalkKey.displayName) to dictate")
         WindowSnapshots.runIfRequested(controller: controller)
+    }
+
+    /// A recording dropped on the Dock icon, or opened with SigmaFlow from Finder: filed as a
+    /// meeting exactly like a drop on the page (pick 16). The Info.plist declares audio and
+    /// video at the Alternate rank, so SigmaFlow is offered but never becomes their default app.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        let files = urls.filter(\.isFileURL)
+        guard !files.isEmpty else { return }
+        guard isLaunched else {
+            waitingRecordings += files
+            return
+        }
+        addRecordings(files)
+    }
+
+    /// Finder's right-click Transcribe with SigmaFlow (pick 17), the `NSServices` entry in
+    /// the Info.plist; `NSMessage` names this method.
+    @objc func transcribeRecordings(
+        _ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>
+    ) {
+        let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL]
+        application(NSApp, open: urls ?? [])
+    }
+
+    /// The Meetings page comes forward, so the new row is in view as it transcribes. Before
+    /// the first open is done the setup window stays the only window, and the recording is
+    /// simply filed.
+    private func addRecordings(_ urls: [URL]) {
+        if Settings.shared.firstOpenDone {
+            Settings.shared.lastPage = MainWindow.Section.meetings.rawValue
+            NSApp.activate()
+            if let window = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }) {
+                window.makeKeyAndOrderFront(nil)
+            } else {
+                openMainWindow?()
+            }
+        }
+        MeetingLibrary.shared.add(recordings: urls)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -170,6 +222,20 @@ private struct WelcomeCommand: View {
         Button("Welcome to SigmaFlow") {
             FirstOpen.shared.reopen(controller: controller)
             openWindow(id: "welcome")
+        }
+    }
+}
+
+/// Hands the app delegate a way to open the main window, from inside SwiftUI where
+/// `openWindow` lives.
+private struct MainWindowOpener: ViewModifier {
+    let delegate: AppDelegate
+    @Environment(\.openWindow) private var openWindow
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            let open = openWindow
+            delegate.openMainWindow = { open(id: "main") }
         }
     }
 }

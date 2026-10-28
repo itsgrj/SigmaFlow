@@ -117,6 +117,10 @@ install: app
 	@# $(BUNDLE) is an absolute staging path — the destination must use $(APPNAME) alone.
 	@rm -rf "/Applications/$(APPNAME)"
 	@cp -R "$(BUNDLE)" "/Applications/$(APPNAME)"
+	@# Launch Services and the Services menu read the new Info.plist: audio and video open
+	@# with SigmaFlow, and Finder's right-click offers Transcribe with SigmaFlow.
+	@/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/$(APPNAME)"
+	@/System/Library/CoreServices/pbs -update
 	@open "/Applications/$(APPNAME)"
 	@echo "installed to /Applications/$(APPNAME)"
 

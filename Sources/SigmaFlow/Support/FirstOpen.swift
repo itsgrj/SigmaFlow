@@ -5,8 +5,9 @@ import Observation
 
 /// The first open (docs/mockups/onboarding.html, round 6; Gokul's picks 1A 2B 3A 8E): a
 /// setup window of its own that goes Welcome, Microphone and Accessibility, talk, hands
-/// free, the folder, then straight into the app on Transcriptions, where what was said
-/// during setup is already waiting.
+/// free, the folder, meetings (docs/mockups/meeting-drop-discover.html, pick 19), then
+/// straight into the app on Transcriptions, where what was said during setup is already
+/// waiting, or on Meetings when a recording was dropped on the last step.
 ///
 /// The talking steps are real dictations. SigmaFlow is the app in front, so nothing is
 /// typed anywhere, the overlay shows as always, and each run is saved like any other.
@@ -20,7 +21,7 @@ final class FirstOpen {
     static let shared = FirstOpen()
 
     enum Step: String, CaseIterable {
-        case welcome, permissions, talk, handsFree, folder
+        case welcome, permissions, talk, handsFree, folder, meetings
     }
 
     var step: Step = .welcome
@@ -39,6 +40,8 @@ final class FirstOpen {
     private(set) var newestLine = -1
     private(set) var talked = false
     private(set) var talkedHandsFree = false
+    /// The file dropped on the Meetings step, now transcribing as a meeting.
+    private(set) var droppedRecording: String?
 
     /// A real first open, as opposed to Welcome opened again from the app menu.
     private(set) var isFirstRun = false
@@ -81,6 +84,7 @@ final class FirstOpen {
         newestLine = -1
         talked = false
         talkedHandsFree = false
+        droppedRecording = nil
         isFinished = false
     }
 
@@ -252,11 +256,20 @@ final class FirstOpen {
         MeetingLibrary.shared.pickFolder()
     }
 
+    // MARK: - Meetings
+
+    /// A recording dropped on the Meetings step: filed and transcribed as any drop is.
+    func addRecordings(_ urls: [URL]) {
+        guard let first = urls.first else { return }
+        MeetingLibrary.shared.add(recordings: urls)
+        droppedRecording = first.lastPathComponent
+    }
+
     // MARK: - Moving through
 
     var canContinue: Bool {
         switch step {
-        case .welcome, .folder: true
+        case .welcome, .folder, .meetings: true
         case .permissions: hasMicrophone && hasAccessibility
         // A download that failed must not trap anyone here; Apple hears them meanwhile.
         case .talk: talked || isModelFailed
@@ -277,11 +290,13 @@ final class FirstOpen {
     }
 
     /// Open SigmaFlow: the setup is done, and the app opens on Transcriptions, where the
-    /// talking steps' dictations are the first rows (8E).
+    /// talking steps' dictations are the first rows (8E), or on Meetings when a recording
+    /// was dropped on the last step, so it is there transcribing.
     func finish() {
         isFinished = true
         Settings.shared.firstOpenDone = true
-        Settings.shared.lastPage = MainWindow.Section.transcriptions.rawValue
+        let page: MainWindow.Section = droppedRecording == nil ? .transcriptions : .meetings
+        Settings.shared.lastPage = page.rawValue
         controller?.waitsForModel = false
         poll?.cancel()
         poll = nil

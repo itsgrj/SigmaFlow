@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>7</string>
+	<string>8</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<!-- Geist Pixel, Geist Mono and Geist ship in Contents/Resources/Fonts; this key makes macOS register the
@@ -30,6 +30,47 @@
 	<string>26.0</string>
 	<!-- A regular app: dock icon, app menu, standard windows. The menu bar item remains
 	     for status and the hotkey while you're working elsewhere, but it is secondary. -->
+	<!-- Audio and video files open as meetings: a drop on the Dock icon, or Open With in Finder
+	     (docs/mockups/meeting-drop-discover.html, pick 16). Alternate rank: SigmaFlow is offered,
+	     never made the default app for these files. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Recording</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.movie</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Finder's right-click Transcribe with SigmaFlow (pick 17); AppDelegate.transcribeRecordings. -->
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Transcribe with SigmaFlow</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>transcribeRecordings</string>
+			<key>NSPortName</key>
+			<string>SigmaFlow</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.movie</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSUIElement</key>
 	<false/>
 	<key>NSHighResolutionCapable</key>

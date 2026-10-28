@@ -48,6 +48,7 @@ struct OnboardingView: View {
         case .talk: talk
         case .handsFree: handsFree
         case .folder: folder
+        case .meetings: meetings
         }
     }
 
@@ -159,6 +160,21 @@ struct OnboardingView: View {
         }
     }
 
+    /// Meetings, two ways: recorded, or a file dropped in. The right tile is a real drop
+    /// target; what lands is filed and transcribed as a meeting.
+    private var meetings: some View {
+        StepFrame(title: "Meetings, two ways",
+                  line: "Record one as it happens, or drop in a recording you already have.") {
+            HStack(spacing: DS.Space.base) {
+                MeetingTile(icon: "microphone", title: "Record a meeting",
+                            caption: "Press ⌃⌥M, or Record meeting on the Meetings page.")
+                RecordingDropTile(dropped: flow.droppedRecording, isEnabled: !isSnapshotting,
+                                  onDrop: flow.addRecordings)
+            }
+            .frame(width: DS.Material.welcomeContentWidth)
+        }
+    }
+
     // MARK: - Foot
 
     private var foot: some View {
@@ -185,13 +201,13 @@ struct OnboardingView: View {
     private var primaryTitle: String {
         switch flow.step {
         case .welcome: "Start"
-        case .folder: "Open SigmaFlow"
+        case .meetings: "Open SigmaFlow"
         default: "Continue"
         }
     }
 
     private func primary() {
-        guard flow.step == .folder else {
+        guard flow.step == .meetings else {
             flow.next()
             return
         }
@@ -361,6 +377,64 @@ private struct FolderRow<Trailing: View>: View {
         .padding(.vertical, DS.Space.rowPadY)
         .contentShape(Rectangle())
         .onTapGesture(perform: action)
+    }
+}
+
+/// One way to make a meeting, on the Meetings step.
+private struct MeetingTile: View {
+    let icon: String
+    let title: String
+    let caption: String
+    var isTargeted = false
+    var isDashed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DS.Space.base) {
+            CarbonIcon(name: icon, size: DS.Control.iconSize)
+            Text(title).font(DS.Font.body)
+            Text(caption)
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(DS.Space.roomy)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: DS.Material.welcomeTileHeight)
+        .background(isTargeted ? DS.Color.controlFill : DS.Color.glass, in: RoundedRectangle(cornerRadius: DS.Radius.card))
+        .overlay {
+            RoundedRectangle(cornerRadius: DS.Radius.card)
+                .strokeBorder(isTargeted ? DS.Color.ink : isDashed ? DS.Color.borderStrong : DS.Color.border,
+                              style: StrokeStyle(lineWidth: DS.Border.hairline, dash: isDashed && !isTargeted ? DS.Border.dropDash : []))
+        }
+    }
+}
+
+/// Drop a recording: dashed until something is held over it, then a white edge; once a file
+/// lands, its name and Added.
+private struct RecordingDropTile: View {
+    let dropped: String?
+    let isEnabled: Bool
+    let onDrop: ([URL]) -> Void
+    @State private var isTargeted = false
+
+    var body: some View {
+        let tile = MeetingTile(
+            icon: dropped == nil ? "upload" : "checkmark",
+            title: dropped == nil ? "Drop a recording" : "Added to Meetings",
+            caption: dropped ?? "Any audio or video file. Drop one here to try it.",
+            isTargeted: isTargeted,
+            isDashed: dropped == nil)
+        if isEnabled {
+            tile.dropDestination(for: URL.self) { urls, _ in
+                let files = urls.filter(\.isFileURL)
+                guard !files.isEmpty else { return false }
+                onDrop(files)
+                return true
+            } isTargeted: { isTargeted = $0 }
+        } else {
+            tile
+        }
     }
 }
 
