@@ -849,6 +849,23 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
   release must carry the installer under exactly that name, as `make dmg` writes it. The
   Homebrew line came out on 27 Oct 2026: the tap `itsgrj/homebrew-tap` was never made, so the
   command failed; put it back with the tap.
+- **The README shows every feature as a moving picture the app drew itself** (28 Oct 2026,
+  [docs/mockups/readme-showcase.html](docs/mockups/readme-showcase.html), rounds 1 to 5):
+  picture on the left, words on the right (`align="left"`, then `<br clear="left">`), in three
+  groups, then the AI-ready folder and the local models. Examples are sales, marketing and
+  developers' work, all made up (Northwind, Maya Chen, Vercel, Q1 launch). Gokul caught hand-drawn
+  pictures not matching the app, so `SigmaFlow --readme-frames DIR [--scenes a,b]`
+  (`Support/ReadmeFrames.swift`) plays each scene through the real overlay, cards and pages,
+  driven by the `stageForPicture` hooks, over a made-up SigmaFlow folder in the temp folder
+  (the real one is never read), and writes `docs/readme/<scene>.png` as animated PNGs
+  (`Support/AnimatedPNG.swift`, changed rectangles only). Run it from the staged build with
+  `lastPage` set away from styles; it shows on screen for about two minutes. Redraw only the
+  scenes a change touches: git keeps every copy (about 22 MB for all eleven). What a dictation
+  lands is the real rule cleanup and dictionary, never a sentence written by hand.
+  `SigmaFlow --cleanup-check "TEXT" …` prints what both cleanups make of a line; tested 28 Oct,
+  Smart cleanup kept "five, no, ten" and "Tuesday, actually Wednesday" as said (only its own
+  prompt's example worked), so the README does not claim changing your mind mid-sentence.
+  Icons are Carbon SVGs in `docs/readme/icons/`, a `-dark` and `-light` copy behind `<picture>`.
 - **Public since 27 Oct 2026, from a fresh start** (Gokul's pick). The 190 commits before it
   held colleagues' names, work topics and a work email in old mockups, so they live only in the
   private `itsgrj/SigmaFlow-history` (remote `private`, local branch `history`); the public

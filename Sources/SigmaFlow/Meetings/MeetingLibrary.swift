@@ -163,6 +163,13 @@ final class MeetingLibrary {
         return !url.path.contains("/.Trash/")
     }
 
+    /// For `--readme-frames` only: reads a made-up SigmaFlow folder in place of the real one,
+    /// for this run. The bookmark and the settings are not touched.
+    func stageForPicture(root: URL) {
+        ownRoot = root
+        reload()
+    }
+
     // MARK: Reading
 
     func reload() {

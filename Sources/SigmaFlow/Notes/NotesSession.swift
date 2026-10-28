@@ -329,3 +329,22 @@ final class NotesSession {
         self.lines = lines
     }
 }
+
+// MARK: - README pictures
+
+extension NotesSession {
+    /// For `--readme-frames` only (Support/ReadmeFrames.swift): the card's state with made-up
+    /// lines and photos. No microphone, camera, recording or folder is behind it.
+    func stageForPicture(open: Bool, lines: [NoteLine], elapsed: TimeInterval, level: Float, photos: [NotePhoto]) {
+        isOpen = open
+        isPaused = false
+        isPreparing = false
+        isCameraOn = open
+        isScreensOn = false
+        self.lines = lines
+        self.elapsed = elapsed
+        self.level = level
+        self.photos = photos
+        screens = []
+    }
+}

@@ -1313,9 +1313,11 @@ extension FaintDelete where Leading == EmptyView {
 /// SigmaFlow folder with Meetings selected; Home opens Home. As faint as `FaintDelete`.
 struct PathBar: View {
     let folder: URL
+    /// Set only by `--readme-frames`: the made-up SigmaFlow folder's parent reads as Home.
+    static var stagedHome: URL?
 
     private var parts: [(name: String, url: URL)] {
-        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
+        let home = (Self.stagedHome ?? FileManager.default.homeDirectoryForCurrentUser).standardizedFileURL
         let target = folder.standardizedFileURL
         var url: URL
         var names: [String]

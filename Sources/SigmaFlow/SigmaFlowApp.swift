@@ -77,6 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if MeetingCheck.runIfRequested() { return }
         if SearchCheck.runIfRequested() { return }
         if WriteCheck.runIfRequested() { return }
+        if ReadmeFrames.runIfRequested(controller: controller) { return }
 
         // A regular app now: dock icon, app menu, standard windows. The HUD is still a
         // non-activating panel, so dictating into another app never steals its focus — that

@@ -833,3 +833,24 @@ final class DictationController {
         }
     }
 }
+
+// MARK: - README pictures
+
+extension DictationController {
+    /// For `--readme-frames` only (Support/ReadmeFrames.swift): puts the overlay's state in
+    /// place with made-up words. No microphone, engine, hotkey or run log is behind it, and
+    /// nothing is typed.
+    func stageForPicture(
+        _ state: State, transcript: String, level: Float, latched: Bool = false,
+        isWriting: Bool = false, writing: Writing? = nil, screen: NSImage? = nil, style: StyleActivity? = nil
+    ) {
+        self.state = state
+        self.transcript = transcript
+        self.level = level
+        isLatched = latched
+        self.isWriting = isWriting
+        self.writing = writing
+        screenPicture = screen
+        styleActivity = style
+    }
+}

@@ -48,7 +48,9 @@ final class TypedWords {
     }
 
     /// Typed so far today.
-    var today: Int { days[Self.key(for: Date())] ?? 0 }
+    var today: Int { stagedToday ?? days[Self.key(for: Date())] ?? 0 }
+    /// Set only by `--readme-frames`: Insights shows this for today. Never saved.
+    var stagedToday: Int?
 
     func note(_ key: Keystroke) {
         switch key {

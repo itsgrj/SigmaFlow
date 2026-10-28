@@ -83,7 +83,15 @@ struct MeetingsPage: View {
         if CommandLine.arguments.contains("--snapshot-dir"), Settings.shared.openTabs[kind.key] == "transcript" {
             _openID = State(initialValue: kind.library.meetings.first?.id)
         }
+        // `--readme-frames`: a made-up meeting open, or a search typed (Support/ReadmeFrames.swift).
+        if let staged = Self.staged {
+            _openID = State(initialValue: staged.openID)
+            _query = State(initialValue: staged.query)
+        }
     }
+
+    /// Set only by `--readme-frames`, before the page is drawn.
+    static var staged: (openID: String?, query: String)?
 
     /// A meeting being recorded shows on Meetings only; live notes have their card.
     private var isRecordingHere: Bool { kind == .meetings && session.isRecording }
