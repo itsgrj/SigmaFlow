@@ -46,8 +46,21 @@ final class DictationController {
             PictureReader.shared.isDictating = state.isActive
         }
     }
-    /// Live transcript, updated as the engine revises it. Drives the HUD.
-    private(set) var transcript = ""
+    /// Live transcript, updated as the engine revises it. The pipeline's raw input; the
+    /// overlay draws `shownTranscript`.
+    private(set) var transcript = "" {
+        didSet {
+            // One corrector per utterance: built at its first words, dropped when it clears,
+            // so a dictionary edit applies from the next hold.
+            if transcript.isEmpty { liveCorrector = nil }
+            else if liveCorrector == nil { liveCorrector = DictionaryStore.shared.corrector }
+            shownTranscript = liveCorrector?.apply(to: transcript).text ?? transcript
+        }
+    }
+    /// `transcript` with the dictionary applied, so "click" reads "Cliq" while you talk, not
+    /// only once it lands. Cleanup, style and snippets still wait for release.
+    private(set) var shownTranscript = ""
+    @ObservationIgnored private var liveCorrector: DictionaryCorrector?
     /// Smoothed 0…1 mic level for the waveform.
     private(set) var level: Float = 0
     /// Hands-free: recording was locked on by a double-tap and runs until the next tap.

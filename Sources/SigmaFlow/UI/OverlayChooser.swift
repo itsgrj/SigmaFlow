@@ -87,12 +87,12 @@ struct OverlayChooser: View {
         case .starting, .listening:
             return OverlayPreviewFrame(
                 phase: .recording, seconds: date.timeIntervalSince(start), level: controller.level,
-                words: controller.transcript, run: run
+                words: controller.shownTranscript, run: run
             )
         case .finishing:
             return OverlayPreviewFrame(
                 phase: .processing, seconds: (controller.releasedAt ?? date).timeIntervalSince(start),
-                words: controller.transcript, run: run
+                words: controller.shownTranscript, run: run
             )
         case .error(let message):
             return OverlayPreviewFrame(phase: .error(message), run: run)

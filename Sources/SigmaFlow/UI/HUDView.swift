@@ -154,13 +154,13 @@ struct HUDView: View {
             case .idle:
                 EmptyView()
             default:
-                if controller.transcript.isEmpty {
+                if controller.shownTranscript.isEmpty {
                     // Batch models transcribe in one pass on release, so there is nothing to
                     // show until it lands; say what is happening rather than show an empty card.
                     words(controller.state == .finishing ? "Transcribing" : "Listening", color: DS.Color.inkSecondary)
                 } else {
                     WordFlowText(
-                        target: controller.transcript,
+                        target: controller.shownTranscript,
                         paced: controller.state == .listening || controller.state == .starting
                     )
                     .foregroundStyle(controller.state == .finishing ? DS.Color.inkSecondary : DS.Color.ink)
