@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meeting video</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--footer:rgba(0,0,0,.35);--veil:rgba(0,0,0,.62);
+ --menu:rgba(34,34,34,.97);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:56px 0 6px}
+h3{font-size:15px;font-weight:500;margin:40px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.note code{font:12px var(--mono);color:var(--ink)}
+.scroll{overflow-x:auto}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;max-width:1180px;margin:10px 0 0;padding:0;list-style:none}
+.index li{font-size:13px;color:var(--ink2);line-height:1.5}
+.index a{text-decoration:none;color:var(--ink2)}.index a:hover{color:var(--ink)}
+.index .k{font:11px var(--mono);color:var(--dim);margin-right:8px}
+
+/* the window at its real size */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:210px;flex:0 0 210px;background:#000;border-right:1px solid var(--border);padding:22px 10px;position:relative}
+.rail .wm{font:22px var(--pixel);padding:0 10px 18px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:5px;font-size:14px;border:1px solid transparent}
+.rail .it.on{background:var(--sel)}
+.rail .it.drop{background:var(--sel);border-color:var(--ink)}
+.rail .it .dl{margin-left:auto;font:11px var(--mono);color:var(--ink2)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.pg{flex:1;padding:30px 34px;min-width:0;display:flex;flex-direction:column;gap:22px;position:relative}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.hd h4{font-size:22px;font-weight:400;margin:0 0 8px}
+.hd .sub{font-size:14px;color:var(--ink2);max-width:560px;line-height:1.45}
+.rec{display:flex;flex-direction:column;align-items:flex-end;gap:8px;position:relative}
+.btns{display:flex;gap:8px}
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:7px 13px;background:var(--fill);white-space:nowrap;display:inline-flex;gap:8px;align-items:center;color:var(--ink)}
+.btn img{width:13px;height:13px;filter:invert(1)}
+.btn.ghost{background:none}
+.btn.sm{padding:4px 10px;font-size:12px}
+.split{display:inline-flex;border:1px solid var(--border);border-radius:5px;background:var(--fill)}
+.split .btn{border:0;background:none}
+.split .chev{border-left:1px solid var(--border);padding:7px 10px;font-size:11px;color:var(--ink2);display:flex;align-items:center}
+.split.open .chev{background:var(--sel);color:var(--ink)}
+.press{font-size:12px;color:var(--ink2)}.kc{border:1px solid var(--border);border-radius:4px;padding:0 6px;font:12px var(--mono);background:var(--fill);margin:0 4px 0 6px}
+.tools{display:flex;justify-content:space-between;align-items:center}
+.search{width:360px;height:32px;border:1px solid var(--border);border-radius:5px;background:var(--fill);display:flex;align-items:center;gap:8px;padding:0 11px;color:var(--ph);font-size:13px}
+.search img{width:13px;filter:invert(1);opacity:.5}
+.count{font-size:13px;color:var(--ink2)}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--border);font-size:13px}
+.tabs span{padding:0 0 9px;color:var(--ink2)}.tabs span.on{color:var(--ink);border-bottom:1px solid var(--ink)}
+
+/* the card */
+.card{border:1px solid var(--border);border-radius:6px;background:var(--glass);display:flex;flex-direction:column;overflow:hidden;font-family:var(--pixel);position:relative}
+.win .card{flex:1;min-height:0}
+.card .rows{flex:1;overflow:hidden}
+.card .mh{font:12px var(--mono);letter-spacing:.06em;color:var(--ink2);padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:52px;border-bottom:1px solid var(--border);font-size:14px;gap:16px}
+.row>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .go{color:var(--ink2);font-size:13px;white-space:nowrap}
+.row.dict{height:auto;padding:13px 16px;align-items:flex-start}
+.row.dict .t{font:12px var(--mono);color:var(--ink2);width:70px;flex:0 0 70px}
+.row.dict span:nth-child(2){white-space:normal;flex:1;line-height:1.45}
+.adding .state{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink2);white-space:nowrap}
+.pline{width:90px;height:2px;background:var(--border);position:relative}.pline i{position:absolute;left:0;top:0;bottom:0;width:22%;background:var(--ink)}
+.dashrow{margin:12px 16px 4px;height:52px;border:1px dashed var(--strong);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:var(--ink2)}
+.dashrow img{width:13px;filter:invert(1);opacity:.7}
+.dashrow u{color:var(--ink);text-decoration-color:var(--strong);text-underline-offset:3px}
+.endrow{display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;font-size:13px;color:var(--dim);opacity:.8}
+.endrow img{width:12px;filter:invert(1);opacity:.6}
+.endrow u{text-decoration-color:var(--strong);text-underline-offset:3px}
+.mhadd{display:inline-flex;align-items:center;gap:6px;font:12px var(--mono);letter-spacing:0;color:var(--dim)}
+.mhadd img{width:11px;filter:invert(1);opacity:.6}
+
+/* footer */
+.ft{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;height:44px;border-top:1px solid var(--border);font-size:12px}
+.faint{display:inline-flex;align-items:center;gap:6px;color:var(--dim);opacity:.75}
+.faint img{width:11px;height:11px;filter:invert(1);opacity:.6}
+.crumbs{display:inline-flex;align-items:center;gap:4px;font:12px var(--mono);color:var(--dim);opacity:.75}
+.crumbs .seg{display:inline-flex;align-items:center;gap:5px;padding:3px 6px}
+.crumbs .seg img{width:11px;filter:invert(1);opacity:.6}
+.crumbs .sep{color:var(--ph)}
+.ft .mid{flex:1;display:flex;justify-content:center}
+
+/* the drop veil, as the app draws it today */
+.veil{position:absolute;inset:0;background:var(--veil);border:1px solid var(--ink);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:15px;z-index:5}
+.veil img{width:16px;filter:invert(1)}
+.veil .file{font:12px var(--mono);color:var(--ink2)}
+.veil.whole{border-radius:0;inset:0;font-size:22px}
+
+/* dragged file and pointer */
+.drag{position:absolute;z-index:20;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
+.doc{width:40px;height:50px;background:#d9d9d9;border-radius:3px;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.5);opacity:.92}
+.doc:before{content:"";position:absolute;right:0;top:0;border-style:solid;border-width:0 11px 11px 0;border-color:transparent #9a9a9a transparent transparent}
+.doc:after{content:"MP4";position:absolute;bottom:7px;left:0;right:0;text-align:center;font:9px var(--mono);color:#333}
+.drag .nm{font:11px var(--geist);background:rgba(0,0,0,.55);padding:1px 6px;border-radius:4px;color:#fff;white-space:nowrap}
+.plus{position:absolute;right:-8px;bottom:12px;width:16px;height:16px;border-radius:50%;background:#fff;color:#000;font:bold 13px/16px var(--geist);text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.cursor{position:absolute;z-index:21;width:16px;height:22px;pointer-events:none}
+
+/* small floating things */
+.tip{position:absolute;z-index:10;background:#2a2a2a;border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:5px 9px;font:12px var(--geist);color:var(--ink);white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.menu{position:absolute;z-index:12;background:var(--menu);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:5px;min-width:230px;box-shadow:0 12px 32px rgba(0,0,0,.6);font:13px var(--geist);color:var(--ink)}
+.menu .mi{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:4px 10px;border-radius:4px;white-space:nowrap}
+.menu .mi.hl{background:rgba(255,255,255,.16)}
+.menu .mi .sc{color:var(--ink2);font-size:12px}
+.menu .mi.off{color:var(--ph)}
+.menu hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:5px 6px}
+.menu .mi .ar{color:var(--ink2)}
+.toast{position:absolute;z-index:8;right:50px;bottom:84px;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:11px 14px;display:flex;align-items:center;gap:12px;font:13px var(--pixel);backdrop-filter:blur(8px)}
+.coach{position:absolute;z-index:8;background:#0c0c0c;border:1px solid var(--ink);border-radius:6px;padding:14px 16px;width:300px;font:13px var(--pixel);box-shadow:0 12px 32px rgba(0,0,0,.6)}
+.coach p{margin:0 0 12px;line-height:1.45}
+.coach .acts{display:flex;justify-content:flex-end}
+.coach:before{content:"";position:absolute;top:-6px;right:40px;width:10px;height:10px;background:#0c0c0c;border-left:1px solid var(--ink);border-top:1px solid var(--ink);transform:rotate(45deg)}
+
+/* the Mac around the window */
+.desk{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;font-family:var(--geist)}
+.desk:before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.desk>*{position:absolute}
+.mbar{left:0;right:0;top:0;height:26px;background:rgba(20,20,20,.82);backdrop-filter:blur(10px);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:13px;color:#eee}
+.mbar b{font-weight:600}
+.mbar .on{background:rgba(255,255,255,.18);border-radius:4px;padding:1px 8px;margin:0 -8px}
+.mini{background:rgba(10,10,10,.9);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.mini .bar{height:28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;padding:0 12px;font-size:12px;color:var(--ink2)}
+.mini .bar i{width:11px;height:11px;border-radius:50%;background:#444;display:inline-block}
+.mini .bar .ttl{margin-left:12px}
+.dock{left:50%;transform:translateX(-50%);bottom:10px;height:74px;padding:9px 12px;border-radius:20px;background:rgba(60,60,60,.45);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(14px);display:flex;gap:10px;align-items:flex-end}
+.dock .app{width:56px;height:56px;border-radius:13px;background:#3a3a3a;border:1px solid rgba(255,255,255,.08)}
+.dock .app.sf{background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%;border:0;transform:translateY(-6px) scale(1.12);box-shadow:0 0 0 2px #fff}
+.dock .sep{width:1px;height:50px;background:rgba(255,255,255,.2);margin:0 2px 3px}
+.dock .lbl{position:absolute;bottom:92px;background:rgba(40,40,40,.92);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:13px}
+.finder{display:flex;font-size:13px}
+.finder .side{width:150px;border-right:1px solid var(--border);padding:12px 10px;color:var(--ink2);font-size:12px;line-height:2}
+.finder .side b{color:var(--dim);font-weight:500;font-size:11px;display:block}
+.finder .list{flex:1}
+.finder .fr{display:flex;align-items:center;gap:10px;padding:5px 14px;font-size:13px;color:var(--ink)}
+.finder .fr img{width:14px;filter:invert(1);opacity:.8}
+.finder .fr .k{margin-left:auto;color:var(--ph);font-size:12px}
+.finder .fr.hl{background:rgba(255,255,255,.14)}
+.finder .fr.target{background:rgba(255,255,255,.18);outline:1px solid #fff;outline-offset:-1px}
+.finder .fr .mdoc{width:12px;height:15px;background:#cfcfcf;border-radius:1px}
+
+/* onboarding */
+.welcome{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;font-family:var(--pixel);display:flex;align-items:center;justify-content:center}
+.welcome:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.welcome>*{position:relative}
+.wbox{width:640px;display:flex;flex-direction:column;gap:18px}
+.wbox .step{font:12px var(--mono);color:var(--dim);letter-spacing:.06em}
+.wbox h5{font-size:28px;font-weight:400;margin:0}
+.wbox .ln{font-size:14px;color:var(--ink2);line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.tile{border:1px solid var(--border);border-radius:6px;background:var(--glass);padding:20px;min-height:170px;display:flex;flex-direction:column;gap:12px}
+.tile.dash{border-style:dashed;border-color:var(--strong)}
+.tile .big{font-size:16px}
+.tile .sm{font-size:13px;color:var(--ink2);line-height:1.45}
+.tile .icn{width:18px;filter:invert(1)}
+.wfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.dots{display:flex;gap:6px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--strong)}.dots i.on{background:var(--ink)}
+
+/* this page's own pieces */
+.pick{font:11px var(--mono);color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.rule{font:12px var(--mono);color:var(--dim);margin:-2px 0 10px}
+.cols{display:flex;gap:20px;align-items:flex-start}
+.cap{font:12px var(--mono);color:var(--dim);margin:0 0 8px}
+
+/* a call, drawn as video */
+.vid{background:#050505;border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;position:relative;font-family:var(--geist)}
+.vid .pic{flex:1;display:grid;gap:4px;padding:4px;min-height:0}
+.vid .pic.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.vid .tile{background:#1d1d1d;border-radius:3px;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
+.vid .tile .av{width:26%;aspect-ratio:1;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-size:12px;color:#bbb;max-width:64px}
+.vid .tile .nm{position:absolute;left:5px;bottom:4px;font-size:9px;color:#ddd;background:rgba(0,0,0,.5);padding:0 4px;border-radius:2px}
+.vid .tile.talk{outline:1px solid #cfcfcf;outline-offset:-1px}
+.vid .slide{background:#e9e9e9;border-radius:3px;color:#222;padding:8% 9%;display:flex;flex-direction:column;gap:7%;position:relative}
+.vid .slide b{font-size:13px;font-weight:600}
+.vid .slide .bars{display:flex;align-items:flex-end;gap:7%;flex:1}
+.vid .slide .bars i{flex:1;background:#8a8a8a}
+.vid .ctl{height:30px;flex:0 0 30px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 10px;font:11px var(--mono);color:var(--ink2);background:#0b0b0b}
+.vid .ctl img{width:12px;filter:invert(1)}
+.vid .ctl .scrub{flex:1;height:2px;background:var(--border);position:relative}
+.vid .ctl .scrub i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.vid .ctl .scrub b{position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--ink);margin-left:-4px}
+.vid .ctl .sq{width:11px;height:9px;border:1px solid var(--ink2)}
+.vid .sub{position:absolute;left:0;right:0;bottom:40px;text-align:center}
+.vid .sub span{background:rgba(0,0,0,.72);color:#fff;font:13px var(--pixel);padding:3px 8px}
+
+/* what is filmed */
+.film{position:absolute;border:2px dashed #fff;border-radius:8px;z-index:30;pointer-events:none}
+.film .ft2{position:absolute;left:-2px;top:-22px;font:11px var(--mono);letter-spacing:.06em;background:#fff;color:#000;padding:2px 7px;border-radius:3px 3px 0 0}
+.notif{background:rgba(40,40,40,.92);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 12px;width:260px;font-size:12px;color:#eee;display:flex;gap:10px;align-items:flex-start;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.notif .ap{width:26px;height:26px;border-radius:6px;background:#555;flex:0 0 26px}
+.notif b{font-weight:600;display:block;margin-bottom:2px}
+.mbar .rt{margin-left:auto;display:flex;gap:14px;align-items:center;color:#ddd}
+.mbar .scr{width:16px;height:11px;border:1.4px solid #ddd;border-radius:2px;position:relative}
+.mbar .scr:after{content:"";position:absolute;left:4px;top:2px;width:4px;height:4px;border-radius:50%;background:#ddd}
+.bubble{position:absolute;width:92px;height:92px;border-radius:50%;background:#2c2c2c;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font:13px var(--geist);color:#ccc;z-index:31}
+.doc2{background:#1b1b1b;border-radius:3px;padding:16px;display:flex;flex-direction:column;gap:9px}
+.doc2 i{height:7px;background:#3a3a3a;display:block;border-radius:2px}
+
+/* the meetings page pieces */
+.row.recrow{height:auto;padding:12px 16px;background:var(--fill)}
+.row.recrow .nm2{display:flex;flex-direction:column;gap:4px;min-width:0}
+.row.recrow .nm2 small{font-size:12px;color:var(--ink2)}
+.recctl{display:flex;align-items:center;gap:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block}
+.eb{font:12px var(--mono);letter-spacing:.08em}
+.meter{display:flex;gap:3px}.meter i{width:5px;height:5px;border-radius:50%;background:#30d158}.meter i.o{background:var(--border)}
+.thumb{width:96px;height:60px;border:1px solid var(--border);border-radius:3px;overflow:hidden;flex:0 0 96px}
+.thumb .vid{height:100%;border:0;border-radius:0}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);border:1px solid var(--border);border-radius:5px;padding:4px 9px}
+.chip img{width:12px;filter:invert(1);opacity:.8}
+.chip.on{color:var(--ink);background:var(--sel);border-color:var(--strong)}
+.sw{width:30px;height:17px;border-radius:9px;background:var(--border);position:relative;flex:0 0 30px}
+.sw:after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#bbb}
+.sw.on{background:#e6e6e6}.sw.on:after{left:15px;background:#000}
+.mk{display:inline-flex;align-items:center;gap:5px;font:11px var(--mono);color:var(--dim);margin-right:14px}
+.mk img{width:12px;filter:invert(1);opacity:.6}
+.still{width:64px;height:40px;flex:0 0 64px;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-right:12px}
+.still .vid{height:100%;border:0;border-radius:0}
+.still .vid .ctl{display:none}
+
+/* sheet */
+.sheet{position:absolute;z-index:40;background:#101010;border:1px solid var(--strong);border-radius:8px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7);font-family:var(--pixel)}
+.sheet h6{font-size:16px;font-weight:400;margin:0 0 14px}
+.choice3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.choice3 .c{border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.choice3 .c.on{border-color:var(--ink);background:var(--sel)}
+.choice3 .c .pv{height:70px;border-radius:3px;background:#1a1a1a;overflow:hidden}
+.choice3 .c small{font-size:11px;color:var(--dim)}
+.sheet .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* settings */
+.set{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px}
+.set small{display:block;font-size:12px;color:var(--ink2);margin-top:4px}
+.set.hl{background:var(--fill)}
+
+/* the call card above the Dock */
+.callcard{position:absolute;z-index:35;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:14px;font-family:var(--pixel);box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.callcard .ic{width:40px;height:40px;border-radius:9px;background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%}
+.callcard .q{font-size:14px;margin:0 0 10px;line-height:40px;height:40px}
+
+/* the transcript */
+.back{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.back img{width:12px;filter:invert(1);opacity:.7}
+.facts{display:flex;gap:18px;font-size:12px}.facts span{color:var(--dim)}.facts b{font-weight:400;color:var(--ink2);margin-left:6px}
+.spk{display:flex;gap:6px;margin-top:10px}.spk span{font-size:12px;border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--ink2)}
+.tbar{height:40px;flex:0 0 40px;display:flex;align-items:center;padding:0 8px 0 16px;border-bottom:1px solid var(--border);background:var(--fill);font:11px var(--mono);letter-spacing:.06em;color:var(--dim)}
+.tbar .tc{width:78px}
+.tbar .r{margin-left:auto;display:flex;gap:8px;align-items:center;letter-spacing:0}
+.tbar .pair{display:flex;border:1px solid var(--border);border-radius:5px;font:12px var(--geist);color:var(--ink)}
+.tbar .pair span{padding:5px 10px;display:flex;gap:6px;align-items:center}.tbar .pair span+span{border-left:1px solid var(--border)}
+.tbar .pair img{width:11px;filter:invert(1)}
+.tbar .pair em{font-style:normal;color:var(--dim)}
+.tbar .again{font:12px var(--geist);color:var(--ink2);padding:5px 8px}
+.tline{display:flex;padding:11px 16px;font-size:14px;line-height:1.5;border-bottom:1px solid transparent}
+.tline .tm{width:78px;flex:0 0 78px;font:12px var(--mono);color:var(--dim);padding-top:2px}
+.tline b{font-weight:500}
+.tline.now{background:var(--sel)}
+.tline .cam{display:inline-block;width:46px;height:29px;vertical-align:middle;border:1px solid var(--border);border-radius:2px;margin-right:6px;overflow:hidden}
+.tline .cam .vid{height:100%;border:0;border-radius:0}.tline .cam .vid .ctl{display:none}
+.txcard{flex:1;min-height:0;display:flex;flex-direction:column}
+.txrows{flex:1;overflow:hidden}
+.pip{position:absolute;z-index:6;right:14px;bottom:14px;width:300px;height:190px;box-shadow:0 12px 32px rgba(0,0,0,.7)}
+.viewer{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 40px}
+.viewer .close{position:absolute;right:20px;top:18px;font-size:13px;color:var(--ink2);display:flex;gap:6px;align-items:center}
+.viewer .close img{width:12px;filter:invert(1)}
+.qt{background:#1e1e1e;border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.7);display:flex;flex-direction:column}
+.qt .bar{height:28px;display:flex;align-items:center;gap:7px;padding:0 12px;font:12px var(--geist);color:var(--ink2);border-bottom:1px solid rgba(255,255,255,.1)}
+.qt .bar i{width:11px;height:11px;border-radius:50%;background:#555;display:inline-block}
+.qt .bar .ttl{margin:0 auto;padding-right:40px}
+.later{border:1px dashed var(--strong);border-radius:6px;padding:16px 18px;max-width:1080px;font-size:13px;line-height:1.55;color:var(--ink2)}
+.later b{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Recording the video of a meeting</h1>
+<p class="lead"><b>Picks, 4 Nov 2026: 03 33 12 15 20 22 27, and 30 and 31 from Later.</b> 33 replaces 08: the choice between video and sound only is made on "Record this meeting?", with two buttons and no third to close it; the card goes by itself after 20 seconds, the line along its foot stopping while the pointer is on it, and nothing is recorded. Rounds 2 and 3 (where a switch on the page would go) are kept below, not picked. 13 waits on measuring the strain from the app. 22 has no dots in its caption. ⌃⌥M and Record meeting on the page, which have no card to ask, follow the last choice made on the card (Gokul, 4 Nov 2026).</p>
+<p class="lead"><b>Asked 4 Nov 2026:</b> "Can we make SigmaFlow record the entire meeting? The video as well." Today a meeting is sound only: the microphone, plus everything the Mac plays, in one <code>.m4a</code>. This page offers 32 choices in eight groups. Transcription stays as it is, worked out from the sound, so rename, speaker names, search and Claude all carry on unchanged. Live notes are left out: they already take photos and screenshots, and they are for meetings in a room. People, companies and lines are made up.</p>
+<p class="lead"><b>Reply with one number from each group</b> (groups A, B, D, E, F and G), any you like from C, and any you want from H. For example: "03 08 11 13 15 19 22 28". <b>My picks are marked</b>; they are only a starting point.</p>
+<p class="note"><b>From Mobbin.</b> Watching a recording: <a href="https://mobbin.com/screens/360ddc40-494e-4028-ad6a-c2ad86c05091">Grain</a> puts the video on the right and the transcript on the left; <a href="https://mobbin.com/screens/2e68b8da-81a8-4e1d-bdb8-48dec8f6e49b">Loom</a>, <a href="https://mobbin.com/screens/d721e6e7-65b8-46c2-a0dc-3bfeb4f7c51f">Fireflies</a> and <a href="https://mobbin.com/screens/0bd8f698-1b0b-4f0d-8883-a2cd23839360">Apollo</a> put the video on the left; <a href="https://mobbin.com/screens/981383f0-7b00-4cc8-8988-8ca538995c36">Lyssna</a> and <a href="https://mobbin.com/screens/b1cf28c8-2ebe-4470-a289-125163c8f7f8">Dialpad</a> put it above the transcript; <a href="https://mobbin.com/screens/3dad3342-5941-457f-a91d-fff6e10c77eb">Sana</a> opens it large over the page; <a href="https://mobbin.com/screens/c660e4c0-f122-428b-949d-8980d57b4527">Amie</a> keeps sound only. Choosing what to film: <a href="https://mobbin.com/screens/3e81e7fa-c414-43d4-8c01-37e5daa35b71">Google Meet</a> and <a href="https://mobbin.com/screens/4bb67a17-74da-443f-bbe5-eaeec3de5cd5">ClickUp</a> ask for a tab, a window or the screen; <a href="https://mobbin.com/screens/96664708-cd8b-43bd-86c9-27efe0f69202">Loom</a> and <a href="https://mobbin.com/screens/7befb9e6-af82-4755-838c-fcf603502c1c">Canva</a> add the camera; <a href="https://mobbin.com/screens/6372d689-bd21-43d1-808a-e043e9cd97c4">Riverside</a> has an "Audio &amp; video / Audio only" switch. Lists: <a href="https://mobbin.com/screens/7aaab63d-a1c8-410a-ba9f-139d389df77e">Otter</a> shows a still beside a recording that has video, while <a href="https://mobbin.com/screens/8ac631df-2124-44da-8199-2346d67375ac">Zoom</a> and <a href="https://mobbin.com/screens/fdcfe6aa-dbc5-420d-9818-573442554234">Vimeo</a> show a grid of stills.</p>
+<p class="note"><b>Whatever is picked:</b> macOS shows its own screen recording mark in the menu bar for as long as SigmaFlow films, and every so often it asks whether SigmaFlow may carry on recording the screen. Screen Recording is already granted for live notes' screenshots. As with the sound, the video is recorded outside the SigmaFlow folder, moved in at Stop, and written in pieces so that a crash still leaves something that plays. SigmaFlow's own windows are never in it.</p>
+
+<ul class="index" id="index"></ul>
+
+<h2>Round 4. The call card asks: video or sound only</h2>
+<p class="rule">4 Nov 2026: the choice moves to "Record this meeting?", with exactly two choices and no third button to close the card. So each option also says how the card goes when you want neither. Today it stays until it is answered or the call ends. Reply with a number, for example "37".</p>
+
+<h3 id="m33"><span class="tag">33</span>Two buttons, and the card leaves by itself<span class="pick">PICKED</span></h3>
+<p class="note">"With video" and "Sound only". A thin line along the foot of the card runs down for 20 seconds and then the card goes, with nothing recorded. It stops while the pointer is on the card, as the Dictionary's learned rules do.</p>
+<div class="scroll" data-m="33"></div>
+
+<h3 id="m34"><span class="tag">34</span>Two buttons, swipe it away</h3>
+<p class="note">The same two buttons and no timer. A two-finger swipe to the right sends the card off, the way a Mac notification goes. Left alone, it goes when the call ends, as it does today.</p>
+<div class="scroll" data-m="34"></div>
+
+<h3 id="m35"><span class="tag">35</span>The one you chose last time leads</h3>
+<p class="note">Both choices are always there, but the one picked last time is the bright button and the other is quiet, so a person who always picks video sees it first. The card leaves by itself after 20 seconds, as in 33.</p>
+<div class="scroll" data-m="35"></div>
+
+<h3 id="m36"><span class="tag">36</span>One button, and a quiet "or sound only"</h3>
+<p class="note">"Record with video" is the button, and "or sound only" is faint underlined text after it. It is the lightest card that still offers both. Left alone, it goes when the call ends.</p>
+<div class="scroll" data-m="36"></div>
+
+<h3 id="m37"><span class="tag">37</span>The question names one, the buttons answer</h3>
+<p class="note">"Record this meeting with video?" with Yes and Sound only. Both answers record; the question just says what Yes means. The card leaves by itself after 20 seconds.</p>
+<div class="scroll" data-m="37"></div>
+
+<h3 id="m38"><span class="tag">38</span>Two tiles</h3>
+<p class="note">Two square tiles under the question, one with the video icon and one with the microphone. Each is a big, plain target, and the card is taller. Swipe it away, as in 34.</p>
+<div class="scroll" data-m="38"></div>
+
+<h3 id="m39"><span class="tag">39</span>The card is the choice</h3>
+<p class="note">The card splits down the middle: the left half is video and the right half is sound only, each half lighting up under the pointer. There are no buttons inside it, and the question sits across the top. It leaves by itself after 20 seconds.</p>
+<div class="scroll" data-m="39"></div>
+
+<h3 id="m40"><span class="tag">40</span>Two rows, like a menu</h3>
+<p class="note">"Record with video" and "Record sound only" as two rows with their icons, each row clickable across its whole width. It reads like a short Mac menu. Left alone, it goes when the call ends.</p>
+<div class="scroll" data-m="40"></div>
+
+<h3 id="m41"><span class="tag">41</span>Icons only</h3>
+<p class="note">The question and two square icon buttons, video and microphone, with a word on hover. It is the smallest card, but you have to know the icons. Swipe it away, as in 34.</p>
+<div class="scroll" data-m="41"></div>
+
+<h3 id="m42"><span class="tag">42</span>Where Mac notifications appear</h3>
+<p class="note">The card moves to the top right, under the menu bar, and looks like a notification: the question, then the two choices underneath. It goes off the way notifications do, with a swipe to the right, or by itself after 20 seconds. The Dock area stays free for dictation's overlay.</p>
+<div class="scroll" data-m="42"></div>
+
+<h2>Round 3. A different kind of switch</h2>
+<p class="rule">Round 2 put a switch somewhere on the page, and none of the six worked. These don't: each one hides the choice until you look for it, or puts it where a meeting starts. Each is remembered, and covers ⌃⌥M and "Record this meeting?" too, except 08l, which is for one meeting. Reply with a letter, for example "08m".</p>
+
+<h3 id="m08g"><span class="tag">08g</span>Only while the pointer is on Record meeting</h3>
+<p class="note">The page looks exactly as it does today. Rest the pointer on Record meeting and a faint "Video off" shows beside Press ⌃⌥M, and a click turns it on. This is the way the pencil appears beside a transcript's title. Once it is on, "Video on" stays in view, so you can always tell.</p>
+<div class="scroll" data-m="08g"></div>
+
+<h3 id="m08h"><span class="tag">08h</span>A word in the subtitle</h3>
+<p class="note">"Record a meeting, <u>sound only</u>, and read it back the moment it ends." The two words are faintly underlined, and a click turns them into "with video". There is no control to look at, just the sentence that is already there.</p>
+<div class="scroll" data-m="08h"></div>
+
+<h3 id="m08i"><span class="tag">08i</span>On the recording row, once it starts</h3>
+<p class="note">Nothing shows before Record. While a meeting records, a faint Video sits beside Stop, and turning it on starts filming from that moment. The next meeting starts the same way this one ended. It also does what 14 did (stop the video, keep the sound).</p>
+<div class="scroll" data-m="08i"></div>
+
+<h3 id="m08j"><span class="tag">08j</span>On the call card only</h3>
+<p class="note">Most meetings start from "Record this meeting?", so the choice sits there: a small video icon at the end of the card's buttons, crossed out when off. The Meetings page never shows it; ⌃⌥M and Record meeting follow the card's last choice.</p>
+<div class="scroll" data-m="08j"></div>
+
+<h3 id="m08k"><span class="tag">08k</span>Right-click Record meeting</h3>
+<p class="note">A small menu with "Record video too", ticked when on. Nothing is ever on the page. This is how Mac apps hide a setting on the button it belongs to; people who never right-click never see it.</p>
+<div class="scroll" data-m="08k"></div>
+
+<h3 id="m08l"><span class="tag">08l</span>Hold ⌥ for this meeting</h3>
+<p class="note">Holding Option turns the button into "Record with video", the way Mac menus show their alternates. Nothing is remembered, so each meeting with video is chosen as it starts. ⌃⌥⇧M does the same from the keyboard.</p>
+<div class="scroll" data-m="08l"></div>
+
+<h3 id="m08m"><span class="tag">08m</span>In SigmaFlow's menu bar menu</h3>
+<p class="note">Beside Clean up text and Sound, which already live there as switches: "Record video with meetings". It is one click away from any app, nothing on the Meetings page changes, and the row's "Recording with video" (12) says when it is filming.</p>
+<div class="scroll" data-m="08m"></div>
+
+<h2>Round 2, not picked</h2>
+<p class="rule">Kept so the record is whole. 4 Nov 2026: "I don't like any of the options you've provided for 8".</p>
+
+<h3 id="m08a"><span class="tag">08a</span>An icon beside Record meeting</h3>
+<p class="note">A small square button with only the video icon, right after Record meeting. Off, it is faint and the icon is crossed out; on, it is as bright as the button beside it. Hovering says "Record video too".</p>
+<div class="scroll" data-m="08a"></div>
+
+<h3 id="m08b"><span class="tag">08b</span>Part of the Record meeting button</h3>
+<p class="note">The same icon, but joined to Record meeting as its last segment, so it reads as part of what Record does. On, the segment is lit.</p>
+<div class="scroll" data-m="08b"></div>
+
+<h3 id="m08c"><span class="tag">08c</span>At the end of the Press ⌃⌥M line</h3>
+<p class="note">A faint icon after the key, on the line that is already there. The header does not grow at all. On, the icon is bright and the word Video appears beside it.</p>
+<div class="scroll" data-m="08c"></div>
+
+<h3 id="m08d"><span class="tag">08d</span>In the footer, as faint as Delete meetings</h3>
+<p class="note">"Video off" between the folder path and Delete meetings, where the page keeps its quiet things. A click turns it to "Video on". It is the furthest from Record.</p>
+<div class="scroll" data-m="08d"></div>
+
+<h3 id="m08e"><span class="tag">08e</span>Beside the meeting count</h3>
+<p class="note">Faint, at the right of the search row, before "17 meetings". It stays in view however far the list scrolls.</p>
+<div class="scroll" data-m="08e"></div>
+
+<h3 id="m08f"><span class="tag">08f</span>Only in the menu bar</h3>
+<p class="note">File, Record Video with Meetings, ticked when on. Nothing on the page at all. While a meeting records, the row's "Recording with video" (12) is the only sign it is filming.</p>
+<div class="scroll" data-m="08f"></div>
+
+<h2>A. What gets filmed</h2>
+
+<h3 id="m01"><span class="tag">01</span>The call's window</h3>
+<p class="note">Only the window of the app holding the microphone: Zoom, Teams, or the browser that has Meet open. It is filmed even while another window covers it, and a notification over it never gets in. It follows the window to another screen. Moving to another tab in that same browser films the other tab. A minimised window films nothing until it is back. A meeting started by hand with no call app holding the mic has no window to film, so it is sound only.</p>
+<div class="scroll" data-m="01"></div>
+
+<h3 id="m02"><span class="tag">02</span>The whole screen the pointer is on</h3>
+<p class="note">The same thing live notes' screenshots take: everything on that screen, SigmaFlow left out. The simplest, and it works with no call at all (a demo, a slide deck, an in-person meeting with a screen). It also films every notification, chat and private window that crosses the screen while you record.</p>
+<div class="scroll" data-m="02"></div>
+
+<h3 id="m03"><span class="tag">03</span>The call's window in a call, the screen otherwise<span class="pick">PICKED</span></h3>
+<p class="note">01 whenever <code>CallWatcher</code> knows the call app, which covers every recording started from "Record this meeting?". 02 for a meeting started by hand with no call. Nothing to choose, and nothing outside the call gets in when there is a call.</p>
+<div class="scroll" data-m="03"></div>
+
+<h3 id="m04"><span class="tag">04</span>Asked at each Record</h3>
+<p class="note">Record meeting opens a small sheet with three tiles: the call's window (by name), the whole screen, or sound only. The last choice stays picked for next time. It is the most control, and it costs one more click for every meeting. From the call card it uses the last choice and asks nothing. Mobbin: <a href="https://mobbin.com/screens/3e81e7fa-c414-43d4-8c01-37e5daa35b71">Google Meet</a>, <a href="https://mobbin.com/screens/4bb67a17-74da-443f-bbe5-eaeec3de5cd5">ClickUp</a>, <a href="https://mobbin.com/screens/7ff2f84a-ad2e-41d4-bd3a-789c67223eb9">VEED</a>.</p>
+<div class="scroll" data-m="04"></div>
+
+<h3 id="m05"><span class="tag">05</span>Add your camera in a corner</h3>
+<p class="note">Goes with 01 to 04. Your face, round, in the bottom right of the video, from the Mac's camera. A call already shows you in its own tile, so this mostly helps a meeting filmed from the screen. The green camera light is on for the whole meeting. Mobbin: <a href="https://mobbin.com/screens/96664708-cd8b-43bd-86c9-27efe0f69202">Loom</a>, <a href="https://mobbin.com/screens/7befb9e6-af82-4755-838c-fcf603502c1c">Canva</a>.</p>
+<div class="scroll" data-m="05"></div>
+
+<h2>B. When it films</h2>
+
+<h3 id="m06"><span class="tag">06</span>Every meeting, always</h3>
+<p class="note">Nothing to switch on. Every Record meeting and every "Record this meeting?" films, and the page looks exactly as it does today. Disk use goes up for every meeting (see E).</p>
+<div class="scroll" data-m="06"></div>
+
+<h3 id="m07"><span class="tag">07</span>A switch in Settings, under Ask to record calls</h3>
+<p class="note">"Record video with meetings", on the Dictation tab beside the call switch, off by default. Set once and forgotten, and nothing on the Meetings page changes.</p>
+<div class="scroll" data-m="07"></div>
+
+<h3 id="m08"><span class="tag">08</span>A Video toggle under Record meeting</h3>
+<p class="note">A small toggle where "Press ⌃⌥M" sits today, moving that line down. It is remembered, and it covers ⌃⌥M and the call card too. You can see whether the next meeting will film before you press Record. Mobbin: <a href="https://mobbin.com/screens/6372d689-bd21-43d1-808a-e043e9cd97c4">Riverside</a>.</p>
+<div class="scroll" data-m="08"></div>
+
+<h3 id="m09"><span class="tag">09</span>Record meeting ▾ with a second choice</h3>
+<p class="note">The arrow beside Record meeting opens "Record with video". The page looks almost the same as today. ⌃⌥M stays sound only, unless it is given a partner key (⌃⌥⇧M) for video.</p>
+<div class="scroll" data-m="09"></div>
+
+<h3 id="m10"><span class="tag">10</span>The call card asks</h3>
+<p class="note">"Record this meeting?" gets a third button: Record meeting, With video, Not now. The choice is made for each call, at the moment it starts. Goes with any of 06 to 09.</p>
+<div class="scroll" data-m="10"></div>
+
+<h2>C. While it records</h2>
+
+<h3 id="m11"><span class="tag">11</span>Nothing new</h3>
+<p class="note">The recording row stays as it is today: REC, the time, the meter and Stop. macOS's own mark in the menu bar is the only sign that the screen is being filmed.</p>
+<div class="scroll" data-m="11"></div>
+
+<h3 id="m12"><span class="tag">12</span>The row says it<span class="pick">PICKED</span></h3>
+<p class="note">"Recording with video, Zoom" in place of "Recording". Words only, in the line that is already there.</p>
+<div class="scroll" data-m="12"></div>
+
+<h3 id="m13"><span class="tag">13</span>A live picture of what is filmed<span class="pick" style="color:var(--ink2);border-color:var(--strong)">ASKED</span></h3>
+<p class="note">A small picture in the row, refreshed every second or two, the same way Autowrite shows the screen it read. You can see at a glance that it is filming the right window.</p>
+<div class="scroll" data-m="13"></div>
+<p class="note"><b>Strain, asked 4 Nov:</b> the picture costs next to nothing. It is a copy of a frame the recording already has, shrunk to 192 × 120 once a second, and only while the Meetings page is on screen. The recording itself is the real cost. On the M4, ScreenCaptureKit hands frames over in graphics memory and the encoding runs on the chip's media engine, not the processor, so I expect a few percent of CPU and a small battery cost at 2880 × 1800, 30 frames a second. I have not measured that yet. The shell can't record the screen, so I'd measure it from the app on a real call before 13 is built, and leave it out if the numbers say otherwise.</p>
+<p class="note"><b>Measured 5 Nov</b> (<code>SigmaFlow --video-check 30 FOLDER</code>, the built recorder, the whole 3024 × 1964 screen at 30 frames a second, the stills check running): SigmaFlow 3.3% of one core, the encoder 0 to 1.3%, a mostly still screen 0.9 GB an hour (2 GB at most, the bit rate's ceiling). The stills check already shrinks one frame a second, as 13 would, and is inside that 3.3%.</p>
+
+<h3 id="m14"><span class="tag">14</span>Stop video, sound carries on</h3>
+<p class="note">A faint "Stop video" beside Stop, for the moment someone shares something that should not be kept. The video ends there and the sound runs to the end. Once stopped, the video does not come back for that meeting.</p>
+<div class="scroll" data-m="14"></div>
+
+<h2>D. The files in the meeting's folder</h2>
+
+<h3 id="m15"><span class="tag">15</span>An .mp4 with sound, beside the .m4a<span class="pick">PICKED</span></h3>
+<p class="note">The video opens anywhere with its sound, QuickTime included, and the .m4a stays what everything else reads. The extra copy of the sound costs about 15 MB an hour. Rename moves three files, and Delete trashes three.</p>
+<div class="scroll" data-m="15"></div>
+
+<h3 id="m16"><span class="tag">16</span>An .mp4 with no sound</h3>
+<p class="note">A little smaller, but it plays silent outside SigmaFlow. Inside SigmaFlow it plays in step with the .m4a.</p>
+<div class="scroll" data-m="16"></div>
+
+<h3 id="m17"><span class="tag">17</span>One .mp4 in place of the .m4a</h3>
+<p class="note">Two files in the folder, as today. Transcription, Play, voice memory, the MCP helper and Transcribe again all learn to read sound out of an .mp4. That is more work and more risk, all of it inside the audio pipeline that works today.</p>
+<div class="scroll" data-m="17"></div>
+
+<h2>E. How sharp</h2>
+<p class="rule">Sizes are estimates for a call with shared slides, using the Mac's hardware encoder. I'd measure them on a real call before building.</p>
+
+<h3 id="m18"><span class="tag">18</span>720p, 10 frames a second, about 0.2 GB an hour</h3>
+<p class="note">Faces are soft and a slide's headings are readable, but its small print is not. A year of weekly hour-long meetings comes to about 10 GB.</p>
+<div class="scroll" data-m="18"></div>
+
+<h3 id="m19"><span class="tag">19</span>1080p, 15 frames a second, about 0.5 GB an hour</h3>
+<p class="note">Slides and shared code can be read, and movement is smooth enough for faces. It matches the 1920 px that live notes' screenshots use. A year of weekly meetings comes to about 25 GB.</p>
+<div class="scroll" data-m="19"></div>
+
+<h3 id="m20"><span class="tag">20</span>The screen's own size, 30 frames a second, about 2 GB an hour<span class="pick">PICKED</span></h3>
+<p class="note">As sharp as the screen itself. A year of weekly meetings comes to about 100 GB.</p>
+<div class="scroll" data-m="20"></div>
+
+<h2>F. Watching it in the transcript</h2>
+<p class="rule">In every one, Play plays the video, the playing line is filled and kept in view, and a click on a line plays from there, all as it does today.</p>
+
+<h3 id="m21"><span class="tag">21</span>Video above the transcript</h3>
+<p class="note">Full width, with the transcript underneath. The video is big, and only a few lines show below it. Mobbin: <a href="https://mobbin.com/screens/981383f0-7b00-4cc8-8988-8ca538995c36">Lyssna</a>, <a href="https://mobbin.com/screens/b1cf28c8-2ebe-4470-a289-125163c8f7f8">Dialpad</a>.</p>
+<div class="scroll" data-m="21"></div>
+
+<h3 id="m22"><span class="tag">22</span>Video on the left, transcript on the right<span class="pick">PICKED</span></h3>
+<p class="note">The card splits in two. The video stays put while the lines scroll beside it. The transcript column gets narrower, so long lines wrap more. Mobbin: <a href="https://mobbin.com/screens/2e68b8da-81a8-4e1d-bdb8-48dec8f6e49b">Loom</a>, <a href="https://mobbin.com/screens/d721e6e7-65b8-46c2-a0dc-3bfeb4f7c51f">Fireflies</a>, <a href="https://mobbin.com/screens/0bd8f698-1b0b-4f0d-8883-a2cd23839360">Apollo</a>.</p>
+<div class="scroll" data-m="22"></div>
+
+<h3 id="m23"><span class="tag">23</span>Transcript on the left, video on the right</h3>
+<p class="note">The words stay where they are today, and the video sits at the right, under Ask Claude and Play. The lines are read first and the video looked at second. Mobbin: <a href="https://mobbin.com/screens/360ddc40-494e-4028-ad6a-c2ad86c05091">Grain</a>.</p>
+<div class="scroll" data-m="23"></div>
+
+<h3 id="m24"><span class="tag">24</span>Small, in the corner, only while it plays</h3>
+<p class="note">The transcript page is unchanged until Play. Then a small video floats in the card's corner and goes away again at Pause. It is the least change to the page, and the video is always small.</p>
+<div class="scroll" data-m="24"></div>
+
+<h3 id="m25"><span class="tag">25</span>Watch opens it large</h3>
+<p class="note">A Watch button beside Play opens the video over the whole page, the way a photo opens today, with the line being said written under it. Esc closes it and the transcript is where you left it. Mobbin: <a href="https://mobbin.com/screens/3dad3342-5941-457f-a91d-fff6e10c77eb">Sana</a>.</p>
+<div class="scroll" data-m="25"></div>
+
+<h3 id="m26"><span class="tag">26</span>No player: Open video</h3>
+<p class="note">Play stays sound only. "Open video" opens the .mp4 in QuickTime Player, which has a window and a Stop, unlike Music (the reason audio is never handed out). It is the least to build, but the video and the transcript never move together.</p>
+<div class="scroll" data-m="26"></div>
+
+<h2>G. The Meetings list</h2>
+
+<h3 id="m27"><span class="tag">27</span>Nothing changes<span class="pick">PICKED</span></h3>
+<p class="note">A meeting with video looks like any other until it is opened.</p>
+<div class="scroll" data-m="27"></div>
+
+<h3 id="m28"><span class="tag">28</span>A faint video mark</h3>
+<p class="note">A small camera icon and VIDEO before "Open transcript →", as faint as the path bar. You can tell which meetings have it, and the list stays a list of names.</p>
+<div class="scroll" data-m="28"></div>
+
+<h3 id="m29"><span class="tag">29</span>A still at the start of the row</h3>
+<p class="note">A frame from the video's first minute, in front of the name. The list becomes a list of pictures, like Conversations' photo stacks. Rows with no video either get a gap or don't line up. Mobbin: <a href="https://mobbin.com/screens/7aaab63d-a1c8-410a-ba9f-139d389df77e">Otter</a>.</p>
+<div class="scroll" data-m="29"></div>
+
+<h2>H. Later, each its own ask</h2>
+
+<h3 id="m30"><span class="tag">30</span>Search reads what was on screen<span class="pick">PICKED</span></h3>
+<p class="note">A still each time the screen changes, read the way screenshots are read today (words, what is in it, how it looks), so "the Q1 pricing slide" finds 14:20 in the right meeting. That means up to a few hundred stills an hour going through the Gemma and EmbeddingGemma pass.</p>
+<div class="scroll" data-m="30"></div>
+
+<h3 id="m31"><span class="tag">31</span>The slides come into the transcript<span class="pick">PICKED</span></h3>
+<p class="note">Each time the shared screen changes, a still is added as a row of its own, exactly like live notes' screenshots. The .md then shows the slides in any Markdown app, and Claude sees them through get_pictures.</p>
+<div class="scroll" data-m="31"></div>
+
+<h3 id="m32"><span class="tag">32</span>Claude can ask for a frame</h3>
+<p class="note">get_pictures takes a recording and a time and returns the frame at that moment, so "what was on the slide when Maya said that?" gets an answer.</p>
+<div class="later">Nothing is drawn for 32: it lives in the MCP helper and has no screen of its own.</div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const ico=n=>`<img src="${ICON(n)}" alt="">`;
+const NAV=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']];
+const rail=on=>`<div class="rail"><div class="wm">Sigma<span>flow</span></div>${NAV.map(([t,i])=>`<div class="it ${t===on?'on':''}">${ico(i)}${t}</div>`).join('')}</div>`;
+const MEETINGS=[
+ '[ 3 Nov ] Tue 4.11 pm - 42 min - Northwind pricing review',
+ '[ 3 Nov ] Tue 10.16 am - 21 min - Q1 launch plan',
+ '[ 2 Nov ] Mon 10.18 am - 66 min - Weekly design review',
+ '[ 30 Oct ] Fri 11.30 am - 3 min - Choosing a venue for the offsite',
+ '[ 29 Oct ] Thu 2.05 pm - 38 min - Vercel migration check-in',
+ '[ 28 Oct ] Wed 12.23 pm - 1 min',
+ '[ 27 Oct ] Tue 10.16 am - 14 min - Support handover',
+];
+const HASVIDEO=[true,true,false,false,true,false,false];
+const SUB='Record a meeting and read it back the moment it ends.';
+const row=(t,right='')=>`<div class="row"><span>${t}</span><span class="go">${right}Open transcript →</span></div>`;
+const crumbs=`<span class="crumbs"><span class="seg">${ico('folder')}Home</span><span class="sep">›</span><span class="seg">${ico('folder')}SigmaFlow</span><span class="sep">›</span><span class="seg">${ico('folder')}Meetings</span></span>`;
+const foot=`<div class="ft">${crumbs}<span class="faint">${ico('trash-can')}Delete meetings</span></div>`;
+const press=`<span class="press">Press<span class="kc">⌃⌥M</span></span>`;
+const btn=(t,i,cls='')=>`<span class="btn ${cls}">${i?ico(i):''}${t}</span>`;
+const recHead=(under=press,recBtn=btn('Record meeting','microphone'))=>`<div class="rec" style="flex-direction:row;align-items:flex-start;gap:8px">${btn('Upload meeting','upload','ghost')}<div class="rec">${recBtn}${under}</div></div>`;
+const POINTER=`<svg class="cursor" viewBox="0 0 16 22" style="__POS__"><path d="M1 1v17l4.5-4.3 3 6.8 2.6-1.1-3-6.6H14z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>`;
+const cursor=(l,t)=>POINTER.replace('__POS__',`left:${l}px;top:${t}px`);
+const meter=(n=8,on=5)=>`<span class="meter">${Array.from({length:n},(_,i)=>`<i class="${i<on?'':'o'}"></i>`).join('')}</span>`;
+
+/* a call as a picture */
+const PEOPLE=[['MC','Maya Chen'],['JO','Jonas Ortiz'],['PR','Priya Rao'],['You','You']];
+function call(o={}){
+ const pic=o.slide
+  ? `<div class="pic" style="grid-template-columns:3fr 1fr"><div class="slide"><b>Northwind pricing, Q1</b><div class="bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:52%"></i><i style="height:88%"></i></div></div><div style="display:grid;gap:4px;grid-template-rows:repeat(3,1fr)">${PEOPLE.slice(0,3).map(([a,n],i)=>`<div class="tile ${i===0?'talk':''}"><span class="av">${a}</span><span class="nm">${n}</span></div>`).join('')}</div></div>`
+  : `<div class="pic g4">${PEOPLE.map(([a,n],i)=>`<div class="tile ${i===0?'talk':''}"><span class="av">${a}</span><span class="nm">${n}</span></div>`).join('')}</div>`;
+ const ctl=o.ctl===false?'':`<div class="ctl">${ico(o.playing?'pause':'play')}<span>${o.time||'12:04'} / 42:10</span><span class="scrub"><i style="width:${o.at||29}%"></i><b style="left:${o.at||29}%"></b></span><span class="sq"></span></div>`;
+ return `<div class="vid" style="${o.style||''}">${pic}${o.sub?`<div class="sub"><span>${o.sub}</span></div>`:''}${ctl}</div>`;
+}
+
+/* the Meetings page */
+function meetings(o={}){
+ const rows=o.rowsHtml||MEETINGS.map((m,i)=>row(m,o.mark&&HASVIDEO[i]?o.mark:'' )).join('');
+ return `<div class="win">${rail('Meetings')}<div class="pg">
+  <div class="hd"><div><h4>Meetings</h4><div class="sub">${SUB}</div></div>${o.head||recHead()}</div>
+  <div class="tools"><div class="search">${ico('search')}Search meetings</div>${o.count||'<span class="count">17 meetings</span>'}</div>
+  <div class="card"><div class="rows"><div class="mh"><span>NOVEMBER 2026</span></div>${o.recRow||''}${rows}</div>${o.foot||foot}</div>
+ </div>${o.over||''}</div>`;
+}
+function recRow(o={}){
+ const stamp='[ 4 Nov ] Wed 11.02 am';
+ return `<div class="row recrow"><span style="display:flex;align-items:center;gap:14px;min-width:0">${o.thumb?`<span class="thumb">${call({ctl:false,slide:o.slide})}</span>`:''}<span class="nm2"><span>${stamp}</span><small>${o.caption||'Recording'}</small></span></span>
+  <span class="recctl"><span style="display:flex;align-items:center;gap:8px"><span class="dot"></span><span class="eb">REC</span></span><span style="font:13px var(--mono)">12:04</span>${meter()}${o.extra||''}${btn('Stop','stop')}</span></div>`;
+}
+
+/* the Mac around a call */
+function desk(o={}){
+ const W=o.w||1160,H=o.h||760,k=W/1160;
+ const z=v=>Math.round(v*k);
+ return `<div class="desk" style="width:${W}px;height:${H}px">
+  <div class="mini" style="left:${z(40)}px;top:${z(70)}px;width:${z(420)}px;height:${z(470)}px"><div class="bar"><i></i><i></i><i></i><span class="ttl">Slack</span></div><div class="doc2">${'<i></i>'.repeat(14)}</div></div>
+  <div class="mini" style="left:${z(330)}px;top:${z(110)}px;width:${z(700)}px;height:${z(470)}px;display:flex;flex-direction:column"><div class="bar"><i></i><i></i><i></i><span class="ttl">${o.app||'Zoom Meeting'}</span></div>${call({ctl:false,slide:o.slide,style:'flex:1;border:0;border-radius:0'})}</div>
+  ${o.noNotif?'':`<div class="notif" style="right:${z(16)}px;top:${z(38)}px;${k<1?'transform:scale(.8);transform-origin:top right':''}"><span class="ap"></span><span><b>Messages</b>Jonas: are we still on for lunch?</span></div>`}
+  <div class="mbar"><b>${o.front||'zoom.us'}</b><span>Meeting</span><span>View</span><span>Window</span><span>Help</span><span class="rt"><span class="scr" title="screen recording"></span><span>Wed 4 Nov 11.14</span></span></div>
+  ${o.film==='window'?`<div class="film" style="left:${z(326)}px;top:${z(106)}px;width:${z(708)}px;height:${z(478)}px"><span class="ft2">FILMED</span></div>`:''}
+  ${o.film==='screen'?`<div class="film" style="left:6px;top:${z(30)}px;right:6px;bottom:6px"><span class="ft2" style="top:0;border-radius:0 0 3px 0">FILMED</span></div>`:''}
+  ${o.bubble?`<div class="bubble" style="left:${z(920)}px;top:${z(470)}px">You</div>`:''}
+  ${o.extra||''}
+ </div>`;
+}
+
+/* the transcript */
+const LINES=[
+ ['00:00','Maya Chen','Thanks for joining. I want to get through the Northwind pricing before Thursday.'],
+ ['00:12','Speaker 2','Sure. I put the three tiers on one slide, so let me share my screen.'],
+ ['00:31','Speaker 2','So the middle tier is where most of the growth is, about sixty percent of new accounts.'],
+ ['00:52','Maya Chen','And the top one, is that still annual only?'],
+ ['01:04','Speaker 3','Annual only for now. We could try monthly in Q1 and see what support thinks.'],
+ ['01:26','Speaker 2','I would keep it annual until the launch plan is final.'],
+ ['01:40','Maya Chen','Okay. Let us write that down and come back to it on Thursday.'],
+ ['01:58','Speaker 3','I will send the numbers after this call.'],
+ ['02:10','Speaker 2','One more thing, the discount for nonprofits, do we keep it at twenty percent?'],
+];
+const tline=([t,s,x],now)=>`<div class="tline ${now?'now':''}"><span class="tm">[${t}]</span><span><b>${s}:</b> ${x}</span></div>`;
+const tbar=`<div class="tbar"><span class="tc">TIME</span><span>TRANSCRIPTION</span><span class="r"><span class="again">Transcribe again ▾</span><span class="pair"><span>${ico('copy')}Copy <em>(.md)</em></span><span>${ico('download')}Download <em>(.md)</em></span></span></span></div>`;
+function transcript(o={}){
+ const playBtn=o.playing?btn('Pause 00:40','pause'):btn('Play 42 min','play');
+ const rows=LINES.slice(0,o.n||LINES.length).map((l,i)=>tline(l,o.playing&&i===2)).join('');
+ const card=o.layout==='top'
+  ? `<div class="card txcard">${call({slide:true,playing:o.playing,style:'height:300px;flex:0 0 300px;border:0;border-bottom:1px solid var(--border);border-radius:0'})}${tbar}<div class="txrows">${rows}</div></div>`
+  : o.layout==='left'
+  ? `<div class="card txcard" style="flex-direction:row"><div style="width:440px;flex:0 0 440px;border-right:1px solid var(--border);padding:12px;display:flex;flex-direction:column;gap:10px">${call({slide:true,playing:o.playing,style:'height:280px'})}<span class="facts"><span>Video<b>2880 × 1800</b></span><span>Size<b>1.4 GB</b></span></span></div><div style="flex:1;display:flex;flex-direction:column;min-width:0">${tbar.replace('Transcribe again ▾','').replace('<span class="tc">TIME</span>','<span class="tc" style="width:64px">TIME</span>')}<div class="txrows">${rows.replaceAll('class="tm"','class="tm" style="width:64px;flex-basis:64px"')}</div></div></div>`
+  : o.layout==='right'
+  ? `<div style="display:flex;gap:14px;flex:1;min-height:0"><div class="card txcard" style="flex:1">${tbar.replace('Transcribe again ▾','')}<div class="txrows">${rows}</div></div><div style="width:340px;flex:0 0 340px;display:flex;flex-direction:column;gap:10px">${call({slide:true,playing:o.playing,style:'height:230px'})}</div></div>`
+  : `<div class="card txcard">${tbar}<div class="txrows">${rows}</div>${o.inCard||''}</div>`;
+ return `<div class="win">${rail('Meetings')}<div class="pg" style="gap:16px">
+  <span class="back">${ico('arrow--left')}Meetings</span>
+  <div class="hd"><div><h4>[ 3 Nov ] Tue 4.11 pm - 42 min - Northwind pricing review</h4>
+   <div class="facts"><span>From<b>Zoom</b></span><span>Speakers<b>3</b></span><span>Language<b>English</b></span></div>
+   <div class="spk"><span>Maya Chen</span><span>Speaker 2</span><span>Speaker 3</span></div></div>
+   <div class="btns">${btn('Ask Claude','anthropic')}${o.extraBtn||''}${playBtn}</div></div>
+  ${card}
+ </div>${o.over||''}</div>`;
+}
+
+/* Settings, Dictation tab */
+function settings(){
+ const sets=[
+  ['Push-to-talk key','Right ⌘',null],
+  ['Cleanup','Smart',null],
+  ['Pause media while you talk','',true],
+  ['Ask to record calls','When a call app starts using the microphone.',true],
+  ['Record video with meetings','The call’s window, or the screen when there is no call.',false,'hl'],
+ ];
+ return `<div class="win">${rail('Settings')}<div class="pg">
+  <div class="hd"><div><h4>Settings</h4></div></div>
+  <div class="tabs"><span class="on">Dictation</span><span>Connections</span><span>Your data</span></div>
+  <div class="card"><div class="rows">${sets.map(([l,s,on,c])=>`<div class="set ${c||''}"><span>${l}${s&&on!==null?`<small>${s}</small>`:''}</span>${on===null?`<span class="chip">${s} ▾</span>`:`<span class="sw ${on?'on':''}"></span>`}</div>`).join('')}</div></div>
+ </div>${cursor(1080,520)}</div>`;
+}
+
+const A=()=>``;
+const vico=(on,dim)=>`<img src="${ICON(on?'video':'video--off')}" alt="" style="width:13px;height:13px;filter:invert(1);opacity:${on?1:(dim||.55)}">`;
+const clip=(html,from,h)=>`<div style="width:1160px;height:${h}px;overflow:hidden;border-radius:10px"><div style="margin-top:-${from}px">${html}</div></div>`;
+const pair=(f,from,h)=>`<div style="display:flex;flex-direction:column;gap:6px"><p class="cap">OFF</p>${clip(f(false),from,h)}<p class="cap" style="margin-top:10px">ON</p>${clip(f(true),from,h)}</div>`;
+const iconBtn=on=>`<span class="btn ${on?'':'ghost'}" style="padding:7px 9px;${on?'':'opacity:.8'}">${vico(on)}</span>`;
+const sfMenu=items=>`<div class="menu" style="right:118px;top:27px;min-width:270px">${items.map(i=>i==='-'?'<hr>':`<div class="mi ${i[1]||''}"><span>${i[0]}</span></div>`).join('')}</div>`;
+const rec=(v,cls='')=>btn(v?'With video':'Sound only',v?'video':'microphone',cls);
+const quiet=h=>h.replace('class="btn ','style="border-color:transparent;color:var(--ink2);opacity:.75" class="btn ');
+const scene=(card,o={})=>`<div class="desk" style="height:${o.h||340}px;${o.w?`width:${o.w}px`:''}">
+  <div class="mini" style="left:240px;top:${o.top||40}px;width:680px;height:420px;display:flex;flex-direction:column;opacity:.9"><div class="bar"><i></i><i></i><i></i><span class="ttl">Zoom Meeting</span></div>${call({ctl:false,style:'flex:1;border:0;border-radius:0'})}</div>
+  ${o.mbar?`<div class="mbar"><b>zoom.us</b><span>Meeting</span><span>View</span><span>Window</span><span>Help</span><span class="rt"><span>Wed 4 Nov 11.02</span></span></div>`:''}
+  ${o.noDock?'':`<div class="dock" style="height:58px;padding:7px 10px;bottom:8px">${'<div class="app" style="width:42px;height:42px;border-radius:10px"></div>'.repeat(7)}</div>`}
+  ${card}${o.extra||''}</div>`;
+const card=(inner,o={})=>`<div class="callcard" style="left:50%;transform:translateX(-50%);bottom:${o.bottom||82}px;${o.style||''}">${o.noIcon?'':'<span class="ic"></span>'}<div style="min-width:0">${inner}</div>${o.bar?`<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--border)"><i style="position:absolute;left:0;top:0;bottom:0;width:${o.bar}%;background:var(--ink2)"></i></span>`:''}</div>`;
+const Q='<div class="q">Record this meeting?</div>';
+const R4={
+ '33':()=>scene(card(`${Q}<div class="btns">${rec(true)}${rec(false)}</div>`,{bar:62})),
+ '34':()=>scene(card(`${Q}<div class="btns">${rec(true)}${rec(false)}</div>`,{style:'left:62%;opacity:.75'})+`<div style="position:absolute;left:41%;bottom:120px;font:12px var(--mono);color:var(--ink2);z-index:36">→ → →</div>`),
+ '35':()=>`<div class="cols"><div><p class="cap">LAST TIME: VIDEO</p>${scene(card(`${Q}<div class="btns">${rec(true)}${quiet(rec(false,'ghost'))}</div>`,{bar:62}),{h:300,w:570})}</div><div><p class="cap">LAST TIME: SOUND ONLY</p>${scene(card(`${Q}<div class="btns">${rec(false)}${quiet(rec(true,'ghost'))}</div>`,{bar:62}),{h:300,w:570})}</div></div>`,
+ '36':()=>scene(card(`${Q}<div class="btns" style="align-items:center">${btn('Record with video','video')}<span style="font-size:13px;color:var(--dim);margin-left:6px">or <u style="text-decoration-color:var(--strong);text-underline-offset:3px">sound only</u></span></div>`)),
+ '37':()=>scene(card(`<div class="q">Record this meeting with video?</div><div class="btns">${btn('Yes','video')}${quiet(btn('Sound only','microphone','ghost'))}</div>`,{bar:62})),
+ '38':()=>scene(card(`${Q}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:280px">${[['video','With video'],['microphone','Sound only']].map(([i,t])=>`<div style="border:1px solid var(--border);border-radius:6px;background:var(--fill);height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-size:13px"><img src="${ICON(i)}" style="width:20px;filter:invert(1)">${t}</div>`).join('')}</div>`),{h:380}),
+ '39':()=>scene(`<div class="callcard" style="left:50%;transform:translateX(-50%);bottom:82px;padding:0;flex-direction:column;gap:0;width:380px;overflow:hidden"><div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)"><span class="ic" style="width:28px;height:28px;border-radius:7px"></span><span style="font-size:14px">Record this meeting?</span></div><div style="display:grid;grid-template-columns:1fr 1fr;height:88px">${[['video','With video',1],['microphone','Sound only',0]].map(([i,t,h])=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-size:13px;${h?'background:var(--sel)':''};${i==='microphone'?'border-left:1px solid var(--border)':''}"><img src="${ICON(i)}" style="width:18px;filter:invert(1)">${t}</div>`).join('')}</div><span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--border)"><i style="position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--ink2)"></i></span></div>`,{h:360,extra:cursor(470,250)}),
+ '40':()=>scene(card(`${Q}<div style="display:flex;flex-direction:column;width:250px;margin-top:-4px">${[['video','Record with video',1],['microphone','Record sound only',0]].map(([i,t,h])=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;font-size:13px;${h?'background:var(--sel)':''}"><img src="${ICON(i)}" style="width:13px;filter:invert(1)">${t}</div>`).join('')}</div>`),{h:360}),
+ '41':()=>scene(card(`<div style="display:flex;align-items:center;gap:14px;height:40px"><span style="font-size:14px">Record this meeting?</span><span class="btns"><span class="btn" style="padding:7px 9px">${vico(true)}</span><span class="btn" style="padding:7px 9px">${ico('microphone')}</span></span></div>`,{style:'align-items:center'})+`<div class="tip" style="left:618px;bottom:136px;z-index:40">With video</div>`+cursor(626,218)),
+ '42':()=>scene(`<div class="callcard" style="right:16px;top:36px;width:330px;flex-direction:column;gap:10px;padding:12px 14px"><div style="display:flex;gap:12px;align-items:center"><span class="ic" style="width:32px;height:32px;border-radius:8px"></span><span style="font-size:14px">Record this meeting?</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${btn('With video','video').replace('class="btn ','class="btn " style="justify-content:center" data-x="')}${btn('Sound only','microphone').replace('class="btn ','class="btn " style="justify-content:center" data-x="')}</div><span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--border)"><i style="position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--ink2)"></i></span></div>`,{mbar:true,noDock:true,top:60}),
+};
+const R3={
+ '08g':()=>pair(on=>meetings({head:recHead(`<span class="press" style="display:flex;align-items:center;gap:2px"><span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px;color:var(--dim)">${vico(false,.5)}Video off</span>Press<span class="kc">⌃⌥M</span></span>`),over:on?cursor(1070,60):''}).replace(on?'':'<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px;color:var(--dim)">','<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px;color:var(--dim);'+(on?'':'visibility:hidden;')+'">'),0,150).replace('<p class="cap">OFF</p>','<p class="cap">POINTER ELSEWHERE</p>').replace('<p class="cap" style="margin-top:10px">ON</p>','<p class="cap" style="margin-top:10px">POINTER ON RECORD MEETING</p>'),
+ '08h':()=>pair(on=>meetings({}).replace(SUB,`Record a meeting, <u style="text-decoration-color:var(--strong);text-underline-offset:3px;${on?'color:var(--ink)':''}">${on?'with video':'sound only'}</u>, and read it back the moment it ends.`),0,150),
+ '08i':()=>pair(on=>meetings({recRow:recRow({caption:on?'Recording with video, Zoom':'Recording',extra:`<span class="faint" style="font-size:12px;${on?'opacity:1;color:var(--ink)':''}">${vico(on,.6)}Video</span>`})}),150,170).replace('<p class="cap">OFF</p>','<p class="cap">RECORDING, VIDEO OFF</p>').replace('<p class="cap" style="margin-top:10px">ON</p>','<p class="cap" style="margin-top:10px">RECORDING, VIDEO ON</p>'),
+ '08j':()=>`<div class="cols">${[false,true].map(on=>`<div><p class="cap">${on?'ON':'OFF'}</p><div class="desk" style="width:570px;height:200px"><div class="callcard" style="left:60px;top:50px"><span class="ic"></span><div><div class="q">Record this meeting?</div><div class="btns">${btn('Record meeting','microphone')}${btn('Not now','','ghost')}<span class="btn ${on?'':'ghost'}" style="padding:7px 9px">${vico(on)}</span></div></div></div></div></div>`).join('')}</div>`,
+ '08k':()=>meetings({over:`<div class="menu" style="right:40px;top:76px;min-width:220px"><div class="mi hl"><span>✓ Record video too</span></div></div>${cursor(1060,84)}`}),
+ '08l':()=>pair(on=>meetings({head:recHead(press,on?btn('Record with video','video'):btn('Record meeting','microphone')),over:on?cursor(1070,60):''}),0,150).replace('<p class="cap">OFF</p>','<p class="cap">AS ALWAYS</p>').replace('<p class="cap" style="margin-top:10px">ON</p>','<p class="cap" style="margin-top:10px">WHILE ⌥ IS HELD</p>'),
+ '08m':()=>`<div class="desk"><div style="position:absolute;left:0;top:0;transform:scale(.62);transform-origin:top left;opacity:.9">${meetings({})}</div>
+   <div class="mbar"><b>Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><span>Help</span><span class="rt"><span class="on" style="font:15px var(--geist);padding:0 8px">Σ</span><span>Wed 4 Nov 11.14</span></span></div>
+   ${sfMenu([['Hold Right ⌘ to dictate','off'],'-',['✓ Clean up text'],['✓ Smart cleanup (on-device AI)'],['✓ Sound'],['✓ Record video with meetings','hl'],'-',['Quit SigmaFlow']])}${cursor(980,140)}</div>`,
+};
+const R2={
+ '08a':()=>pair(on=>meetings({head:`<div class="rec" style="flex-direction:row;align-items:flex-start;gap:8px">${btn('Upload meeting','upload','ghost')}<div class="rec"><span style="display:flex;gap:6px">${btn('Record meeting','microphone')}${iconBtn(on)}</span>${press}</div></div>`,over:on?'':`<div class="tip" style="right:20px;top:100px">Record video too</div>`}),0,170),
+ '08b':()=>pair(on=>meetings({head:recHead(press,`<span class="split"><span class="btn">${ico('microphone')}Record meeting</span><span class="chev" style="${on?'background:var(--sel)':''}">${vico(on)}</span></span>`)}),0,150),
+ '08c':()=>pair(on=>meetings({head:recHead(`<span class="press" style="display:flex;align-items:center;gap:2px">Press<span class="kc">⌃⌥M</span><span style="display:inline-flex;align-items:center;gap:5px;margin-left:8px;${on?'color:var(--ink)':''}">${vico(on,.45)}${on?'Video':''}</span></span>`)}),0,150),
+ '08d':()=>pair(on=>meetings({foot:`<div class="ft">${crumbs}<span class="mid"><span class="faint" style="${on?'opacity:1;color:var(--ink2)':''}">${vico(on,.6)}${on?'Video on':'Video off'}</span></span><span class="faint">${ico('trash-can')}Delete meetings</span></div>`}),640,120),
+ '08e':()=>pair(on=>meetings({count:`<span style="display:flex;align-items:center;gap:18px"><span class="faint" style="font-size:12px;${on?'opacity:1;color:var(--ink2)':''}">${vico(on,.6)}${on?'Video on':'Video off'}</span><span class="count">17 meetings</span></span>`}),0,210),
+ '08f':()=>`<div class="desk">${miniMeetings()}<div class="mbar"><b>SigmaFlow</b><span class="on">File</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span></div>
+   <div class="menu" style="left:94px;top:27px"><div class="mi"><span>Record Meeting</span><span class="sc">⌃⌥M</span></div><div class="mi hl"><span>✓ Record Video with Meetings</span><span class="sc"></span></div><div class="mi"><span>Upload Meeting…</span><span class="sc">⌘O</span></div><div class="mi"><span>Take Notes</span><span class="sc">⌃⌥N</span></div><hr><div class="mi"><span>Close Window</span><span class="sc">⌘W</span></div></div>${cursor(250,58)}</div>`,
+};
+function miniMeetings(){
+ return `<div class="mini" style="left:390px;top:80px;width:720px;height:440px;font-family:var(--pixel)"><div class="bar"><i></i><i></i><i></i><span class="ttl">SigmaFlow</span></div>
+  <div style="padding:22px 26px;display:flex;flex-direction:column;gap:14px"><div style="font-size:20px">Meetings</div>
+  <div class="card" style="background:var(--glass)"><div class="rows">${MEETINGS.slice(0,5).map(m=>row(m)).join('')}</div></div></div></div>`;
+}
+const M={
+ '01':()=>desk({film:'window'}),
+ '02':()=>desk({film:'screen'}),
+ '03':()=>`<div class="cols"><div><p class="cap">IN A CALL: THE CALL'S WINDOW</p>${desk({film:'window',w:570,h:374})}</div><div><p class="cap">STARTED BY HAND, NO CALL: THE SCREEN</p>${desk({film:'screen',w:570,h:374,app:'Keynote',front:'Keynote',slide:true,noNotif:true})}</div></div>`,
+ '04':()=>meetings({over:`<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:39"></div><div class="sheet" style="left:400px;top:200px;width:560px">
+   <h6>Record meeting</h6>
+   <div class="choice3">
+    <div class="c on"><div class="pv">${call({ctl:false,style:'height:100%;border:0'})}</div>Zoom Meeting<small>The call's window</small></div>
+    <div class="c"><div class="pv" style="display:flex;align-items:center;justify-content:center"><img src="${ICON('laptop')}" style="width:28px;filter:invert(1);opacity:.6"></div>Whole screen<small>Built-in display</small></div>
+    <div class="c"><div class="pv" style="display:flex;align-items:center;justify-content:center"><img src="${ICON('microphone')}" style="width:24px;filter:invert(1);opacity:.6"></div>Sound only<small>As today</small></div>
+   </div>
+   <div class="acts">${btn('Cancel','','ghost')}${btn('Record','recording')}</div></div>${cursor(840,486)}`}),
+ '05':()=>desk({film:'window',bubble:true}),
+ '06':()=>meetings({recRow:recRow()}),
+ '07':()=>settings(),
+ '08':()=>meetings({head:recHead(`<span class="chip on">${ico('video')}Video <span class="sw on" style="transform:scale(.8)"></span></span>${press}`)}),
+ '09':()=>meetings({head:`<div class="rec" style="flex-direction:row;align-items:flex-start;gap:8px">${btn('Upload meeting','upload','ghost')}<div class="rec"><span class="split open"><span class="btn">${ico('microphone')}Record meeting</span><span class="chev">▾</span></span>${press}
+   <div class="menu" style="right:0;top:40px"><div class="mi"><span>Record meeting</span><span class="sc">⌃⌥M</span></div><div class="mi hl"><span>Record with video</span><span class="sc">⌃⌥⇧M</span></div></div></div></div>`}),
+ '10':()=>desk({noNotif:true,extra:`<div class="callcard" style="left:340px;bottom:40px"><span class="ic"></span><div><div class="q">Record this meeting?</div><div class="btns">${btn('Record meeting','microphone')}${btn('With video','video')}${btn('Not now','','ghost')}</div></div></div>`}),
+ '11':()=>meetings({recRow:recRow()}),
+ '12':()=>meetings({recRow:recRow({caption:'Recording with video, Zoom'})}),
+ '13':()=>meetings({recRow:recRow({thumb:true,slide:true})}),
+ '14':()=>meetings({recRow:recRow({thumb:true,slide:true,extra:`<span class="faint" style="font-size:12px">${ico('stop')}Stop video</span>`})}),
+ '15':()=>folder(['m4a','mp4','md'],'1.4 GB'),
+ '16':()=>folder(['m4a','mp4','md'],'0.42 GB'),
+ '17':()=>folder(['mp4','md'],'0.43 GB'),
+ '18':()=>sharp(1.8,1.5,'720p, 10 fps'),
+ '19':()=>sharp(.5,.45,'1080p, 15 fps'),
+ '20':()=>sharp(0,0,'2880 × 1800, 30 fps'),
+ '21':()=>transcript({layout:'top',playing:true}),
+ '22':()=>transcript({layout:'left',playing:true}),
+ '23':()=>transcript({layout:'right',playing:true}),
+ '24':()=>transcript({playing:true,inCard:`<div class="pip">${call({slide:true,playing:true,time:'00:40',at:2,style:'height:100%'})}</div>`}).replace('<div class="card txcard">','<div class="card txcard" style="position:relative">'),
+ '25':()=>transcript({extraBtn:btn('Watch','view'),over:`<div class="viewer"><span class="close">${ico('close')}Close</span>${call({slide:true,playing:true,time:'00:40',at:2,style:'width:860px;height:540px',sub:'Speaker 2: So the middle tier is where most of the growth is.'})}</div>`}),
+ '26':()=>`<div class="desk">${'' }<div style="position:absolute;left:0;top:0;transform:scale(.72);transform-origin:top left">${transcript({extraBtn:btn('Open video','view')})}</div>
+   <div class="qt" style="position:absolute;left:470px;top:250px;width:640px;height:440px"><div class="bar"><i></i><i></i><i></i><span class="ttl">[ 3 Nov ] Tue 4.11 pm - 42 min - Northwind pricing review.mp4</span></div>${call({slide:true,playing:true,style:'flex:1;border:0;border-radius:0'})}</div>
+   <div class="mbar"><b>QuickTime Player</b><span>File</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span></div></div>`,
+ '27':()=>meetings({}),
+ '28':()=>meetings({mark:`<span class="mk">${ico('video')}VIDEO</span>`}),
+ '29':()=>meetings({rowsHtml:MEETINGS.map((m,i)=>`<div class="row" style="height:58px"><span style="display:flex;align-items:center">${HASVIDEO[i]?`<span class="still">${call({ctl:false,slide:true})}</span>`:`<span class="still" style="border-style:dashed;opacity:.4"></span>`}${m}</span><span class="go">Open transcript →</span></div>`).join('')}),
+ '30':()=>meetings({rowsHtml:`<div class="row"><span>[ 3 Nov ] Tue 4.11 pm - 42 min - Northwind pricing review</span><span class="go">Open transcript →</span></div>
+   <div class="row dict" style="padding-left:32px;align-items:center"><span class="still" style="width:96px;height:60px;flex:0 0 96px">${call({ctl:false,slide:true})}</span><span class="t" style="flex:0 0 70px;margin-left:12px">[14:20]</span><span style="flex:1">On screen: <u>Northwind pricing, Q1</u>, three tiers, a bar chart</span></div>
+   <div class="row dict" style="padding-left:32px"><span class="t">[14:31]</span><span>So the middle tier is where most of the <u>pricing</u> growth is.</span></div>
+   <div class="row"><span>[ 3 Nov ] Tue 10.16 am - 21 min - Q1 launch plan</span><span class="go">Open transcript →</span></div>`}).replace('<div class="search">'+ico('search')+'Search meetings</div>',`<div class="search" style="color:var(--ink)">${ico('search')}the Q1 pricing slide</div>`),
+ '31':()=>transcript({n:2}).replace(tline(LINES[1]),tline(LINES[1])+`<div class="tline"><span class="tm">[00:14]</span><span><span class="still" style="width:300px;height:180px;display:block;margin:0">${call({ctl:false,slide:true})}</span></span></div>`+tline(LINES[2])),
+};
+function folder(kinds,vid){
+ const N='[ 3 Nov ] Tue 4.11 pm - 42 min - Northwind pricing review';
+ const F={m4a:[N+'.m4a','10 MB'],mp4:[N+'.mp4',vid],md:[N+'.md','18 KB']};
+ return `<div class="desk" style="height:420px"><div class="mini finder" style="left:60px;top:50px;width:1040px;height:320px;display:flex;flex-direction:column">
+  <div class="bar"><i></i><i></i><i></i><span class="ttl">${N}</span></div>
+  <div style="display:flex;flex:1"><div class="side"><b>Favourites</b>Desktop<br>Documents<br>Downloads<br><span style="color:var(--ink)">SigmaFlow</span></div>
+  <div class="list" style="padding-top:6px">${kinds.map(k=>`<div class="fr ${k==='mp4'?'hl':''}"><span class="mdoc"></span>${F[k][0]}<span class="k">${F[k][1]}</span></div>`).join('')}</div></div></div></div>`;
+}
+function sharp(big,small,label){
+ return `<div class="cols" style="align-items:flex-end">
+  <div><p class="cap">${label}, A SLIDE AT FULL SIZE</p><div style="width:560px;height:330px;overflow:hidden;border:1px solid var(--border);border-radius:6px">
+   ${call({ctl:false,slide:true,style:`height:100%;border:0;filter:blur(${big}px)`})}</div></div>
+  <div><p class="cap">SMALL PRINT ON THAT SLIDE</p><div style="width:360px;height:140px;border:1px solid var(--border);border-radius:6px;background:#e9e9e9;color:#222;padding:18px;font:12px var(--geist);line-height:1.6;filter:blur(${small}px)">Starter $12, Team $29, Business $59<br>Annual only above Team. Nonprofit discount 20%.<br>Source: Northwind billing export, 31 Oct.</div></div>
+ </div>`;
+}
+
+document.querySelectorAll('[data-m]').forEach(el=>{const f=M[el.dataset.m]||R2[el.dataset.m]||R3[el.dataset.m]||R4[el.dataset.m];if(f)el.innerHTML=f()});
+document.getElementById('index').innerHTML=[...document.querySelectorAll('h3[id]')].map(h=>`<li><a href="#${h.id}"><span class="k">${h.id.slice(1)}</span>${h.textContent.replace(/^\d+/,'').replace('PICKED','  picked').replace('ASKED','  asked')}</a></li>`).join('');
+</script>
+</body>
+</html>

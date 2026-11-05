@@ -23,6 +23,9 @@ import Foundation
 /// 2026). Everyone is Speaker 1, 2, 3, numbered across both sides in the order they first
 /// speak, and the microphone's words that merely echo the call's are dropped.
 ///
+/// Before any of it, `MeetingTones` silences a call's ringing and hang-up beeps, which the
+/// models otherwise write down as words.
+///
 /// Between hearing and the join, `MeetingRouting` listens for Tamil. A Tamil meeting's words
 /// come from IndicConformer, except whole English sentences, which stay Parakeet's. A meeting
 /// is Tamil when either side is.
@@ -68,8 +71,11 @@ enum MeetingProcessor {
 
         // A call: the microphone on the left, the call on the right. Each side's voices
         // are told apart on that side alone, then numbered together.
-        let sides = try MeetingAudio.split(audio)
-        defer { try? FileManager.default.removeItem(at: sides.mic.deletingLastPathComponent()) }
+        let split = try MeetingAudio.split(audio)
+        let folder = split.mic.deletingLastPathComponent()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        // Both sides: through the speakers the microphone hears the ringing too.
+        let sides = (mic: try MeetingTones.silenced(split.mic, into: folder), call: try MeetingTones.silenced(split.call, into: folder))
 
         var (mine, heardAs) = try await heardWords(sides.mic, language: language) { progress(0.02 + $0 * 0.28) }
         var lines: [MeetingLine] = []
@@ -99,6 +105,12 @@ enum MeetingProcessor {
     private static func transcribeRoom(
         _ audio: URL, language: MeetingLanguage?, progress: @escaping @Sendable (Double) -> Void
     ) async throws -> Transcript {
+        // A dropped recording of a phone call rings too.
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sigmaflow-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let audio = try MeetingTones.silenced(audio, into: folder)
+
         let (words, heardAs) = try await heardWords(audio, language: language) { progress(0.02 + $0 * 0.53) }
         guard !words.isEmpty else { throw Failure.nothingHeard }
         let voices = await voices(audio: audio, side: "room") { fraction in

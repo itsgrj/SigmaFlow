@@ -54,6 +54,33 @@ enum MeetingAudio {
         }
     }
 
+    /// Both sides of a two-sided recording in one channel, for the meeting's video (`MeetingMovie`),
+    /// which other apps play as it is. The meeting's own file stays two-sided.
+    static func fold(_ stereo: URL, into mono: URL) throws {
+        let source = try AVAudioFile(forReading: stereo)
+        let one = MeetingRecorder.outputFormat
+        let out = try AVAudioFile(
+            forWriting: mono,
+            settings: [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: MeetingRecorder.sampleRate,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderBitRateKey: 32_000,
+            ],
+            commonFormat: .pcmFormatFloat32, interleaved: false)
+        guard let pair = AVAudioPCMBuffer(pcmFormat: source.processingFormat, frameCapacity: chunk),
+              let both = AVAudioPCMBuffer(pcmFormat: one, frameCapacity: chunk)
+        else { throw CocoaError(.fileWriteUnknown) }
+        while source.framePosition < source.length {
+            try source.read(into: pair, frameCount: chunk)
+            let frames = Int(pair.frameLength)
+            guard frames > 0, let channels = pair.floatChannelData, let data = both.floatChannelData?[0] else { break }
+            for i in 0..<frames { data[i] = (channels[0][i] + channels[1][i]) * 0.5 }
+            both.frameLength = pair.frameLength
+            try out.write(from: both)
+        }
+    }
+
     static func isTwoSided(_ url: URL) -> Bool {
         (try? AVAudioFile(forReading: url))?.fileFormat.channelCount == 2
     }

@@ -81,6 +81,8 @@
 	<string>SigmaFlow takes a photo every 30 seconds while live notes are on.</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>SigmaFlow uses this to hear the other people on your calls.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>SigmaFlow names a recorded browser call after the site it was on, such as Google Meet or Zoho Cliq.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>SigmaFlow transcribes your speech on-device to insert text where you're typing.</string>
 </dict>

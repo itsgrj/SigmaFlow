@@ -63,6 +63,8 @@ enum DS {
         /// The track under the correction notice's bar: quieter than a gauge, since the bar
         /// itself is grey (`dim`), not ink.
         static let noticeTrack = SwiftUI.Color.white.opacity(0.07)
+        /// Behind a meeting's video, where the picture doesn't reach: the film's own black.
+        static let videoBacking = SwiftUI.Color.black
         /// The ring of a radio mark that is not chosen.
         static let radioOff = SwiftUI.Color.white.opacity(0.35)
         /// The thumb of a scroll bar inside a text box.
@@ -358,6 +360,12 @@ enum DS {
         /// the searched word fall back (docs/mockups/meetings-simple.html, 5D).
         static let transcriptTimeColumn: CGFloat = 96
         static let transcriptBarHeight: CGFloat = 44
+        /// A meeting recorded with video: the column the video sits in, left of the lines
+        /// (docs/mockups/meeting-video.html, 22), the poster drawn before Play, and the knob on
+        /// its scrubber.
+        static let videoColumn: CGFloat = 380
+        static let videoPoster = CGSize(width: 760, height: 480)
+        static let videoKnob: CGFloat = 6
         /// A speaker's name field in the speakers row, while it is being renamed.
         static let speakerFieldWidth: CGFloat = 180
         /// While a transcript plays, the line playing is brought to this height in the card
@@ -732,6 +740,9 @@ enum DS {
         static let statusHold: TimeInterval = 1.5
         /// How long the call card shows the recording after Record meeting, before it goes.
         static let callConfirmHold: TimeInterval = 3
+        /// How long the call card waits for With video or Sound only before it goes, and
+        /// nothing is recorded (docs/mockups/meeting-video.html, 33).
+        static let callAnswerWindow: TimeInterval = 20
         /// A photo in a stack rising under the pointer.
         static let stackLift: TimeInterval = 0.18
         /// The correction notice: how long the bar takes to drain, and how long ADDED holds.

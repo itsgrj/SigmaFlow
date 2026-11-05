@@ -13,6 +13,8 @@ struct MomentRow: View {
     let moment: SearchMoment
     let folder: URL
     let query: String
+    /// A meeting recorded with video: its screenshots are stills of what was shown.
+    var isFilmed = false
     let action: () -> Void
 
     @State private var isHovering = false
@@ -52,7 +54,7 @@ struct MomentRow: View {
         switch moment.kind {
         case .line: moment.speaker ?? "Said"
         case .photo: "Photo"
-        case .screenshot: "Screenshot"
+        case .screenshot: isFilmed ? "On screen" : "Screenshot"
         }
     }
 

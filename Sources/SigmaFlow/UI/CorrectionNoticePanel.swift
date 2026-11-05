@@ -267,7 +267,7 @@ final class CorrectionNoticeModel {
 /// `.activeAlways` is the point of the subclass: the panel never becomes key and the app is
 /// not frontmost, so nothing keyed to the key window ever fires here.
 @MainActor
-private final class HoverHostingView<Content: View>: NSHostingView<Content> {
+final class HoverHostingView<Content: View>: NSHostingView<Content> {
     var onHoverChange: ((Bool) -> Void)?
     private var hoverArea: NSTrackingArea?
 

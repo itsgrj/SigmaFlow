@@ -10,7 +10,7 @@ import Foundation
 /// every browser. Voice-note apps (WhatsApp, Telegram) are left out on purpose: a ten-second
 /// voice note would ask to record a meeting. SigmaFlow's own use of the mic never counts.
 ///
-/// A browser cannot say which tab has the mic, so the card names the browser. A call is over
+/// A browser cannot say which tab has the mic; `CallSite` asks it which call site it has open. A call is over
 /// when its app has let go of the mic for `endGrace` seconds: Zoom drops the mic for a moment
 /// when you switch microphones, and that must not end a recording.
 @MainActor
@@ -22,6 +22,8 @@ final class CallWatcher {
         let app: String
         /// The bundle-id family the app's processes share, for matching later polls.
         let family: String
+        /// The browser's bundle id, when the call is in one: `CallSite` asks it which site.
+        var browser: String? = nil
     }
 
     /// The call in progress, if any.
@@ -136,16 +138,16 @@ final class CallWatcher {
             }
         }
         if let app, isBrowser(app.bundle) {
-            return Call(app: app.name, family: app.bundle.lowercased())
+            return Call(app: app.name, family: app.bundle.lowercased(), browser: app.bundle)
         }
         // Safari, Orion and DuckDuckGo hear through WebKit's own process, which sits in no
         // app. The browser in front is the one that just joined; otherwise it's Safari.
         if bundle?.lowercased().hasPrefix("com.apple.webkit.") == true {
             let front = NSWorkspace.shared.frontmostApplication
-            let name = front.flatMap { app in
-                app.bundleIdentifier.map(isBrowser) == true ? app.localizedName : nil
-            }
-            return Call(app: name ?? "Safari", family: "com.apple.webkit")
+                .flatMap { $0.bundleIdentifier.map(isBrowser) == true ? $0 : nil }
+            return Call(
+                app: front?.localizedName ?? "Safari", family: "com.apple.webkit",
+                browser: front?.bundleIdentifier ?? "com.apple.Safari")
         }
         return nil
     }

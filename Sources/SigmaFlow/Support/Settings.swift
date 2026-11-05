@@ -69,6 +69,12 @@ final class Settings {
         didSet { defaults.set(askToRecordCalls, forKey: Keys.askToRecordCalls) }
     }
 
+    /// The last answer on the call card, With video or Sound only (docs/mockups/
+    /// meeting-video.html, 33). ⌃⌥M and Record meeting, which have no card to ask, follow it.
+    var recordVideo: Bool {
+        didSet { defaults.set(recordVideo, forKey: Keys.recordVideo) }
+    }
+
     /// Run the cleanup pass before injecting. Off = raw engine output.
     var cleanupEnabled: Bool {
         didSet { defaults.set(cleanupEnabled, forKey: Keys.cleanupEnabled) }
@@ -159,7 +165,7 @@ final class Settings {
         Keys.pushToTalkKey, Keys.customHotkey, Keys.activeModel, Keys.overlayMode,
         Keys.cleanupEnabled, Keys.smartCleanup, Keys.soundEnabled,
         Keys.startSound, Keys.stopSound, Keys.pauseMedia, Keys.styleEngine, Keys.learnFromCorrections,
-        Keys.defaultStyle, Keys.powerMode, Keys.askToRecordCalls, Keys.autowriteInstructions,
+        Keys.defaultStyle, Keys.powerMode, Keys.askToRecordCalls, Keys.recordVideo, Keys.autowriteInstructions,
     ]
 
     /// A JSON-safe snapshot of the portable settings.
@@ -205,6 +211,7 @@ final class Settings {
         overlayMode = OverlayMode(rawValue: defaults.string(forKey: Keys.overlayMode) ?? "") ?? overlayMode
         powerMode = defaults.object(forKey: Keys.powerMode) as? Bool ?? powerMode
         askToRecordCalls = defaults.object(forKey: Keys.askToRecordCalls) as? Bool ?? askToRecordCalls
+        recordVideo = defaults.object(forKey: Keys.recordVideo) as? Bool ?? recordVideo
         cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? cleanupEnabled
         smartCleanup = defaults.object(forKey: Keys.smartCleanup) as? Bool ?? smartCleanup
         soundEnabled = defaults.object(forKey: Keys.soundEnabled) as? Bool ?? soundEnabled
@@ -228,6 +235,7 @@ final class Settings {
         static let overlayMode = "overlayMode"
         static let powerMode = "powerMode"
         static let askToRecordCalls = "askToRecordCalls"
+        static let recordVideo = "recordVideo"
         static let microphoneID = "microphoneID"
         static let pauseMedia = "pauseMediaWhileRecording"
         static let styleEngine = "styleEngine"
@@ -285,6 +293,8 @@ final class Settings {
         // Off until switched on: sending without a Return press is a choice, not a default.
         powerMode = defaults.object(forKey: Keys.powerMode) as? Bool ?? false
         askToRecordCalls = defaults.object(forKey: Keys.askToRecordCalls) as? Bool ?? true
+        // Sound only until the card is answered With video: filming the screen is asked for.
+        recordVideo = defaults.object(forKey: Keys.recordVideo) as? Bool ?? false
         cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? true
         smartCleanup = defaults.object(forKey: Keys.smartCleanup) as? Bool ?? false
         soundEnabled = defaults.object(forKey: Keys.soundEnabled) as? Bool ?? true

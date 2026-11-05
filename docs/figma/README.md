@@ -14,6 +14,12 @@ On 23 Oct 2026 Write for me was drawn as section 8, after Styles as in the sideb
 (its frames 9.1 to 9.17, notes and Flows references renumbered with it). The Sidebar component has a
 Write for me item in every variant and a Page=Write for me variant.
 
+On 4 Nov 2026 meeting video was drawn (docs/mockups/meeting-video.html, picks 03 33 12 15 20 22 27 30 31):
+Screens 3.25 to 3.28 at the right of the Meetings section (recording with video, the transcript with the
+video on the left, a slide as a row, search finding what was on screen) and Overlays O4.5 to O4.7 (the call
+card asking With video or Sound only, with its 20 s line and no Not now). Icon/video and Icon/video--off
+joined the Icons board after Icon/camera; the camera is live notes' photos, never video.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,

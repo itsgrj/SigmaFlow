@@ -15,6 +15,10 @@ import SwiftUI
 /// them, and redoes the meeting as English or as Tamil and English, replacing the .md
 /// (docs/mockups/meeting-language.html, 1B 2B 3A 4B).
 ///
+/// A meeting recorded with video has it in a column left of the lines, and Play plays the
+/// video (docs/mockups/meeting-video.html, 22). The bar then names that column, Video, in
+/// place of Time and Transcription, which leaves Copy and Download room.
+///
 /// Deleting (docs/mockups/delete-recordings.html round 2): the whole meeting from faint text
 /// after its last line, a photo or a screenshot from a faint bin on its larger view. Nothing
 /// near the title or Play.
@@ -60,8 +64,8 @@ struct MeetingTranscriptView: View {
 
     private var shownLines: [MeetingLine] { removedPicture?.lines ?? meeting.lines }
 
-    /// This meeting's audio is playing or paused part way.
-    private var isLoaded: Bool { meeting.audioURL != nil && player.playing == meeting.audioURL }
+    /// This meeting is playing or paused part way: its video when it has one, else its audio.
+    private var isLoaded: Bool { meeting.playbackURL != nil && player.playing == meeting.playbackURL }
 
     /// The line the sound is in: the last one starting at or before it, playing or paused
     /// (docs/mockups/conversation-playback.html, 3A).
@@ -87,7 +91,15 @@ struct MeetingTranscriptView: View {
                 .padding(.bottom, DS.Space.wide)
             Card {
                 bar
-                transcript
+                if let video = meeting.videoURL {
+                    HStack(alignment: .top, spacing: 0) {
+                        MeetingVideoColumn(meeting: meeting, video: video)
+                        Rectangle().fill(DS.Color.border).frame(width: DS.Border.hairline)
+                        VStack(spacing: 0) { transcript }
+                    }
+                } else {
+                    transcript
+                }
             }
             Spacer(minLength: 0)
         }
@@ -171,10 +183,10 @@ struct MeetingTranscriptView: View {
             HStack(alignment: .top, spacing: DS.Space.snug) {
                 askClaude
                 Group {
-                    if let audio = meeting.audioURL, isLoaded {
+                    if let played = meeting.playbackURL, isLoaded {
                         if player.isPaused {
                             AppButton(title: "Play \(MeetingNaming.clock(player.elapsed))", kind: .secondary, icon: "play") {
-                                player.play(audio)
+                                player.play(played)
                             }
                         } else {
                             AppButton(title: "Pause \(MeetingNaming.clock(player.elapsed))", kind: .secondary, icon: "pause") {
@@ -184,9 +196,9 @@ struct MeetingTranscriptView: View {
                     } else {
                         AppButton(
                             title: "Play \(MeetingNaming.length(meeting.duration))", kind: .secondary, icon: "play",
-                            isEnabled: meeting.audioURL != nil
+                            isEnabled: meeting.playbackURL != nil
                         ) {
-                            if let audio = meeting.audioURL { player.play(audio) }
+                            if let played = meeting.playbackURL { player.play(played) }
                         }
                     }
                 }
@@ -223,9 +235,13 @@ struct MeetingTranscriptView: View {
 
     private var bar: some View {
         HStack(spacing: 0) {
-            Eyebrow("Time", color: DS.Color.dim)
-                .frame(width: DS.Material.transcriptTimeColumn, alignment: .leading)
-            Eyebrow("Transcription", color: DS.Color.dim)
+            if meeting.videoURL != nil {
+                Eyebrow("Video", color: DS.Color.dim)
+            } else {
+                Eyebrow("Time", color: DS.Color.dim)
+                    .frame(width: DS.Material.transcriptTimeColumn, alignment: .leading)
+                Eyebrow("Transcription", color: DS.Color.dim)
+            }
             Spacer(minLength: DS.Space.roomy)
             TranscribeAgainMenu(current: meeting.language ?? .english, isBusy: redoProgress != nil) { language in
                 library.transcribe(meeting, language: language)
@@ -314,9 +330,9 @@ struct MeetingTranscriptView: View {
                     isFocused: index == focusRow,
                     isPlaying: index == playingRow,
                     removed: removedPicture?.path,
-                    canPlay: meeting.audioURL != nil && !isCovered && !isAsking,
+                    canPlay: meeting.playbackURL != nil && !isCovered && !isAsking,
                     onPlay: {
-                        if let audio = meeting.audioURL { player.play(audio, from: line.start) }
+                        if let played = meeting.playbackURL { player.play(played, from: line.start) }
                     },
                     onDelete: onDeletePicture,
                     onUndo: { library.undoPicture() })

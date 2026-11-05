@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import SwiftUI
 
 @main
@@ -307,6 +308,7 @@ private struct MenuContent: View {
 /// A developer aid: `SigmaFlow --snapshot-dir DIR --pages models,styles/custom,...`
 /// opens each page (and tab), draws the main window to DIR/<page>[-<tab>].png, and quits.
 /// `--snapshot-size WxH` draws at another window size (the minimum is 980x620).
+/// `--snapshot-root DIR` reads a made-up SigmaFlow folder in place of the real one.
 /// The window draws itself, so no screen-recording grant is needed; vibrancy behind the
 /// sidebar is composited by the window server and does not appear in the file.
 @MainActor
@@ -326,6 +328,9 @@ enum WindowSnapshots {
         if let sizeIndex = args.firstIndex(of: "--snapshot-size"), sizeIndex + 1 < args.count {
             let parts = args[sizeIndex + 1].lowercased().split(separator: "x").compactMap { Double($0) }
             if parts.count == 2 { size = CGSize(width: parts[0], height: parts[1]) }
+        }
+        if let rootIndex = args.firstIndex(of: "--snapshot-root"), rootIndex + 1 < args.count {
+            MeetingLibrary.shared.stageForPicture(root: URL(fileURLWithPath: args[rootIndex + 1], isDirectory: true))
         }
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         Task { @MainActor in
@@ -403,6 +408,11 @@ enum MeetingCheck {
             }
             return true
         }
+        if let index = args.firstIndex(of: "--video-check"), index + 2 < args.count {
+            NSApp.setActivationPolicy(.accessory)
+            videoCheck(seconds: Double(args[index + 1]) ?? 30, folder: URL(fileURLWithPath: args[index + 2]))
+            return true
+        }
         guard let index = args.firstIndex(of: "--transcribe-meeting"), index + 2 < args.count else { return false }
         NSApp.setActivationPolicy(.accessory)
         let audio = URL(fileURLWithPath: args[index + 1])
@@ -427,5 +437,73 @@ enum MeetingCheck {
             NSApp.terminate(nil)
         }
         return true
+    }
+
+    /// `--video-check SECONDS FOLDER`: films the screen under the pointer as a meeting with
+    /// video does, then makes the .mp4 with silence for its sound, and writes what it cost to
+    /// FOLDER/report.txt: SigmaFlow's own CPU, the film's size, the stills kept. The encoding
+    /// itself runs on the media engine, outside this process. Screen Recording must be allowed
+    /// for this copy, so start it with `open`, not from a shell.
+    private static func videoCheck(seconds: Double, folder: URL) {
+        Task { @MainActor in
+            var report: [String] = []
+            func say(_ line: String) {
+                print("video check: \(line)")
+                report.append(line)
+            }
+            func cpu() -> Double {
+                var usage = rusage()
+                getrusage(RUSAGE_SELF, &usage)
+                return Double(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)
+                    + Double(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1_000_000
+            }
+            let fm = FileManager.default
+            try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
+            defer {
+                try? report.joined(separator: "\n").write(to: folder.appendingPathComponent("report.txt"), atomically: true, encoding: .utf8)
+                NSApp.terminate(nil)
+            }
+            guard MeetingVideo.isAllowed else { return say("Screen Recording is not allowed for this copy") }
+            let film = folder.appendingPathComponent("film.mov")
+            let stills = folder.appendingPathComponent("stills")
+            let video = MeetingVideo()
+            let before = cpu()
+            do {
+                try await video.start(to: film, stills: stills, startedAt: CMClockGetTime(CMClockGetHostTimeClock()), call: nil)
+            } catch {
+                return say("couldn't start: \(error.localizedDescription)")
+            }
+            try? await Task.sleep(for: .seconds(seconds))
+            let filmed = await video.stop()
+            let used = cpu() - before
+            let size = { (url: URL) in (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map { Double($0) / 1_000_000 } ?? 0 }
+            let kept = (try? fm.contentsOfDirectory(atPath: stills.path))?.count ?? 0
+            say("filmed \(filmed) for \(Int(seconds)) s, SigmaFlow's CPU \(String(format: "%.1f", used / seconds * 100))% of one core")
+            say("film \(String(format: "%.1f", size(film))) MB, about \(String(format: "%.2f", size(film) / seconds * 3.6)) GB an hour, \(kept) stills")
+            guard filmed else { return }
+
+            let sound = folder.appendingPathComponent("sound.m4a")
+            do {
+                let out = try AVAudioFile(
+                    forWriting: sound,
+                    settings: [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: MeetingRecorder.sampleRate, AVNumberOfChannelsKey: 1],
+                    commonFormat: .pcmFormatFloat32, interleaved: false)
+                let chunk = AVAudioFrameCount(MeetingRecorder.sampleRate)
+                if let silence = AVAudioPCMBuffer(pcmFormat: MeetingRecorder.outputFormat, frameCapacity: chunk) {
+                    silence.frameLength = chunk
+                    for _ in 0..<Int(seconds) { try out.write(from: silence) }
+                }
+            } catch {
+                return say("couldn't write the silence: \(error.localizedDescription)")
+            }
+            let movie = folder.appendingPathComponent("movie.mp4")
+            let started = Date()
+            do {
+                try await MeetingMovie.make(film: film, sound: sound, into: movie)
+                say("movie in \(String(format: "%.1f", Date().timeIntervalSince(started))) s, \(String(format: "%.1f", size(movie))) MB")
+            } catch {
+                say("couldn't make the movie: \(error.localizedDescription)")
+            }
+        }
     }
 }

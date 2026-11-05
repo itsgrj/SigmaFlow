@@ -510,7 +510,9 @@ struct MeetingsPage: View {
         let isOpen = expanded.contains(meeting.id)
         VStack(spacing: 0) {
             ForEach(isOpen ? hit.all : hit.moments) { moment in
-                MomentRow(moment: moment, folder: meeting.folder, query: trimmedQuery) { clicked(moment, in: meeting) }
+                MomentRow(moment: moment, folder: meeting.folder, query: trimmedQuery, isFilmed: meeting.videoURL != nil) {
+                    clicked(moment, in: meeting)
+                }
             }
             if !isOpen, hit.total > hit.moments.count {
                 MoreMomentsRow(count: hit.total - hit.moments.count, noun: kind.noun) { expanded.insert(meeting.id) }
@@ -569,7 +571,7 @@ private struct RecordingRow: View {
                     .lineLimit(1)
                     .font(DS.Font.transcript)
                     .foregroundStyle(DS.Color.ink)
-                Text("Recording")
+                Text(caption)
                     .font(DS.Font.caption)
                     .foregroundStyle(DS.Color.inkSecondary)
             }
@@ -591,6 +593,12 @@ private struct RecordingRow: View {
         .padding(.horizontal, DS.Space.rowPadX)
         .padding(.vertical, DS.Space.rowPadY)
         .background(DS.Color.editorFill)
+    }
+
+    /// "Recording with video, Zoom" while the screen is filmed too (docs/mockups/meeting-video.html, 12).
+    private var caption: String {
+        guard session.isFilming else { return "Recording" }
+        return session.source.map { "Recording with video, \($0)" } ?? "Recording with video"
     }
 }
 
@@ -675,6 +683,9 @@ private struct MeetingRow: View {
                             .truncationMode(.middle)
                             .font(DS.Font.transcript)
                             .foregroundStyle(DS.Color.ink)
+                        if let app = meeting.app {
+                            CallSource(app: app)
+                        }
                         AppButton(title: "", icon: "edit") { isEditing = true }
                             .opacity(isHovering && !isTranscribing && pick == nil ? 1 : 0)
                             .disabled(isTranscribing || pick != nil)
@@ -813,6 +824,23 @@ private struct RenameLayout: Layout {
                        proposal: ProposedViewSize(width: width, height: nil))
             x += width + spacing
         }
+    }
+}
+
+/// What tells a call from a meeting in the room on the list (Gokul, 4 Nov 2026): a phone and
+/// where the call was, "Zoho Cliq", "Zoom", faint beside the name. The name gives way first.
+private struct CallSource: View {
+    let app: String
+
+    var body: some View {
+        HStack(spacing: DS.Space.tight) {
+            CarbonIcon(name: "phone", size: DS.Control.iconSizeSmall)
+            Text(app)
+                .font(DS.Font.caption)
+                .lineLimit(1)
+        }
+        .foregroundStyle(DS.Color.inkSecondary)
+        .fixedSize()
     }
 }
 

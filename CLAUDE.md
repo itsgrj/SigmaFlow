@@ -86,6 +86,8 @@ Load-bearing invariants, all with a failure mode that is silent rather than loud
   would paste the same utterance twice.
 - **The dictionary runs last and unconditionally**, after cleanup, even when cleanup is off.
   Engine biasing only shifts odds; `DictionaryCorrector` is the pass that guarantees.
+  The overlay shows the dictionary live too (`shownTranscript`, 5 Nov 2026): the raw
+  `transcript` still feeds the pipeline, so cleanup and style see what the engine heard.
 - **The default style runs before the dictionary**, never after. `Formatting/DefaultStyle.swift`
   (Formal / Casual / the third tile) touches only capitals and punctuation; running it after the
   dictionary would lowercase the names the dictionary just guaranteed. It is skipped when
@@ -370,14 +372,40 @@ picks A A A B):
   in front. Until 19 Oct 2026 browsers matched by the helper's own label, case-sensitively,
   and Dia (`company.thebrowser.browser.helper`, lowercase b) never asked once. A call ends
   when its app has let go of the mic for 5 s. `CallPrompter` shows `CallPromptPanel` above
-  the Dock: the app's name, "Record this meeting?", Record meeting / Not now. It stops a
+  the Dock: SigmaFlow's icon, "Record this meeting?", With video / Sound only (no Not now
+  since 5 Nov 2026; it goes unanswered after 20 s, see Video below). It stops a
   recording it started when that call ends; a recording started by hand never auto-stops.
   `Settings.askToRecordCalls`, on by default, on the Dictation tab.
+- **A call recording says where the call was** (4 Nov 2026, Gokul: a Cliq call and a
+  meeting looked the same). The .md's `From:` line is the call app, or for a browser call
+  the site (`CallSite`: "Zoho Cliq", "Google Meet"), and it is set for a recording started
+  by hand during a call too; a meeting with no call has none. The list shows it after the
+  name, a Carbon phone and the name in secondary ink (`CallSource`, MeetingsPage.swift).
+  The site comes from asking the browser for its tabs' addresses at the start of the
+  recording, through `osascript` as a child process (NSAppleScript off the main thread never
+  got its reply; `NSAppleEventsUsageDescription`; one macOS question per browser),
+  matched against a short list: a meeting room (a Meet code, Zoom's web client) anywhere
+  wins, then a call app in a window's front tab, then the only call app open. Refused, or a
+  browser with no Apple Events (Firefox), it stays the browser's name. Accessibility titles
+  were tried first: Dia cuts them short behind its profile name, and Chromium shows no
+  addresses without its whole accessibility tree switched on. Addresses are never kept.
 - **Every** meeting recording also runs `SystemAudioTap`: a Core Audio process tap on
   everything the Mac plays except SigmaFlow, so the other side is heard even through
   AirPods. Needs `NSAudioCaptureUsageDescription`; refused, it records silence and the
   meeting is the mic alone. At Stop a call side that heard anything is merged with the mic
-  into one stereo file (`MeetingAudio`): **mic left, call right, never mixed**.
+  into one stereo file (`MeetingAudio`): **mic left, call right, never mixed**. Play folds
+  the two into one channel on the way out (`MeetingPlayer`, AVAudioEngine through a mono
+  mixer; 4 Nov 2026, Gokul heard himself in one ear and the call in the other); the file
+  stays split, so other apps still play it that way.
+- **Call tones are silenced before anything listens** (`MeetingTones`, 4 Nov 2026): a Cliq
+  call's ringing and three hang-up beeps came out as "ஹம் ஹம் ஹம்" and "உம் உம் உம்" rows.
+  Five windows in a row whose six strongest bins hold 97%+ of the sound, at 300 Hz or above,
+  widened while 90%+ at the same pitch, become zeros in a temporary copy that Parakeet,
+  IndicConformer and the diarizer hear; the meeting's file keeps them. On 4.4 hours of
+  calls it found only tones; mains hum (148 Hz) is why the floor exists. A warbling
+  ringtone heard through someone's mic is only partly caught. Any change to the audio moves
+  `MeetingSamples`' gain a hair, and a Tamil transcript then differs in small words all the
+  way through (the model is deterministic, just that sensitive); that is not a regression.
 - A two-sided file is transcribed per side, and **both** sides are diarized: everyone is
   Speaker 1, 2, 3, numbered across both sides by first word. The mic side is not labelled
   with the user's name: any sound the Mac plays makes a room meeting two-sided, and on
@@ -386,6 +414,42 @@ picks A A A B):
   within 1 s goes). Rows break at 1.5 s pauses.
 - UI copy here is titles and buttons only. No how-it-works, privacy or consent lines
   (Gokul, 13 Oct 2026, emphatically).
+
+**Video** (5 Nov 2026, [docs/mockups/meeting-video.html](docs/mockups/meeting-video.html), picks
+03 33 12 15 20 22 27 30 31; Figma 3.25 to 3.28, O4.5 to O4.7). A meeting can be filmed as well as
+heard.
+
+- **Asked on the call card, and nowhere else.** Its two buttons are the answer, With video and
+  Sound only; there is no Not now (Gokul: two choices, never a third button to close it). A
+  2 px line along its foot runs down over `DS.Motion.callAnswerWindow` (20 s), held while the
+  pointer is on the card (`HoverHostingView`, shared with the correction notice); run out, the
+  card goes and nothing is recorded. The answer is `Settings.recordVideo`, and ⌃⌥M and Record
+  meeting, which have no card, follow it. Sound only until the card is first answered.
+- `MeetingVideo` (ScreenCaptureKit) films the call's largest window when `CallWatcher` knows
+  the call, followed even when covered, else the screen under the pointer with SigmaFlow's
+  windows left out; the window closing mid-call carries on with that screen. The screen's own
+  size, up to 30 fps, HEVC at 4.5 Mbit/s, to a staged `<id>.video.mov` in 10 s fragments, so a
+  crash leaves a film `recoverUnfiled` still makes into a video. The writer's session starts at
+  the host time the sound started, so the gap before the first frame is an empty edit and the
+  two stay level. No Screen Recording: the system is asked and that meeting is sound only.
+- **Stills** (31): once a second a 64×40 luma copy (vImage, straight from the frame) is
+  compared with the second before and the last still; settled (under 3% of cells changed) and
+  new (6%+ since the last still, 5 s apart at least) is kept as a 1920 px JPEG in
+  `<id>.screens`, filed into `Screens/` like live notes' screenshots, so each is a row and
+  search reads it (30), labelled On screen in a filmed meeting's moments. The thresholds are a
+  first guess; tune them on a real call.
+- At Stop the meeting is filed with its sound and transcribed at once; `MeetingMovie` then
+  makes `<name>.mp4` (15) from the film, copied as it is, and the sound folded to one channel
+  (`MeetingAudio.fold`), and `attachVideo` moves it in under the name the meeting has by then.
+  The .m4a stays the record the transcript is made from. Rename moves the .mp4 too.
+- The transcript (22) puts `MeetingVideoColumn` left of the lines and its bar says Video in
+  place of Time and Transcription. Play, a line and the picture all play the .mp4 through
+  `MeetingPlayer.video` (AVPlayer): one clock for picture, sound and the filled line.
+- Measured 5 Nov 2026 with `SigmaFlow --video-check SECONDS FOLDER` (start it with `open -n -a`,
+  so the app's own Screen Recording grant applies; its report is FOLDER/report.txt): the whole
+  3024×1964 screen, SigmaFlow 3.3% of one core, the encoder about 1%, 0.9 GB an hour for a
+  mostly still screen. 13 (a live picture on the recording row) is still Gokul's call.
+- `--snapshot-root DIR` draws `--snapshot-dir` pages over a made-up SigmaFlow folder.
 
 Old recordings from before 13 Oct 2026 are still under `Application Support/SigmaFlow/Meetings/<id>/`
 with `meeting-types.json` and `voices.json` beside them. Nothing reads them; moving any of them

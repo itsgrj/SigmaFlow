@@ -4,9 +4,10 @@ import Foundation
 //
 //     Meetings/2026/10 October/[ 13 Oct ] Tue 2.30 pm - 48 min/
 //         [ 13 Oct ] Tue 2.30 pm - 48 min.m4a
+//         [ 13 Oct ] Tue 2.30 pm - 48 min.mp4             (recorded with video only)
 //         [ 13 Oct ] Tue 2.30 pm - 48 min.md
 //         Photos/[ 13 Oct ] Tue 2.30 pm - 00-30.jpg     (live notes only)
-//         Screens/[ 13 Oct ] Tue 2.30 pm - 00-45.jpg    (live notes only)
+//         Screens/[ 13 Oct ] Tue 2.30 pm - 00-45.jpg    (live notes, and stills from a video)
 //
 // The folder is the record. The app reads it back on every visit, so a meeting renamed,
 // moved or deleted in Finder is renamed, moved or deleted in the app too. There is no
@@ -37,6 +38,9 @@ struct Meeting: Identifiable, Hashable, Sendable {
     /// The meeting's own folder.
     var folder: URL
     var audioURL: URL?
+    /// The meeting filmed, with its sound (docs/mockups/meeting-video.html, 15): only for a
+    /// meeting recorded With video. The .m4a stays the record the transcript is made from.
+    var videoURL: URL? = nil
     var transcriptURL: URL?
     var date: Date
     /// Seconds.
@@ -57,6 +61,8 @@ struct Meeting: Identifiable, Hashable, Sendable {
     var id: String { folder.path }
     var name: String { folder.lastPathComponent }
     var hasTranscript: Bool { transcriptURL != nil }
+    /// What Play plays: the video when there is one, so picture and sound share one clock.
+    var playbackURL: URL? { videoURL ?? audioURL }
 
     var speakerCount: Int { speakers ?? Set(lines.compactMap(\.speaker)).count }
 

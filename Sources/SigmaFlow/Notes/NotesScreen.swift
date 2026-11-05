@@ -65,7 +65,7 @@ enum NotesScreen {
         }
     }
 
-    private static func write(_ image: CGImage, to url: URL) -> Bool {
+    static func write(_ image: CGImage, to url: URL) -> Bool {
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.jpeg.identifier as CFString, 1, nil)
         else { return false }
         CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: quality] as CFDictionary)

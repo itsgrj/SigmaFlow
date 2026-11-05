@@ -222,6 +222,7 @@ final class MeetingLibrary {
             return matching.first { $0.deletingPathExtension().lastPathComponent == name } ?? matching.first
         }
         let audio = pick("m4a")
+        let video = pick("mp4")
         let transcript = pick("md")
         let photosFolder = folder.appendingPathComponent("Photos", isDirectory: true)
         let photos = ((try? FileManager.default.contentsOfDirectory(
@@ -238,7 +239,7 @@ final class MeetingLibrary {
         }
         let duration = parsed.duration ?? audio.map(audioSeconds) ?? 0
         return Meeting(
-            folder: folder, audioURL: audio, transcriptURL: transcript,
+            folder: folder, audioURL: audio, videoURL: video, transcriptURL: transcript,
             date: parsed.date ?? created ?? Date.distantPast, duration: duration, lines: parsed.lines,
             app: parsed.app, language: parsed.language, speakers: parsed.speakers, photos: photos)
     }
@@ -280,6 +281,22 @@ final class MeetingLibrary {
         if let app { apps[meeting.id] = app }
         reload()
         return meeting
+    }
+
+    /// A meeting's video, put together after Stop while its transcript is on the way, moved
+    /// in beside the audio under the name the meeting has by then. If it can't be moved it
+    /// stays in the staging folder rather than being lost.
+    func attachVideo(_ staged: URL, to id: String) {
+        guard let meeting = meeting(id) else {
+            Log.meetings.error("video made for a meeting that is gone")
+            return
+        }
+        do {
+            try FileManager.default.moveItem(at: staged, to: meeting.folder.appendingPathComponent("\(meeting.name).mp4"))
+        } catch {
+            Log.meetings.error("couldn't file the video: \(error.localizedDescription, privacy: .public)")
+        }
+        reload()
     }
 
     /// Live notes' pictures into `<meeting>/Photos/` or `<meeting>/Screens/`, named after
@@ -339,7 +356,7 @@ final class MeetingLibrary {
         return out
     }
 
-    /// Renames the folder and both files, and the heading inside the transcript. Returns
+    /// Renames the folder and its files, and the heading inside the transcript. Returns
     /// the meeting's id afterwards, which is its new folder path.
     @discardableResult
     func rename(_ meeting: Meeting, title: String) -> String {
@@ -355,6 +372,11 @@ final class MeetingLibrary {
                 try? fm.moveItem(
                     at: target.appendingPathComponent(audio.lastPathComponent),
                     to: target.appendingPathComponent("\(newName).m4a"))
+            }
+            if let video = meeting.videoURL {
+                try? fm.moveItem(
+                    at: target.appendingPathComponent(video.lastPathComponent),
+                    to: target.appendingPathComponent("\(newName).mp4"))
             }
             if let transcript = meeting.transcriptURL {
                 let moved = target.appendingPathComponent("\(newName).md")
@@ -490,7 +512,7 @@ final class MeetingLibrary {
         var moved: [Moved] = []
         var keys = Set<String>()
         for meeting in chosen where progress[meeting.id] == nil {
-            if let audio = meeting.audioURL, MeetingPlayer.shared.playing == audio { MeetingPlayer.shared.stop() }
+            if let played = meeting.playbackURL, MeetingPlayer.shared.playing == played { MeetingPlayer.shared.stop() }
             var trashed: NSURL?
             do {
                 try fm.trashItem(at: meeting.folder, resultingItemURL: &trashed)
