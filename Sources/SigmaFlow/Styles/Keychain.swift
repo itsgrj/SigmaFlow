@@ -10,6 +10,7 @@ enum Keychain {
     private static let keyAccount = "anthropic-api-key"
     private static let workspaceAccount = "anthropic-workspace-id"
     private static let openRouterAccount = "openrouter-api-key"
+    private static let zohoMCPAccount = "zoho-mcp-url"
 
     static var anthropicKey: String? {
         get { read(keyAccount) }
@@ -27,6 +28,13 @@ enum Keychain {
     static var openRouterKey: String? {
         get { read(openRouterAccount) }
         set { store(newValue, account: openRouterAccount) }
+    }
+
+    /// The Zoho MCP server's URL, which carries its API key in the path. Autowrite reads Zoho
+    /// Desk tickets through it.
+    static var zohoMCPURL: String? {
+        get { read(zohoMCPAccount) }
+        set { store(newValue, account: zohoMCPAccount) }
     }
 
     static var hasAnthropicKey: Bool {

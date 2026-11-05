@@ -28,6 +28,8 @@ struct ScreenContext: Sendable {
     var appName: String?
     var text: String
     var jpeg: Data?
+    /// The Zoho Desk ticket being answered, when one is open and a Zoho MCP server is connected.
+    var ticket: DeskTicket? = nil
 
     static let empty = ScreenContext(appName: nil, text: "", jpeg: nil)
 
@@ -103,6 +105,11 @@ enum WritePrompt {
     /// whole exchange; a cloud model has room for a full screen.
     static let appleScreenLimit = 6_000
     static let cloudScreenLimit = 24_000
+    /// A ticket beside the screen. Apple's model gets the screen cut to make room and the
+    /// newest end of the ticket; a cloud model gets up to about 100,000 tokens of it.
+    static let appleScreenLimitBesideTicket = 3_000
+    static let appleTicketLimit = 3_000
+    static let cloudTicketLimit = 400_000
     /// Apple's model reads this many words of the custom instructions; what's left of its
     /// window after the screen goes to the reply. A cloud model reads them whole.
     static let appleInstructionWords = 300
@@ -168,7 +175,7 @@ enum WritePrompt {
     /// `instructions` are the custom instructions, for Apple's model only: it passed over them
     /// in its instructions and followed them here, beside the ask. A cloud model gets them in
     /// the system prompt instead (`system(instructions:)`).
-    static func user(ask: String, context: ScreenContext, screenLimit: Int, instructions: String = "") -> String {
+    static func user(ask: String, context: ScreenContext, screenLimit: Int, ticketLimit: Int, instructions: String = "") -> String {
         // The instruction is set apart and named as one, last, then the task: a small model
         // otherwise takes the spoken words for the text to type and hands them straight back.
         var parts: [String] = []
@@ -177,6 +184,16 @@ enum WritePrompt {
             parts.append("On their screen\(app):\n<screen>\n\(context.text.prefix(screenLimit))\n</screen>")
         } else if !app.isEmpty {
             parts.append("They are\(app).")
+        }
+        if let ticket = context.ticket {
+            parts.append("""
+            The help desk ticket they are working on, read from Zoho Desk. Use it like the screen, \
+            for names, facts and context. Internal notes are for the agents only: never quote or \
+            reveal them to the customer.
+            <ticket>
+            \(ticket.text(limit: ticketLimit))
+            </ticket>
+            """)
         }
         let standing = instructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !standing.isEmpty {
@@ -312,7 +329,10 @@ struct AppleWriter: WritingEngine {
                     }
                     let session = LanguageModelSession(instructions: WritePrompt.system())
                     let stream = session.streamResponse(
-                        to: WritePrompt.user(ask: ask, context: context, screenLimit: WritePrompt.appleScreenLimit, instructions: instructions),
+                        to: WritePrompt.user(
+                            ask: ask, context: context,
+                            screenLimit: context.ticket == nil ? WritePrompt.appleScreenLimit : WritePrompt.appleScreenLimitBesideTicket,
+                            ticketLimit: WritePrompt.appleTicketLimit, instructions: instructions),
                         options: GenerationOptions(temperature: 0.4, maximumResponseTokens: 800)
                     )
                     for try await snapshot in stream { continuation.yield(snapshot.content) }
@@ -334,7 +354,7 @@ struct CloudWriter: WritingEngine {
     func write(ask: String, context: ScreenContext) -> AsyncThrowingStream<String, Error> {
         let pieces = CloudTextClient.stream(
             system: WritePrompt.system(instructions: instructions),
-            user: WritePrompt.user(ask: ask, context: context, screenLimit: WritePrompt.cloudScreenLimit),
+            user: WritePrompt.user(ask: ask, context: context, screenLimit: WritePrompt.cloudScreenLimit, ticketLimit: WritePrompt.cloudTicketLimit),
             jpeg: credentials.provider == .anthropic ? context.jpeg : nil,
             maxTokens: 1_500,
             temperature: 0.4,
@@ -364,30 +384,33 @@ struct CloudWriter: WritingEngine {
 /// `SigmaFlow --write-check "ASK" [--engine apple|claude|openRouter] [--sample chat]` writes for the ask
 /// against a sample message, printing the writing as it arrives, and quits instead
 /// of starting the app. Safe to run beside the installed copy.
+///
+/// `--ticket NUMBER|ID|LINK` reads that Zoho Desk ticket through the Zoho MCP server saved in
+/// the Keychain and writes the ask three ways, each timed: the screen alone, with the newest
+/// email in full, and with every email in full. `--detail newest|every` writes just one of
+/// the two ticket ways. The screen is a stand-in (the ticket's header and the start of its
+/// newest email) unless `--screen live`, which reads the real one after 5 s. `--show-ticket`
+/// prints what goes to the model.
 @MainActor
 enum WriteCheck {
     static func runIfRequested() -> Bool {
         let args = CommandLine.arguments
         guard let index = args.firstIndex(of: "--write-check"), index + 1 < args.count else { return false }
         let ask = args[index + 1]
-        let choice = args.firstIndex(of: "--engine").flatMap { $0 + 1 < args.count ? StyleEngineChoice(rawValue: args[$0 + 1]) : nil }
-        let sample = args.firstIndex(of: "--sample").map { $0 + 1 < args.count && args[$0 + 1] == "chat" } == true
-            ? ScreenContext.sampleChat : .sample
+        func value(_ flag: String) -> String? {
+            args.firstIndex(of: flag).flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil }
+        }
+        let choice = value("--engine").flatMap(StyleEngineChoice.init(rawValue:))
+        let sample = value("--sample") == "chat" ? ScreenContext.sampleChat : .sample
         Task { @MainActor in
-            let started = Date()
             do {
-                let engine = try WriteEngines.current(choice)
-                var shown = ""
-                for try await sofar in engine.write(ask: ask, context: sample) {
-                    // Each step is the whole text so far; print only what is new.
-                    if sofar.hasPrefix(shown) {
-                        FileHandle.standardOutput.write(Data(sofar.dropFirst(shown.count).utf8))
-                    } else {
-                        FileHandle.standardOutput.write(Data("\n\(sofar)".utf8))
-                    }
-                    shown = sofar
+                if let ticket = value("--ticket") {
+                    try await checkTicket(
+                        ticket, ask: ask, choice: choice, detail: value("--detail").flatMap(DeskReader.Detail.init(rawValue:)),
+                        liveScreen: value("--screen") == "live", showTicket: args.contains("--show-ticket"))
+                } else {
+                    try await write(ask, context: sample, choice: choice)
                 }
-                print("\n\n[\((choice ?? Settings.shared.styleEngine).shortName), \(String(format: "%.1f", Date().timeIntervalSince(started))) s]")
                 exit(0)
             } catch {
                 print("error: \(error.localizedDescription)")
@@ -395,5 +418,83 @@ enum WriteCheck {
             }
         }
         return true
+    }
+
+    private static func write(_ ask: String, context: ScreenContext, choice: StyleEngineChoice?) async throws {
+        let started = Date()
+        let engine = try WriteEngines.current(choice)
+        var shown = ""
+        for try await sofar in engine.write(ask: ask, context: context) {
+            // Each step is the whole text so far; print only what is new.
+            if sofar.hasPrefix(shown) {
+                FileHandle.standardOutput.write(Data(sofar.dropFirst(shown.count).utf8))
+            } else {
+                FileHandle.standardOutput.write(Data("\n\(sofar)".utf8))
+            }
+            shown = sofar
+        }
+        print("\n\n[\((choice ?? Settings.shared.styleEngine).shortName), \(String(format: "%.1f", Date().timeIntervalSince(started))) s]")
+    }
+
+    private static func checkTicket(
+        _ reference: String, ask: String, choice: StyleEngineChoice?, detail: DeskReader.Detail?,
+        liveScreen: Bool, showTicket: Bool
+    ) async throws {
+        guard let saved = Keychain.zohoMCPURL, let url = URL(string: saved) else {
+            throw CheckError("Save your Zoho MCP server URL first:\n  security add-generic-password -s com.grj.sigmaflow -a zoho-mcp-url -U -w")
+        }
+        guard let ref = DeskReader.Reference(reference) else { throw CheckError("Not a ticket number, id or Desk link: \(reference)") }
+        let client = MCPClient(url: url)
+        let limit = (choice ?? Settings.shared.styleEngine) == .apple ? WritePrompt.appleTicketLimit : WritePrompt.cloudTicketLimit
+
+        func read(_ detail: DeskReader.Detail) async throws -> DeskTicket {
+            let started = Date()
+            let ticket = try await DeskReader.read(ref, detail: detail, client: client)
+            let whole = ticket.text(limit: .max).count, sent = ticket.text(limit: limit).count
+            let emails = ticket.entries.filter { $0.kind == .email }.count
+            let notes = ticket.entries.count - emails
+            print("[Read #\(ticket.number) in \(String(format: "%.1f", Date().timeIntervalSince(started))) s: \(emails) emails, \(notes) notes; "
+                + "\(sent) characters, about \(sent / 4) tokens" + (whole > sent ? ", oldest \(whole - sent) characters left out to fit" : "") + "]")
+            return ticket
+        }
+
+        var screen: ScreenContext
+        var newest: DeskTicket?
+        if liveScreen {
+            print("Reading the screen in 5 s: bring the ticket to the front.")
+            try await Task.sleep(for: .seconds(5))
+            screen = await ScreenReader.read()
+        } else {
+            let ticket = try await read(.newest)
+            newest = ticket
+            let opening = ticket.entries.last { $0.kind == .email }?.full ?? ""
+            screen = ScreenContext(
+                appName: "Zoho Desk",
+                text: "#\(ticket.number) \(ticket.subject)\n\(ticket.customer)\n\n\(opening.prefix(1_500))",
+                jpeg: nil)
+        }
+
+        let ways: [DeskReader.Detail?] = detail.map { [$0] } ?? [nil, .newest, .every]
+        for way in ways {
+            var context = screen
+            switch way {
+            case nil:
+                print("\n=== The screen alone\(liveScreen ? "" : " (a stand-in: the newest email's first 1,500 characters)") ===")
+            case .newest:
+                print("\n=== With the ticket: the newest email in full, the rest as opening lines ===")
+                if newest == nil { newest = try await read(.newest) }
+                context.ticket = newest
+            case .every:
+                print("\n=== With the ticket: every email in full ===")
+                context.ticket = try await read(.every)
+            }
+            if showTicket, let ticket = context.ticket { print(ticket.text(limit: limit) + "\n---") }
+            try await write(ask, context: context, choice: choice)
+        }
+    }
+
+    private struct CheckError: LocalizedError {
+        let errorDescription: String?
+        init(_ message: String) { errorDescription = message }
     }
 }
