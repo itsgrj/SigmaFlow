@@ -20,6 +20,14 @@ video on the left, a slide as a row, search finding what was on screen) and Over
 card asking With video or Sound only, with its 20 s line and no Not now). Icon/video and Icon/video--off
 joined the Icons board after Icon/camera; the camera is live notes' photos, never video.
 
+On 12 Nov 2026 updates were drawn (docs/mockups/app-updates.html, picks 10 + 02; built in 1.1.0). The
+sidebar's version text became the component set Version line (Components page, under Sidebar) with
+State=Version, Ready ("1.1.0 is ready", Restart) and Restart waiting ("After this"); every Sidebar
+variant holds a State=Version instance, so the version reads 1.1.0 everywhere. Overlays gained section
+O7 Updates: O7.1 and O7.2 are 2.1 Transcriptions with the line Ready and Restart waiting, O7.3 the
+UPDATED notice above the Dock, drawn on O2.5's desktop. components.js still writes the old plain
+version text; the file, not the script, is the record.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,

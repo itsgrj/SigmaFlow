@@ -793,7 +793,9 @@ install over, which also stops its scheduler. There is no Check now and no switc
   the bundle (they are for sandboxed apps). And Sparkle logs a 404 for the feed in any build
   whose `appcast.xml` is not on main yet; it is silent.
 - Copies from before 1.1.0 have no updater; their owners download 1.1.0 by hand once.
-- **Figma is behind**: the sidebar's ready line and the UPDATED notice are not drawn there yet.
+- **In Figma** (12 Nov 2026): the component set Version line (State=Version, Ready, Restart
+  waiting) at the foot of every Sidebar variant, and Overlays section O7 Updates (O7.1 ready,
+  O7.2 after this, O7.3 the UPDATED notice).
 
 ### Snippets
 
