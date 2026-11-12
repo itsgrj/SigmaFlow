@@ -123,7 +123,7 @@ struct MainWindow: View {
 
             Spacer()
 
-            Text(Self.versionLabel)
+            versionLine
                 .font(DS.Font.data)
                 .foregroundStyle(DS.Color.dim)
                 .padding(.horizontal, DS.Space.wordmarkSide)
@@ -143,6 +143,31 @@ struct MainWindow: View {
         .focusEffectDisabled()
         .overlay(alignment: .trailing) {
             Rectangle().fill(DS.Color.border).frame(width: DS.Border.hairline)
+        }
+    }
+
+    /// The version, or a downloaded one waiting to be put in place (docs/mockups/
+    /// app-updates.html, 02): "1.1.0 is ready" and Restart, in the same faint ink. Restart
+    /// pressed while something still runs says it will restart once that is done.
+    @ViewBuilder
+    private var versionLine: some View {
+        let updates = Updates.shared
+        if let ready = updates.readyVersion {
+            HStack(spacing: DS.Space.snug) {
+                Text("\(ready) is ready")
+                Spacer(minLength: 0)
+                if updates.restartWanted {
+                    Text("After this")
+                } else {
+                    Button("Restart") { updates.requestRestart() }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(DS.Color.ink)
+                        .underline(true, color: DS.Color.borderStrong)
+                }
+            }
+            .lineLimit(1)
+        } else {
+            Text(Self.versionLabel)
         }
     }
 

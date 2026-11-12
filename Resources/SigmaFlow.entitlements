@@ -10,5 +10,11 @@
 	<true/>
 	<key>com.apple.security.automation.apple-events</key>
 	<true/>
+	<!-- Sparkle.framework is the first library the app itself loads. Under the hardened
+	     runtime a library must carry the app's Team ID, and the self-signed "SigmaFlow Dev"
+	     certificate has none, so dyld refused it and the app died at launch (12 Nov 2026).
+	     Gokul's call the same day. A Developer ID gives both a Team ID; this key can go then. -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
 </dict>
 </plist>

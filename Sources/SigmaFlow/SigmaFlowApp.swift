@@ -130,6 +130,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         observeState()
+        // Updates from GitHub releases, installed when SigmaFlow quits (Support/Updates.swift),
+        // and a word above the Dock the first time a newer version opens.
+        Updates.shared.start(controller: controller)
+        UpdatedNotice.showIfJustUpdated()
         Log.app.info("SigmaFlow ready — hold \(Settings.shared.pushToTalkKey.displayName) to dictate")
         WindowSnapshots.runIfRequested(controller: controller)
     }

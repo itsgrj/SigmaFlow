@@ -19,6 +19,9 @@ let package = Package(
         .package(url: "https://github.com/ml-explore/mlx-swift", exact: "0.32.3"),
         .package(url: "https://github.com/ml-explore/mlx-swift-lm", exact: "3.32.3"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.0"),
+        // Updates from GitHub releases (Support/Updates.swift). A prebuilt framework that the
+        // Makefile copies into Contents/Frameworks and signs before the app.
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.7.0"),
     ],
     targets: [
         // Plain C, no dependencies. Hosted inside /usr/bin/perl because MediaRemote only
@@ -43,10 +46,20 @@ let package = Package(
                 .product(name: "MLXVLM", package: "mlx-swift-lm"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
                 .product(name: "Tokenizers", package: "swift-transformers"),
+                .product(name: "Sparkle", package: "Sparkle"),
             ],
             path: "Sources/SigmaFlow",
             swiftSettings: [
                 .swiftLanguageMode(.v6)
+            ],
+            // Sparkle.framework sits in Contents/Frameworks of the bundle the Makefile builds.
+            // Weak, so a framework the system refuses to load costs updates, never the app
+            // (Support/Updates.swift checks before touching it).
+            linkerSettings: [
+                .unsafeFlags([
+                    "-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks",
+                    "-Xlinker", "-weak_framework", "-Xlinker", "Sparkle",
+                ])
             ]
         ),
         // The MCP helper Claude Desktop launches. Its own executable on purpose: it runs

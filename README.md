@@ -244,6 +244,9 @@ No account. No subscription. No bots in your calls.
 3. SigmaFlow walks you through two quick permissions.
 4. Hold Right ⌘ and talk. Let go, and SigmaFlow writes it where your cursor is.
 
+From 1.1.0 on, SigmaFlow keeps itself up to date: it downloads a new version quietly and puts
+it in place the next time you quit.
+
 ## Requirements
 
 | You need | |

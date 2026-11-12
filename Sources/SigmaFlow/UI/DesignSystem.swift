@@ -748,6 +748,9 @@ enum DS {
         /// The correction notice: how long the bar takes to drain, and how long ADDED holds.
         static let noticeWindow: TimeInterval = 3.5
         static let addedHold: TimeInterval = 2.0
+        /// How long UPDATED shows above the Dock when a new version first opens
+        /// (docs/mockups/app-updates.html, 10).
+        static let updatedHold: TimeInterval = 5
         /// Deleting: how long Delete stays dim after the question opens, so the double-click
         /// that opened it can't also answer it; how long Undo is offered (6B); how long a
         /// picture's larger view waits for the pointer to come onto it.

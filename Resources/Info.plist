@@ -17,9 +17,24 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.1</string>
+	<string>1.1.0</string>
+	<!-- Sparkle compares this one: raise it by one with every release. -->
 	<key>CFBundleVersion</key>
-	<string>8</string>
+	<string>9</string>
+	<!-- Updates (Sources/SigmaFlow/Support/Updates.swift): the list of releases, read once a day,
+	     and the public half of the key every release is signed with (account sigmaflow in
+	     the login keychain of the Mac that releases). Checked and downloaded with no
+	     question, installed when SigmaFlow quits. -->
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/itsgrj/SigmaFlow/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>v5Gc/5CRcTXJ0vDUGaztJYwOwYeUz6FFqPlwXUMIxxA=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<!-- Geist Pixel, Geist Mono and Geist ship in Contents/Resources/Fonts; this key makes macOS register the

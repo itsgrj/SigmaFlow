@@ -39,14 +39,18 @@ ifeq ($(strip $(SIGN_ID)),)
 SIGN_ID := -
 endif
 
-.PHONY: all build app run install clean dmg
+.PHONY: all build app run install clean dmg release sparkle-tools
 
 all: app
 
 ## C and C++ are optimised even in the debug build: MLX (picture descriptions) is C++, and
 ## at -O0 it is several times slower; Swift stays unoptimised and quick to build.
+##
+## The native build system on purpose. Swift 6.4 (Xcode 27) builds with Swift Build by
+## default, which compiles MLX's .metal kernels and fails without Xcode's separate Metal
+## Toolchain; the app never uses those, it loads the prebuilt mlx.metallib instead.
 build:
-	swift build -c $(CONFIG) -Xcc -O2 -Xcxx -O2 --scratch-path "$(SCRATCH)"
+	swift build -c $(CONFIG) --build-system native -Xcc -O2 -Xcxx -O2 --scratch-path "$(SCRATCH)"
 
 ## Assemble a real .app bundle. TCC (microphone + Accessibility) keys on bundle identity
 ## and code signature, so the raw SwiftPM binary can't be used directly.
@@ -62,6 +66,12 @@ app: build
 	@if [ -f $(MEDIABUILD) ]; then \
 		mkdir -p "$(CONTENTS)/Frameworks"; cp $(MEDIABUILD) "$(CONTENTS)/Frameworks/$(MEDIAHOST)"; \
 	fi
+	@# Sparkle, for updates (Sources/SigmaFlow/Support/Updates.swift). ditto keeps the
+	@# framework's symlinks. Its XPC services exist for sandboxed apps; SigmaFlow is not one.
+	@mkdir -p "$(CONTENTS)/Frameworks"
+	@ditto "$(SCRATCH)/$(CONFIG)/Sparkle.framework" "$(CONTENTS)/Frameworks/Sparkle.framework"
+	@rm -rf "$(CONTENTS)/Frameworks/Sparkle.framework/XPCServices" \
+		"$(CONTENTS)/Frameworks/Sparkle.framework/Versions/B/XPCServices"
 	@cp Resources/Info.plist "$(CONTENTS)/Info.plist"
 	@if [ -f Resources/AppIcon.icns ]; then cp Resources/AppIcon.icns "$(CONTENTS)/Resources/"; fi
 	@# Geist Pixel, Geist Mono and Geist (OFL) — registered via ATSApplicationFontsPath in Info.plist.
@@ -97,6 +107,14 @@ app: build
 		codesign --force --sign "$(SIGN_ID)" --timestamp=none \
 			"$(CONTENTS)/Frameworks/$(MEDIAHOST)"; \
 	fi
+	@# Sparkle's helpers first, then the framework around them. Every release must be signed
+	@# with the same identity as the last, or the updated app loses Accessibility.
+	@codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none \
+		"$(CONTENTS)/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
+	@codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none \
+		"$(CONTENTS)/Frameworks/Sparkle.framework/Versions/B/Updater.app"
+	@codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none \
+		"$(CONTENTS)/Frameworks/Sparkle.framework"
 	@codesign --force --sign "$(SIGN_ID)" \
 		--entitlements Resources/$(EXEC).entitlements \
 		--options runtime \
@@ -139,6 +157,62 @@ dmg:
 	@hdiutil create -volname "$(EXEC)" -srcfolder "$(STAGE)/dmg" -ov -format UDZO "$(EXEC).dmg" >/dev/null
 	@rm -rf "$(STAGE)/dmg"
 	@echo "wrote $(EXEC).dmg — that's the file to send"
+
+## Sparkle's command-line tools (generate_keys, sign_update), pinned like the framework.
+SPARKLE_VERSION := 2.10.1
+SPARKLE_SHA256  := 1a856d2a9edb8e628de88121d7be04cf0e2167f8641650b78fca00b14244cf27
+SPARKLE_HOME    := $(STAGE)/sparkle-$(SPARKLE_VERSION)
+SPARKLE_TOOLS   := $(SPARKLE_HOME)/bin
+
+sparkle-tools:
+	@if [ ! -x "$(SPARKLE_TOOLS)/sign_update" ]; then \
+		mkdir -p "$(SPARKLE_HOME)" && \
+		curl -sSLf -o "$(SPARKLE_HOME)/Sparkle.tar.xz" \
+			"https://github.com/sparkle-project/Sparkle/releases/download/$(SPARKLE_VERSION)/Sparkle-$(SPARKLE_VERSION).tar.xz" && \
+		echo "$(SPARKLE_SHA256)  $(SPARKLE_HOME)/Sparkle.tar.xz" | shasum -a 256 -c - >/dev/null && \
+		tar -xf "$(SPARKLE_HOME)/Sparkle.tar.xz" -C "$(SPARKLE_HOME)"; \
+	fi
+
+## A release that every copy of SigmaFlow updates to by itself (Support/Updates.swift).
+##
+##   1. Raise CFBundleShortVersionString and CFBundleVersion in Resources/Info.plist, write
+##      docs/releases/<version>.md (the GitHub release's words), commit, push.
+##   2. make release
+##
+## It builds from a clean copy of the pushed commit, never from this folder, so work in
+## progress here is never shipped. The DMG is signed with the private key in this Mac's login
+## keychain (account sigmaflow; back it up with `generate_keys --account sigmaflow -x FILE`,
+## or no copy of SigmaFlow can be updated again), put on GitHub as SigmaFlow.dmg (the README's
+## Download button names it), and only then added to appcast.xml, so the list never points
+## at a file that isn't there yet.
+VERSION  = $(shell /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist)
+RELSRC   := $(STAGE)/release-src
+RELNOTES  = docs/releases/$(VERSION).md
+REPO     := itsgrj/SigmaFlow
+
+release: sparkle-tools
+	@if [ -n "$$(git status --porcelain -- Resources/Info.plist appcast.xml $(RELNOTES))" ]; then \
+		echo "Commit Resources/Info.plist, appcast.xml and $(RELNOTES) first."; exit 1; fi
+	@if [ ! -f "$(RELNOTES)" ]; then echo "Write $(RELNOTES) first: it is the release's page."; exit 1; fi
+	@git fetch -q origin --tags
+	@if git rev-parse -q --verify "refs/tags/v$(VERSION)" >/dev/null; then \
+		echo "v$(VERSION) is out already: raise both versions in Resources/Info.plist."; exit 1; fi
+	@if ! git merge-base --is-ancestor HEAD origin/main; then \
+		echo "Push first: a release is built from what is on GitHub."; exit 1; fi
+	@git worktree remove --force "$(RELSRC)" 2>/dev/null; git worktree prune
+	@git worktree add -q --detach "$(RELSRC)" HEAD
+	@$(MAKE) -C "$(RELSRC)" dmg SCRATCH="$(STAGE)/release-scratch"
+	@keys=$$(mktemp -d); \
+		"$(SPARKLE_TOOLS)/generate_keys" --account sigmaflow -x "$$keys/key" >/dev/null && \
+		"$(SPARKLE_TOOLS)/sign_update" --ed-key-file "$$keys/key" "$(RELSRC)/$(EXEC).dmg" > "$$keys/signature"; \
+		status=$$?; signature=$$(cat "$$keys/signature" 2>/dev/null); \
+		rm -f "$$keys/key" "$$keys/signature"; rmdir "$$keys"; \
+		[ $$status -eq 0 ] && python3 Tools/appcast.py appcast.xml Resources/Info.plist "$$signature"
+	@gh release create "v$(VERSION)" "$(RELSRC)/$(EXEC).dmg" --repo $(REPO) \
+		--target "$$(git rev-parse HEAD)" --title "SigmaFlow $(VERSION)" --notes-file "$(RELNOTES)"
+	@git commit -q -m "Appcast: SigmaFlow $(VERSION)" -- appcast.xml && git push -q origin HEAD:main
+	@git worktree remove --force "$(RELSRC)"
+	@echo "released SigmaFlow $(VERSION): every copy picks it up within a day"
 
 clean:
 	@rm -rf .build "$(STAGE)" "$(SCRATCH)"

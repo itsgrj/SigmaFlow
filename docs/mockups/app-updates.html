@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>App updates</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--veil:rgba(0,0,0,.62);--menu:rgba(34,34,34,.97);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:56px 0 6px}
+h3{font-size:15px;font-weight:500;margin:40px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+.pick{font:11px var(--mono);color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.note code,.lead code{font:12px var(--mono);color:var(--ink)}
+.scroll{overflow-x:auto}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;max-width:1180px;margin:10px 0 0;padding:0;list-style:none}
+.index li{font-size:13px;color:var(--ink2);line-height:1.5}
+.index a{text-decoration:none;color:var(--ink2)}.index a:hover{color:var(--ink)}
+.index .k{font:11px var(--mono);color:var(--dim);margin-right:8px}
+.how{border:1px dashed var(--strong);border-radius:6px;padding:16px 20px;max-width:1080px;font-size:13px;line-height:1.6;color:var(--ink2)}
+.how b{color:var(--ink);font-weight:500}
+.how ol,.how ul{margin:6px 0 10px;padding-left:20px}
+.how li{margin:3px 0}
+.how code{font:12px var(--mono);color:var(--ink)}
+
+/* the window at its real size */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:210px;flex:0 0 210px;background:#000;border-right:1px solid var(--border);padding:22px 10px;position:relative}
+.rail .wm{font:22px var(--pixel);padding:0 10px 18px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:5px;font-size:14px;border:1px solid transparent}
+.rail .it.on{background:var(--sel)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.rail .foot{position:absolute;left:10px;right:10px;bottom:14px;padding:0 10px;font:12px var(--mono);color:var(--dim)}
+.pg{flex:1;padding:30px 34px;min-width:0;display:flex;flex-direction:column;gap:22px;position:relative}
+.hd h4{font-size:22px;font-weight:400;margin:0 0 8px}
+.hd .sub{font-size:14px;color:var(--ink2);max-width:560px;line-height:1.45}
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:7px 13px;background:var(--fill);white-space:nowrap;display:inline-flex;gap:8px;align-items:center;color:var(--ink);font-family:var(--pixel)}
+.btn img{width:13px;height:13px;filter:invert(1)}
+.btn.ghost{background:none}
+.btn.solid{background:var(--ink);color:#000;border-color:var(--ink)}
+.btn.solid img{filter:none}
+.btn.sm{padding:4px 10px;font-size:12px}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--border);font-size:13px}
+.tabs span{padding:0 0 9px;color:var(--ink2)}.tabs span.on{color:var(--ink);border-bottom:1px solid var(--ink)}
+.search{width:360px;height:32px;border:1px solid var(--border);border-radius:5px;background:var(--fill);display:flex;align-items:center;gap:8px;padding:0 11px;color:var(--ph);font-size:13px}
+.search img{width:13px;filter:invert(1);opacity:.5}
+.card{border:1px solid var(--border);border-radius:6px;background:var(--glass);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.win .card.grow{flex:1;min-height:0}
+.row{display:flex;gap:16px;padding:13px 16px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.45}
+.row .t{font:12px var(--mono);color:var(--ink2);width:70px;flex:0 0 70px;padding-top:2px}
+.dayhd{font:12px var(--mono);letter-spacing:.06em;color:var(--ink2);padding:14px 16px 6px}
+.set{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px}
+.set small{display:block;font-size:12px;color:var(--ink2);margin-top:4px}
+.set.hl{background:var(--fill)}
+.sw{width:30px;height:17px;border-radius:9px;background:var(--border);position:relative;flex:0 0 30px}
+.sw:after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#bbb}
+.sw.on{background:#e6e6e6}.sw.on:after{left:15px;background:#000}
+.pline{height:2px;background:var(--border);position:relative}.pline i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.dotn{width:6px;height:6px;border-radius:50%;background:var(--ink);display:inline-block}
+
+/* over the window */
+.dim{position:absolute;inset:0;background:var(--veil);z-index:20}
+.modal{position:absolute;z-index:21;background:#0c0c0c;border:1px solid var(--strong);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.7);font-family:var(--pixel);overflow:hidden}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid var(--border)}
+.newtag{font:11px var(--mono);letter-spacing:.06em;border:1px solid var(--strong);border-radius:4px;padding:2px 7px;color:var(--ink2);display:inline-block}
+.feat{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.45}
+.feat img{width:14px;filter:invert(1);margin-top:3px;opacity:.85}
+.feat small{display:block;color:var(--ink2);font-size:13px;margin-top:2px}
+
+/* the Mac around the window */
+.desk{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;font-family:var(--geist)}
+.desk:before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.desk>*{position:absolute}
+.mbar{left:0;right:0;top:0;height:26px;background:rgba(20,20,20,.82);backdrop-filter:blur(10px);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:13px;color:#eee}
+.mbar b{font-weight:600}
+.mbar .rt{margin-left:auto;display:flex;gap:16px;align-items:center;color:#ddd}
+.mbar .sf{display:inline-flex;align-items:center;justify-content:center;font:15px var(--pixel);width:22px;height:20px;border-radius:4px;position:relative}
+.mbar .sf.on{background:rgba(255,255,255,.22)}
+.mbar .sf .d{position:absolute;right:1px;top:2px;width:5px;height:5px;border-radius:50%;background:#fff}
+.app2{background:rgba(22,22,22,.94);border:1px solid rgba(255,255,255,.14);border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.app2 .bar{height:28px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:7px;padding:0 12px;font-size:12px;color:var(--ink2)}
+.app2 .bar i{width:11px;height:11px;border-radius:50%;background:#444;display:inline-block}
+.app2 .bar .ttl{margin:0 auto;padding-right:40px}
+.app2 .ln{height:8px;background:#333;border-radius:2px;margin:12px 18px}
+.dock{left:50%;transform:translateX(-50%);bottom:10px;height:74px;padding:9px 12px;border-radius:20px;background:rgba(60,60,60,.45);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(14px);display:flex;gap:10px;align-items:flex-end}
+.dock .app{width:56px;height:56px;border-radius:13px;background:#3a3a3a;border:1px solid rgba(255,255,255,.08)}
+.dock .app.sf{background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%;border:0}
+.dock .sep{width:1px;height:50px;background:rgba(255,255,255,.2);margin:0 2px 3px}
+.menu{z-index:12;background:var(--menu);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:5px;min-width:270px;box-shadow:0 12px 32px rgba(0,0,0,.6);font:13px var(--geist);color:var(--ink)}
+.menu .mi{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:4px 10px;border-radius:4px;white-space:nowrap}
+.menu .mi.hl{background:rgba(255,255,255,.16)}
+.menu .mi .sc{color:var(--ink2);font-size:12px}
+.menu .mi.off{color:var(--ph)}
+.menu hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:5px 6px}
+
+/* the card above the Dock, twin of the call card */
+.callcard{z-index:35;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:14px 16px 16px;display:flex;gap:14px;font-family:var(--pixel);box-shadow:0 14px 40px rgba(0,0,0,.6);overflow:hidden}
+.callcard .ic{width:40px;height:40px;border-radius:9px;background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%;flex:0 0 40px}
+.callcard .q{font-size:14px;margin:0 0 10px;line-height:40px;height:40px}
+.callcard .tl{position:absolute;left:0;bottom:0;height:2px;background:var(--ink)}
+
+/* Sparkle's own window, drawn as macOS draws it */
+.sp{z-index:30;width:640px;background:#262626;border:1px solid rgba(255,255,255,.16);border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.7);font:13px -apple-system,var(--geist);color:#e6e6e6;overflow:hidden}
+.sp .bar{height:28px;display:flex;align-items:center;gap:8px;padding:0 12px}
+.sp .bar i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.sp .body{display:flex;gap:18px;padding:6px 22px 18px}
+.sp .ic{width:64px;height:64px;flex:0 0 64px;background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%}
+.sp h5{font-size:14px;font-weight:700;margin:0 0 8px}
+.sp p{margin:0 0 12px;line-height:1.4}
+.sp .rn{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);height:190px;padding:12px 14px;line-height:1.5;overflow:hidden}
+.sp .rn b{display:block;font-size:15px;margin-bottom:6px}
+.sp .rn ul{margin:0;padding-left:18px}
+.sp .chk{display:flex;align-items:center;gap:8px;margin:12px 0 16px}
+.sp .chk i{width:14px;height:14px;border-radius:3px;background:#3d3d3d;border:1px solid rgba(255,255,255,.2);display:inline-block}
+.sp .bt{display:flex;gap:10px}
+.sp .bt span{padding:3px 12px;border-radius:5px;background:#4a4a4a;font-size:13px}
+.sp .bt .def{background:#0a84ff;color:#fff}
+.sp .bt .sp1{margin-right:auto}
+
+/* the notice after it opens again, twin of the correction notice */
+.notice{z-index:35;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;font-family:var(--pixel);font-size:14px;box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.notice .ic{width:28px;height:28px;border-radius:7px;background:url("../../Resources/AppIcon.iconset/icon_128x128.png") center/100%}
+.notice .eb{font:11px var(--mono);letter-spacing:.08em;color:var(--ink2)}
+.cap{font:12px var(--mono);color:var(--dim);margin:8px 0 0}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Updating SigmaFlow from inside the app</h1>
+<p class="lead"><b>Picks, 12 Nov 2026: 10 + 02.</b> Built in 1.1.0. The downloading line under the version (02, left) was left out: Sparkle downloads with no progress to show. The notice's What's new opens the GitHub release, and the release was named 1.1.0, not 1.0.2.</p>
+<p class="lead"><b>Asked 12 Nov 2026:</b> "Can the people already using SigmaFlow get an update right from their Mac, once I push it to GitHub and release it? There's this framework called Sparkle." Yes. Sparkle is how most Mac apps outside the App Store do this (VLC, iTerm, Rectangle, Raycast before it moved). You publish a release on GitHub as today; every copy of SigmaFlow checks a small list of versions once a day, downloads the new one, checks it really came from you, swaps itself and opens again. Nothing to drag to Applications, no Gatekeeper right-click.</p>
+<p class="lead"><b>This page is only about how it looks.</b> Ten ways for SigmaFlow to tell someone a new version is ready, from loudest to quietest. Each one uses the same update underneath, so they can be mixed. The example release is 1.0.2 with what has really landed since 1.0.1: filmed meetings, where a call was, and the dictionary in the overlay.</p>
+<p class="lead"><b>Reply with one number, or two that work together</b>, for example "10 + 02". <b>My pick is marked</b>: install quietly when SigmaFlow quits (10), with the sidebar's version line saying so when one is waiting (02). It never interrupts a dictation and asks nothing.</p>
+<p class="note"><b>From Mobbin.</b> Big announcement: <a href="https://mobbin.com/screens/9429ba3f-25d0-444d-b04c-5dba81377619">Lovable</a> splits the card, picture left and a short list right, one button; <a href="https://mobbin.com/screens/8beabf9c-f9ff-400f-b4d6-08ccec5773be">Gumloop</a> names the version and date and ends on Close and View changelog; <a href="https://mobbin.com/screens/30739211-cb52-4961-b88b-f45dacafd942">Discord</a> and <a href="https://mobbin.com/screens/45627560-4212-4ea2-90c6-fe432422c857">Microsoft Loop</a> use a long What's new sheet. A list of every release: <a href="https://mobbin.com/screens/e5128125-a731-4a11-9100-bbbf940922b6">Suno</a>, <a href="https://mobbin.com/screens/42e351c2-b1ea-487f-91fd-9a09a07387a1">Turo</a>, and <a href="https://mobbin.com/screens/47f63634-d3c2-49a0-bf29-769e4228c1d7">Whereby</a>, which keeps What's new in its sidebar. A thin strip over the page: <a href="https://mobbin.com/screens/8a284269-a221-4064-b63f-6e7e88b195ad">Google Analytics</a>. A switch in settings: <a href="https://mobbin.com/screens/e19cf89a-c936-43f8-b1ef-3784cd2acaca">Tailscale</a> ("Auto-update new devices") and <a href="https://mobbin.com/screens/492f6864-47b5-49b7-b46b-f3b710168fb9">Zendesk</a> ("Enable auto updates"). Mobbin has no Mac apps, so the Mac-only places (menu bar, above the Dock, Sparkle's own window) are drawn from macOS itself.</p>
+<p class="note"><b>Whatever is picked:</b> SigmaFlow never restarts while you are dictating, recording a meeting, taking notes or writing with Autowrite, and never while a transcript is being made. Restart now waits for that to finish. Everything you have open (the page, the tab) comes back as it was.</p>
+
+<ul class="index" id="index"></ul>
+
+<h2>Loud: it asks</h2>
+
+<h3 id="m01"><span class="tag">01</span>Sparkle's own window</h3>
+<p class="note">What Sparkle shows with no design work: a Mac window with the release notes, Skip This Version, Remind Me Later and Install Update, and a box to install future ones by themselves. It looks like every other Mac app's updater, not like SigmaFlow. Its sentence is reworded here; Sparkle's own has an em dash in it.</p>
+<div class="scroll" data-m="01"></div>
+
+<h3 id="m03"><span class="tag">03</span>A card above the Dock, like Record this meeting?</h3>
+<p class="note">The call card's twin, in the same place: SigmaFlow's icon, "SigmaFlow 1.0.2 is ready", Restart now and When I quit. The line along its foot runs down over 20 seconds and the card goes; unanswered counts as When I quit. Two buttons, no third to close it.</p>
+<div class="scroll" data-m="03"></div>
+
+<h3 id="m07"><span class="tag">07</span>A card in the window, picture and list</h3>
+<p class="note">Lovable's split card, opened over the page the next time the window comes to the front. Left, the new thing moving (a README picture, which the app already draws itself). Right, three lines, each a verb and what you get. Restart to update and Later.</p>
+<div class="scroll" data-m="07"></div>
+
+<h3 id="m08"><span class="tag">08</span>What's new, as a sheet you scroll</h3>
+<p class="note">Gumloop and Discord: version and date at the top, one short section per change, a picture where it helps, Later and Restart to update at the foot. More room than 07; easier to skip.</p>
+<div class="scroll" data-m="08"></div>
+
+<h2>Middle: it shows, you choose when</h2>
+
+<h3 id="m04"><span class="tag">04</span>A strip across the top of the page</h3>
+<p class="note">One line over whatever page is open: "SigmaFlow 1.0.2 is ready." with Restart and What's new. It stays until you restart, on every page, which is the cost.</p>
+<div class="scroll" data-m="04"></div>
+
+<h3 id="m05"><span class="tag">05</span>A dot on the menu bar icon</h3>
+<p class="note">A small dot on SigmaFlow's menu bar Σ, and "Restart to update to 1.0.2" at the top of its menu. Works when the main window is closed, which is most of the day.</p>
+<div class="scroll" data-m="05"></div>
+
+<h3 id="m09"><span class="tag">09</span>What's new, a page of its own</h3>
+<p class="note">The version line at the sidebar's foot becomes What's new. Its page lists every release, newest first, the way Transcriptions lists days. The newest, when it is waiting, has Restart to update beside it. The release notes come from the GitHub release.</p>
+<div class="scroll" data-m="09"></div>
+
+<h3 id="m06"><span class="tag">06</span>Updates in Settings</h3>
+<p class="note">Tailscale's switch: in Settings, Your data, three rows under the SigmaFlow folder card. The version you have, Install updates by themselves (on by default), and Check now. When one is waiting, the first row says so and has Restart.</p>
+<div class="scroll" data-m="06"></div>
+
+<h2>Quiet: it just happens</h2>
+
+<h3 id="m02"><span class="tag">02</span>The sidebar's version line<span class="pick">MY PICK, WITH 10</span></h3>
+<p class="note">The 1.0.1 at the foot of the sidebar is where people already look for the version. While a new one downloads, a thin line fills under it. Once it is ready: "1.0.2 is ready" and Restart, in the same faint ink as the path bar. Nothing anywhere else.</p>
+<div class="scroll" data-m="02"></div>
+
+<h3 id="m10"><span class="tag">10</span>Installed when SigmaFlow quits<span class="pick">MY PICK</span></h3>
+<p class="note">No question at all. The new version downloads in the background and is put in place the next time SigmaFlow quits or the Mac restarts. If it has not quit in three days, SigmaFlow restarts itself at a quiet moment (nothing recording, no key pressed for ten minutes). When it opens again, a small notice above the Dock, where the learned-rule notice shows, says UPDATED and 1.0.2 with What's new for five seconds.</p>
+<div class="scroll" data-m="10"></div>
+
+<h2>How it would work underneath</h2>
+<div class="how">
+<b>The pieces.</b>
+<ol>
+<li><b>Sparkle 2</b> added through SwiftPM. Its framework goes into <code>Contents/Frameworks</code> and is signed before the app, like the MCP helper today.</li>
+<li><b>A signing key pair</b> made once with Sparkle's <code>generate_keys</code>. The private half stays in your Mac's Keychain; the public half goes into Info.plist as <code>SUPublicEDKey</code>. SigmaFlow refuses any download that is not signed by that key, so nobody can push a fake update even if the GitHub account or the download is tampered with.</li>
+<li><b>A list of versions</b>, <code>appcast.xml</code>, kept in the repo and read from GitHub (<code>SUFeedURL</code>). Each entry is a version, its notes and the DMG's address under Releases.</li>
+<li><b><code>make release</code></b>: builds the DMG as <code>make dmg</code> does, signs it with Sparkle's <code>sign_update</code>, adds the entry to appcast.xml, makes the GitHub release with <code>gh</code> and pushes. One command per release.</li>
+</ol>
+<b>Three things to know.</b>
+<ul>
+<li><b>Everyone on 1.0.0 or 1.0.1 downloads once more by hand.</b> Those copies have no updater in them. From the first Sparkle version on, it is automatic.</li>
+<li><b>Permissions survive updates, as long as every release is signed with "SigmaFlow Dev" from your Mac.</b> Accessibility and the microphone are tied to that certificate (checked today: the installed app's requirement is that certificate's fingerprint). If that certificate were ever lost and a release signed with another, every user would silently lose the hotkeys. Back it up.</li>
+<li><b>The Keychain password question still comes after each update</b> for people who saved a Claude or OpenRouter key. That is the self-signed certificate, already waiting on the Developer ID; the Developer ID would also let releases be notarized.</li>
+</ul>
+</div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const ico=n=>`<img src="${ICON(n)}" alt="">`;
+const NAV=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']];
+const VER='<div class="foot">1.0.1</div>';
+const rail=(on,foot=VER)=>`<div class="rail"><div class="wm">Sigma<span>flow</span></div>${NAV.map(([t,i])=>`<div class="it ${t===on?'on':''}">${ico(i)}${t}</div>`).join('')}${foot}</div>`;
+const btn=(t,i,cls='')=>`<span class="btn ${cls}">${i?ico(i):''}${t}</span>`;
+
+const DICT=[
+ ['4.12 pm','Can you send Maya the Northwind pricing sheet before the call tomorrow? She wants the annual numbers.'],
+ ['3.58 pm','The Q1 launch plan is in the shared folder. I moved the beta to the second week of February.'],
+ ['2.31 pm','Thanks for the quick turnaround on the Vercel migration, the preview builds look good.'],
+ ['11.04 am','Let us push the design review to Thursday at eleven, I still need to finish the onboarding screens.'],
+ ['10.20 am','Reminder to myself: book the venue for the offsite and ask for the projector.'],
+];
+const transcriptions=(top='')=>`<div class="pg">${top}
+ <div class="hd"><h4>Transcriptions</h4><div class="sub">Everything you’ve said, newest first.</div></div>
+ <div class="tabs"><span class="on">History</span><span>Insights</span></div>
+ <div class="search">${ico('search')}Search transcriptions</div>
+ <div class="card grow"><div class="dayhd">TODAY</div>${DICT.map(([t,s])=>`<div class="row"><span class="t">${t}</span><span>${s}</span></div>`).join('')}</div>
+</div>`;
+const win=(body,{on='Transcriptions',foot=VER,over=''}={})=>`<div class="win">${rail(on,foot)}${body}${over}</div>`;
+
+/* the desk: menu bar, someone's work, the Dock */
+const desk=(inner,{sfOn=false,sfDot=false}={})=>`<div class="desk">
+ <div class="mbar"><b>Mail</b><span>File</span><span>Edit</span><span>View</span><span>Mailbox</span><span>Message</span><span>Window</span><span>Help</span>
+ <span class="rt"><span class="sf ${sfOn?'on':''}">Σ${sfDot?'<i class="d"></i>':''}</span><span>Wed 12 Nov</span><span>4.18 pm</span></span></div>
+ <div class="app2" style="left:120px;top:70px;width:860px;height:540px"><div class="bar"><i></i><i></i><i></i><span class="ttl">Inbox</span></div>
+ ${Array.from({length:14},(_,k)=>`<div class="ln" style="width:${[70,52,80,44,66,58,74,40,62,50,78,46,68,55][k]}%"></div>`).join('')}</div>
+ <div class="dock">${'<div class="app"></div>'.repeat(5)}<div class="app sf"></div>${'<div class="app"></div>'.repeat(3)}<div class="sep"></div><div class="app"></div></div>
+ ${inner}</div>`;
+
+const NOTES=[
+ ['video','Meetings can be filmed','SigmaFlow keeps the picture beside the transcript.'],
+ ['phone','A call says where it was','Zoom, Google Meet or Cliq, right on the list.'],
+ ['book','Your words, fixed as you talk','The overlay shows your dictionary while you speak.'],
+];
+
+const M={};
+
+M['01']=desk(`<div class="sp" style="left:260px;top:140px">
+ <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+ <div class="body"><div class="ic"></div><div style="flex:1">
+  <h5>A new version of SigmaFlow is available</h5>
+  <p>SigmaFlow 1.0.2 is now available, you have 1.0.1. Would you like to download it now?</p>
+  <p style="font-weight:600;margin-bottom:6px">Release Notes:</p>
+  <div class="rn"><b>SigmaFlow 1.0.2</b><ul>${NOTES.map(n=>`<li>${n[1]}. ${n[2]}</li>`).join('')}</ul></div>
+  <div class="chk"><i></i>Automatically download and install updates in the future</div>
+  <div class="bt"><span class="sp1">Skip This Version</span><span>Remind Me Later</span><span class="def">Install Update</span></div>
+ </div></div></div>`);
+
+M['03']=desk(`<div class="callcard" style="left:50%;transform:translateX(-50%);bottom:104px;width:420px">
+ <div class="ic"></div><div style="flex:1"><div class="q">SigmaFlow 1.0.2 is ready</div>
+ <div style="display:flex;gap:8px">${btn('Restart now','renew','solid')}${btn('When I quit','')}</div></div>
+ <i class="tl" style="width:64%"></i></div>`);
+
+M['07']=win(transcriptions(),{over:`<div class="dim"></div>
+ <div class="modal" style="left:50%;top:50%;transform:translate(-50%,-50%);width:760px;display:flex">
+  <div style="width:330px;flex:0 0 330px;background:#050505;border-right:1px solid var(--border);position:relative;display:flex;align-items:center;justify-content:center">
+   <div style="width:270px;border:1px solid var(--border);border-radius:6px;overflow:hidden">
+    <div style="height:140px;display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;background:#0b0b0b">
+     ${['MC','JR','AK','TS'].map(a=>`<div style="background:#1d1d1d;border-radius:2px;display:flex;align-items:center;justify-content:center"><span style="width:30px;height:30px;border-radius:50%;background:#3a3a3a;font:11px var(--geist);color:#bbb;display:flex;align-items:center;justify-content:center">${a}</span></div>`).join('')}
+    </div>
+    <div style="padding:10px 12px;font-size:12px;line-height:1.5;border-top:1px solid var(--border)"><span style="font:11px var(--mono);color:var(--dim);margin-right:8px">04:12</span><b style="font-weight:500">Speaker 2:</b> The annual plan starts in March.</div>
+   </div>
+  </div>
+  <div style="flex:1;padding:26px 26px 22px;display:flex;flex-direction:column;gap:16px">
+   <span class="newtag" style="align-self:flex-start">NEW IN 1.0.2</span>
+   <div style="font-size:20px">SigmaFlow got better</div>
+   ${NOTES.map(([i,t,s])=>`<div class="feat">${ico(i)}<div>${t}<small>${s}</small></div></div>`).join('')}
+   <div style="display:flex;gap:8px;margin-top:6px">${btn('Restart to update','renew','solid')}${btn('Later','','ghost')}</div>
+  </div>
+ </div>`});
+
+M['08']=win(transcriptions(),{over:`<div class="dim"></div>
+ <div class="modal" style="left:50%;top:50%;transform:translate(-50%,-50%);width:620px">
+  <div style="padding:22px 24px 14px;border-bottom:1px solid var(--border)">
+   <div style="font-size:20px;margin-bottom:6px">SigmaFlow 1.0.2</div>
+   <div style="font:12px var(--mono);color:var(--dim)">12 Nov 2026</div>
+  </div>
+  <div style="height:390px;overflow:hidden;padding:20px 24px;display:flex;flex-direction:column;gap:20px;-webkit-mask-image:linear-gradient(#000 80%,transparent)">
+   <div><div class="feat">${ico('video')}<div>Meetings can be filmed</div></div>
+    <p style="font-size:13px;color:var(--ink2);line-height:1.55;margin:6px 0 10px 26px">When a call starts, With video records the call’s window too. Open the transcript and the picture plays beside the lines, on one clock.</p>
+    <div style="margin-left:26px;height:120px;border:1px solid var(--border);border-radius:4px;background:#0b0b0b;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px">${'<div style="background:#1d1d1d;border-radius:2px"></div>'.repeat(4)}</div></div>
+   <div><div class="feat">${ico('phone')}<div>A call says where it was</div></div>
+    <p style="font-size:13px;color:var(--ink2);line-height:1.55;margin:6px 0 0 26px">A meeting recorded during a call is labelled with the app or the site it was on, so a Google Meet and a room meeting no longer look the same.</p></div>
+   <div><div class="feat">${ico('book')}<div>Your words, fixed as you talk</div></div>
+    <p style="font-size:13px;color:var(--ink2);line-height:1.55;margin:6px 0 0 26px">The overlay shows your dictionary’s fixes while you speak, not only after you let go.</p></div>
+  </div>
+  <div class="acts">${btn('Later','','ghost')}${btn('Restart to update','renew','solid')}</div>
+ </div>`});
+
+M['04']=win(transcriptions(`<div style="margin:-30px -34px 0;padding:10px 34px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.55);display:flex;align-items:center;gap:14px;font-size:13px">
+ ${ico('renew').replace('<img','<img style="width:13px;filter:invert(1)"')}<span style="flex:1">SigmaFlow 1.0.2 is ready.</span>${btn('What’s new','','ghost sm')}${btn('Restart','','solid sm')}</div>`));
+
+M['05']=desk(`<div class="menu" style="right:170px;top:28px">
+ <div class="mi hl">Restart to update to 1.0.2</div><hr>
+ <div class="mi">Open SigmaFlow</div>
+ <div class="mi">Record meeting<span class="sc">⌃⌥M</span></div>
+ <div class="mi">Take notes<span class="sc">⌃⌥N</span></div><hr>
+ <div class="mi">Quit SigmaFlow<span class="sc">⌘Q</span></div></div>`,{sfOn:true,sfDot:true});
+
+const REL=[
+ ['1.0.2','12 Nov 2026',NOTES.map(n=>n[1]),true],
+ ['1.0.1','28 Oct 2026',['Drop a recording on the Dock icon to transcribe it','Upload meeting, beside Record meeting','Transcribe with SigmaFlow, in Finder’s right-click menu'],false],
+ ['1.0.0','27 Oct 2026',['The first public SigmaFlow'],false],
+];
+M['09']=win(`<div class="pg">
+ <div class="hd"><h4>What’s new</h4><div class="sub">Every SigmaFlow release, newest first.</div></div>
+ <div class="card grow">${REL.map(([v,d,ls,wait])=>`<div style="padding:18px 18px 16px;border-bottom:1px solid var(--border);${wait?'background:var(--fill)':''}">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px"><span style="font-size:16px">${v}</span><span style="font:12px var(--mono);color:var(--dim)">${d}</span>
+  <span style="margin-left:auto">${wait?btn('Restart to update','renew','solid sm'):v==='1.0.1'?'<span style="font:12px var(--mono);color:var(--ink2)">YOU HAVE THIS</span>':''}</span></div>
+  ${ls.map(l=>`<div style="font-size:14px;color:${wait?'var(--ink)':'var(--ink2)'};line-height:1.7">${l}</div>`).join('')}</div>`).join('')}</div>
+</div>`,{on:'',foot:`<div class="foot" style="bottom:10px"><div class="it on" style="margin:0 -10px;font-family:var(--pixel);color:var(--ink)">${ico('renew')}What’s new<span class="dotn" style="margin-left:auto"></span></div></div>`});
+
+M['06']=win(`<div class="pg">
+ <div class="hd"><h4>Settings</h4></div>
+ <div class="tabs"><span>Dictation</span><span>Connections</span><span class="on">Your data</span></div>
+ <div class="card"><div class="set"><div>SigmaFlow folder<small>~/SigmaFlow</small></div>${btn('Change','','ghost sm')}</div></div>
+ <div class="card">
+  <div class="set hl"><div>SigmaFlow 1.0.2 is ready<small>You have 1.0.1.</small></div><div style="display:flex;gap:8px">${btn('What’s new','','ghost sm')}${btn('Restart','renew','solid sm')}</div></div>
+  <div class="set"><div>Install updates by themselves<small>SigmaFlow updates when it quits, never while you talk.</small></div><span class="sw on"></span></div>
+  <div class="set" style="border-bottom:0"><div>Checked today at 9.02 am</div>${btn('Check now','','ghost sm')}</div>
+ </div>
+ <div class="card"><div class="set" style="border-bottom:0"><div>Export your data<small>Transcripts, dictionary, snippets, styles and settings.</small></div>${btn('Export','','ghost sm')}</div></div>
+</div>`,{on:'Settings'});
+
+const foot02=`<div class="foot" style="display:flex;flex-direction:column;gap:6px">
+ <div style="display:flex;align-items:center;justify-content:space-between"><span>1.0.2 is ready</span><span style="color:var(--ink);text-decoration:underline;text-decoration-color:var(--strong);text-underline-offset:3px">Restart</span></div></div>`;
+const foot02b=`<div class="foot" style="display:flex;flex-direction:column;gap:7px"><span>1.0.1</span><div class="pline"><i style="width:38%"></i></div></div>`;
+M['02']=`<div style="display:flex;flex-direction:column-reverse;gap:18px;align-items:flex-start">
+ <div><div style="width:240px;height:260px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;font-family:var(--pixel)">${rail('Transcriptions',foot02b).replace('class="rail"','class="rail" style="width:240px;height:470px;flex:0 0 470px"')}</div><p class="cap">DOWNLOADING</p></div>
+ <div>${win(transcriptions(),{foot:foot02})}<p class="cap">READY. RESTART WAITS FOR ANY DICTATION OR RECORDING TO FINISH</p></div>
+</div>`;
+
+M['10']=desk(`<div class="notice" style="left:50%;transform:translateX(-50%);bottom:104px">
+ <div class="ic"></div><span class="eb">UPDATED</span><span>SigmaFlow 1.0.2</span>${btn('What’s new','','ghost sm')}</div>`);
+
+document.querySelectorAll('[data-m]').forEach(el=>{el.innerHTML=M[el.dataset.m]||''});
+document.getElementById('index').innerHTML=[...document.querySelectorAll('h3[id]')].map(h=>`<li><a href="#${h.id}"><span class="k">${h.id.slice(1)}</span>${h.childNodes[1].textContent}</a></li>`).join('');
+</script>
+</body>
+</html>

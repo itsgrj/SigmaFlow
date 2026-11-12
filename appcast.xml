@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Every SigmaFlow release, newest first. Written by `make release` (Tools/appcast.py);
+     each copy of SigmaFlow reads it once a day (Sources/SigmaFlow/Support/Updates.swift). -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>SigmaFlow</title>
+    <link>https://github.com/itsgrj/SigmaFlow/releases</link>
+    <language>en</language>
+  </channel>
+</rss>

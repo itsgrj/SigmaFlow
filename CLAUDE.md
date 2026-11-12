@@ -17,8 +17,16 @@ make build      # swift build only
 make run        # build + bundle + launch from the staging dir
 make install    # build + bundle + copy to /Applications + launch  ← the normal loop
 make dmg        # Release build → SigmaFlow.dmg at the repo root
+make release    # a release every copy updates to by itself (see Updates below)
 make clean
 ```
+
+`make build` passes `--build-system native` on purpose. Xcode 27.2 (Swift 6.4.2) arrived on
+this Mac on 8 Nov 2026 and is now the selected toolchain; its default Swift Build compiles
+MLX's `.metal` files and fails without Xcode's separate Metal Toolchain. The native system
+never touches them, which is how every build before then worked (under Command Line Tools).
+SwiftPM warns that the flag is deprecated; when it goes, install the Metal Toolchain
+(`xcodebuild -downloadComponent MetalToolchain`) or select Command Line Tools for the build.
 
 `Update SigmaFlow.command` at the repo root is `make install` for double-clicking from Finder;
 it is how Gokul rebuilds after Claude commits a change. Keep it working when the Makefile
@@ -37,9 +45,9 @@ Tests:
 swift test --filter VectorTests                          # the dictionary test vectors
 ```
 
-`swift test` needs a real Xcode for the swift-testing `Testing` module. This machine has
-only `/Library/Developer/CommandLineTools`, so it fails locally with `no such module
-'Testing'` — that is the environment, not the code. CI (`.github/workflows/macos.yml`,
+`swift test` needs a real Xcode for the swift-testing `Testing` module. Until 8 Nov 2026 this
+machine had only `/Library/Developer/CommandLineTools`, so it failed locally with `no such
+module 'Testing'`; with Xcode 27.2 installed it has not been tried yet. CI (`.github/workflows/macos.yml`,
 macos-26, since mlx-swift needs Swift 6.3) selects the newest Xcode and is the actual gate. The app target itself builds
 fine locally; it's only the test target that needs Xcode.
 
@@ -748,6 +756,45 @@ reads the screen and types the writing where the cursor is. It never presses Ret
   and prints it as it streams. A cloud engine reads its key from the Keychain, which asks for
   permission from any copy but the one that saved it; check Claude in the app itself.
 
+### Updates
+
+12 Nov 2026, [docs/mockups/app-updates.html](docs/mockups/app-updates.html), picks 10 + 02.
+SigmaFlow updates itself from GitHub releases with Sparkle 2 (`Support/Updates.swift`). **It
+asks nothing.** Once a day it reads `appcast.xml` from main (`SUFeedURL`), downloads a newer
+DMG quietly, checks it against `SUPublicEDKey`, and Sparkle puts it in place when SigmaFlow
+quits. Until then the sidebar's version line reads "1.1.0 is ready" with Restart (02), which
+waits for a dictation, recording, notes or transcript to finish ("After this"). Waiting three
+days, it restarts itself once the Mac has had no input for ten minutes and nothing runs. When a
+newer version first opens, `UpdatedNotice` shows UPDATED above the Dock for 5 s with What's
+new (the GitHub release). Sparkle's own windows never show: `willInstallUpdateOnQuit` takes the
+install over, which also stops its scheduler. There is no Check now and no switch.
+
+- **Releasing** is `make release` after raising `CFBundleShortVersionString` and
+  `CFBundleVersion` (Sparkle compares the build number) and writing `docs/releases/<version>.md`,
+  committed and pushed. It builds from a clean worktree of the pushed commit in
+  `~/Library/Caches/SigmaFlowBuild/release-src`, so uncommitted work here never ships; signs the
+  DMG; creates the GitHub release with `SigmaFlow.dmg`; and only then commits `appcast.xml`
+  (`Tools/appcast.py`), so the feed never names a missing file.
+- **The signing key** is ed25519, account `sigmaflow` under `https://sparkle-project.org` in
+  Gokul's login keychain (made 12 Nov 2026; the two other Sparkle keys there belong to other
+  apps). Lose it and no installed copy can be updated again, only replaced by hand. Back it up
+  with `generate_keys --account sigmaflow -x FILE` (the tools are in
+  `~/Library/Caches/SigmaFlowBuild/sparkle-2.10.1/bin`, fetched by `make sparkle-tools`).
+- **Every release must be signed with "SigmaFlow Dev"** (or, later, the same Developer ID).
+  TCC holds Accessibility against that certificate's fingerprint; tested 12 Nov 2026 with a
+  fake 1.1.1 through a local feed: downloaded, verified, installed on quit, hotkeys listening
+  after relaunch, no quarantine.
+- **Three things that look like bugs.** Sparkle is weak-linked (`-weak_framework`) and checked
+  with `NSClassFromString`, so a framework macOS refuses costs updates, not the app: the first
+  install died at launch because the hardened runtime wants a library to share the app's Team
+  ID and a self-signed certificate has none. The fix is
+  `com.apple.security.cs.disable-library-validation` in the entitlements (Gokul's call, 12 Nov
+  2026); drop it once there is a Developer ID. The framework's XPC services are deleted from
+  the bundle (they are for sandboxed apps). And Sparkle logs a 404 for the feed in any build
+  whose `appcast.xml` is not on main yet; it is silent.
+- Copies from before 1.1.0 have no updater; their owners download 1.1.0 by hand once.
+- **Figma is behind**: the sidebar's ready line and the UPDATED notice are not drawn there yet.
+
 ### Snippets
 
 `Snippets/SnippetStore.swift` — a trigger phrase → saved text, matched whole-phrase and
@@ -961,4 +1008,5 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - `log` is shadowed in this shell. Use `/usr/bin/log show --predicate 'subsystem == "com.grj.sigmaflow"'`.
 - `tccutil reset Accessibility com.grj.sigmaflow` — **always with the bundle ID**; a bare
   reset wipes every app on the machine.
-- `CFBundleShortVersionString` is `1.0.1` since 28 Oct 2026 (1.0.0 was the first public build); the sidebar foot reads it.
+- `CFBundleShortVersionString` is `1.1.0`, `CFBundleVersion` 9, since 12 Nov 2026 (1.0.0 was the
+  first public build, 1.0.1 on 28 Oct); the sidebar foot reads it. Raise both for every release.
