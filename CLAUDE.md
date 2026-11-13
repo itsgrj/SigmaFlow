@@ -861,6 +861,10 @@ extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser
   the dashboard asks for is in [docs/chrome-web-store.md](docs/chrome-web-store.md), the policy
   in [PRIVACY.md](PRIVACY.md). Raise the manifest's `version` for each update. The zip is written
   to the build cache, never the repo.
+- **PRIVACY.md must stay true** (13 Nov 2026, Gokul handed it to Claude): it is the store's
+  privacy link and a public promise. Any change to what the app or the extension reads, keeps
+  or sends anywhere (a new cloud engine, crash reports, the Zoho Meeting import, longer watch
+  times, new extension permissions) updates it in the same commit, before it ships.
 - **Every site from the start (04)**: `<all_urls>`, one install warning. Content scripts are
   never told to do anything by the page; the background calls `globalThis.sigmaflow` through
   `chrome.scripting` only when the app asks. Password inputs never count. A site switched off in
