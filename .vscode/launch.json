@@ -39,6 +39,26 @@
             "target": "SigmaFlow",
             "configuration": "release",
             "preLaunchTask": "swift: Build Release SigmaFlow"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:[ SIGMAFLOW ] }",
+            "name": "Debug SigmaFlowBrowserHost",
+            "target": "SigmaFlowBrowserHost",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug SigmaFlowBrowserHost"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:[ SIGMAFLOW ] }",
+            "name": "Release SigmaFlowBrowserHost",
+            "target": "SigmaFlowBrowserHost",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release SigmaFlowBrowserHost"
         }
     ]
 }
