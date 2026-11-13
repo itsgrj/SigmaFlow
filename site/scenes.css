@@ -1,0 +1,261 @@
+/* The demos: a Mac desktop with real apps on it, and SigmaFlow's own overlays on top.
+   Everything here is drawn at a fixed size (data-w by data-h) and scaled to fit its screen. */
+
+.desk-box { position: relative; overflow: hidden; }
+.desk {
+  position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px; line-height: 1.45; color: #1d1c1d; text-align: left; -webkit-font-smoothing: antialiased;
+  background: #1b1612 url("assets/painting.jpg") center 35% / cover no-repeat;
+}
+.desk::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.34); }
+.desk svg.i { width: 16px; height: 16px; fill: currentColor; flex: none; }
+
+/* macOS menu bar and Dock */
+.menubar { position: absolute; z-index: 5; left: 0; right: 0; top: 0; height: 28px; display: flex; align-items: center; gap: 20px; padding: 0 16px; background: rgba(0,0,0,.28); -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px); font-size: 13.5px; color: #fff; }
+.menubar .apple { width: 13px; height: 16px; background: url("apps/apple.svg") center / contain no-repeat; }
+.menubar b { font-weight: 600; }
+.menubar .right { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+.menubar .sfmark { width: 15px; height: 15px; border-radius: 4px; background: url("apps/sigmaflow.png") center / 130% no-repeat; }
+.dock { position: absolute; z-index: 5; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px 8px 8px; border-radius: 22px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.22); -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px); }
+.dock span { position: relative; width: 50px; height: 50px; background: center / contain no-repeat; }
+.dock span.on::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: rgba(255,255,255,.85); }
+
+/* a window */
+.win { position: absolute; z-index: 2; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 .5px rgba(0,0,0,.5), 0 22px 60px rgba(0,0,0,.45); transition: opacity .3s cubic-bezier(.22,1,.36,1); }
+.win.hide { opacity: 0; pointer-events: none; }
+.lights { display: flex; gap: 8px; } .lights i { width: 12px; height: 12px; border-radius: 50%; }
+.lights i:nth-child(1) { background: #FF5F57; } .lights i:nth-child(2) { background: #FEBC2E; } .lights i:nth-child(3) { background: #28C840; }
+.caret { display: inline-block; width: 1.5px; height: 1.15em; background: currentColor; vertical-align: -3px; margin-left: 1px; }
+.sel { background: #B3D7FF; border-radius: 2px; }
+.ph { color: #8a8a8a; }
+
+/* ---------- Slack ---------- */
+.slack { background: #3F0E40; display: grid; grid-template-rows: 40px 1fr; color: #1d1c1d; }
+.slack .top { display: flex; align-items: center; gap: 16px; padding: 0 14px; }
+.slack .search { flex: 1; max-width: 480px; margin: 0 auto; height: 26px; border-radius: 7px; background: rgba(255,255,255,.18); color: rgba(255,255,255,.85); display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 13px; }
+.slack .wb { display: grid; grid-template-columns: 70px 236px 1fr; min-height: 0; }
+.slack .rail { display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 6px; color: #fff; font-size: 11px; }
+.slack .ws { width: 36px; height: 36px; border-radius: 9px; background: #fff; color: #3F0E40; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
+.slack .rb { display: flex; flex-direction: column; align-items: center; gap: 3px; opacity: .85; }
+.slack .rb i { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; }
+.slack .rb.on i { background: rgba(255,255,255,.2); }
+.slack .rb svg.i { width: 19px; height: 19px; }
+.slack .side { background: #4A154B; border-radius: 10px 0 0 0; padding: 12px 10px; color: rgba(255,255,255,.72); font-size: 14.5px; overflow: hidden; }
+.slack .side h4 { margin: 2px 8px 14px; color: #fff; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+.slack .side .grp { margin: 14px 8px 6px; font-size: 13.5px; }
+.slack .side .it { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; border-radius: 6px; }
+.slack .side .it.on { background: rgba(255,255,255,.92); color: #3F0E40; font-weight: 700; }
+.slack .side .it b { color: #fff; font-weight: 700; }
+.slack .av { width: 20px; height: 20px; border-radius: 5px; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; flex: none; }
+.slack .main { background: #fff; display: grid; grid-template-rows: 52px 1fr auto; min-height: 0; }
+.slack .chead { display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid #e2e2e2; font-weight: 800; font-size: 17px; }
+.slack .chead .av { width: 26px; height: 26px; font-size: 12px; }
+.slack .msgs { padding: 14px 20px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; }
+.slack .day { align-self: center; font-size: 12.5px; font-weight: 700; border: 1px solid #ddd; border-radius: 12px; padding: 2px 12px; margin-bottom: 4px; }
+.slack .m { display: grid; grid-template-columns: 38px 1fr; gap: 10px; }
+.slack .m .av { width: 38px; height: 38px; border-radius: 8px; font-size: 14px; }
+.slack .m .n { font-weight: 800; } .slack .m .t { color: #616061; font-size: 12px; margin-left: 6px; font-weight: 400; }
+.slack .m p { margin: 2px 0 0; font-size: 15px; }
+.slack .compose { margin: 0 20px 18px; border: 1px solid #bbb; border-radius: 9px; overflow: hidden; }
+.slack .tools { display: flex; gap: 12px; padding: 7px 10px; background: #f8f8f8; color: #666; }
+.slack .tools svg.i { width: 15px; height: 15px; }
+.slack .field { min-height: 46px; padding: 8px 12px; font-size: 15px; }
+.slack .bar { display: flex; align-items: center; gap: 12px; padding: 4px 8px 8px; color: #666; }
+.slack .send { margin-left: auto; width: 30px; height: 28px; border-radius: 5px; display: grid; place-items: center; color: #aaa; }
+.slack .send.ready { background: #007A5A; color: #fff; }
+
+/* ---------- Chrome and Gmail ---------- */
+.chrome { background: #fff; display: grid; grid-template-rows: 40px 42px 1fr; }
+.chrome .ctabs { background: #DFE3E8; display: flex; align-items: flex-end; gap: 12px; padding: 0 12px; }
+.chrome .ctabs .lights { align-self: center; margin-right: 8px; }
+.chrome .ctab { height: 32px; width: 240px; background: #fff; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 12.5px; color: #1f1f1f; white-space: nowrap; overflow: hidden; }
+.chrome .ctab img { width: 16px; height: 16px; }
+.chrome .ctab.off { background: none; color: #444; width: 200px; }
+.chrome .omni { display: flex; align-items: center; gap: 14px; padding: 0 14px; color: #5f6368; border-bottom: 1px solid #e3e3e3; }
+.chrome .url { flex: 1; height: 30px; border-radius: 15px; background: #EDF0F4; display: flex; align-items: center; padding: 0 14px; font-size: 13.5px; color: #1f1f1f; }
+.chrome .page { min-height: 0; position: relative; }
+
+.gmail { position: absolute; inset: 0; background: #F6F8FC; display: grid; grid-template-columns: 236px 1fr; grid-template-rows: 60px 1fr; color: #1f1f1f; font-family: Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+.gmail .logo { display: flex; align-items: center; gap: 14px; padding-left: 18px; color: #5f6368; font-size: 22px; }
+.gmail .logo img { width: 30px; height: 30px; margin: 0 -6px 0 -2px; }
+.gmail .gsearch { display: flex; align-items: center; }
+.gmail .gsearch div { width: 620px; max-width: 92%; height: 44px; border-radius: 22px; background: #E9EEF6; display: flex; align-items: center; gap: 14px; padding: 0 18px; color: #444; font-size: 15px; }
+.gmail nav { padding: 6px 12px 0 8px; }
+.gmail .compose { display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 22px 0 18px; border-radius: 16px; background: #C2E7FF; font-size: 14.5px; font-weight: 500; margin-bottom: 14px; }
+.gmail .nv { display: flex; align-items: center; gap: 16px; height: 32px; padding: 0 12px 0 20px; border-radius: 0 16px 16px 0; font-size: 14px; color: #202124; }
+.gmail .nv.on { background: #D3E3FD; font-weight: 700; }
+.gmail .nv em { margin-left: auto; font-style: normal; font-size: 12.5px; }
+.gmail .gcard { background: #fff; border-radius: 16px; margin: 0 14px 14px 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.gmail h2 { margin: 0; font-size: 22px; font-weight: 400; display: flex; align-items: center; gap: 10px; }
+.gmail h2 small { font-size: 12px; background: #ddd; border-radius: 4px; padding: 1px 6px; color: #444; }
+.gmail .from { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; }
+.gmail .gav { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 17px; }
+.gmail .from b { font-size: 14.5px; } .gmail .from span { color: #5f6368; font-size: 12.5px; } .gmail .from .gav { color: #fff; font-size: 17px; }
+.gmail .msg { margin: 0 0 0 52px; font-size: 14.5px; line-height: 1.55; }
+.gmail .reply { margin-left: 52px; border-radius: 16px; box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15); padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.gmail .to { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #444; }
+.gmail .field { min-height: 72px; font-size: 14.5px; line-height: 1.55; white-space: pre-line; }
+.gmail .gbar { display: flex; align-items: center; gap: 14px; color: #444; }
+.gmail .gsend { height: 36px; padding: 0 22px; border-radius: 18px; background: #0B57D0; color: #fff; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; }
+
+/* ---------- Cursor ---------- */
+.cursor { background: #141414; color: #CCCCCC; display: grid; grid-template-rows: 36px 1fr; font-size: 13px; }
+.cursor .top { display: flex; align-items: center; padding: 0 12px; color: #9a9a9a; font-size: 12.5px; }
+.cursor .top .t { flex: 1; text-align: center; margin-right: 52px; }
+.cursor .wb { display: grid; grid-template-columns: 44px 200px 1fr 330px; min-height: 0; }
+.cursor .act { display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 12px; color: #7a7a7a; border-right: 1px solid #252525; }
+.cursor .act svg.i { width: 20px; height: 20px; } .cursor .act .on { color: #e6e6e6; }
+.cursor .ctree { background: #181818; border-right: 1px solid #252525; padding: 10px 0; font-size: 13px; }
+.cursor .ctree .h { padding: 0 14px 8px; font-size: 11px; letter-spacing: .06em; color: #8a8a8a; }
+.cursor .ctree div { height: 23px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.cursor .ctree .on { background: #2A2D2E; color: #fff; }
+.cursor .ts { color: #3B82F6; font-size: 9px; font-weight: 700; }
+.cursor .ed { background: #1E1E1E; display: grid; grid-template-rows: 34px 1fr; min-width: 0; }
+.cursor .etabs { display: flex; background: #181818; }
+.cursor .etab { display: flex; align-items: center; gap: 6px; padding: 0 14px; background: #1E1E1E; color: #fff; border-top: 1px solid #3B82F6; }
+.cursor pre { margin: 0; padding: 10px 0; font-family: "GeistMono", Menlo, monospace; font-size: 12.5px; line-height: 1.7; color: #D4D4D4; overflow: hidden; }
+.cursor pre i { display: inline-block; width: 44px; padding-right: 14px; text-align: right; color: #5A5A5A; font-style: normal; }
+.cursor pre .k { color: #C586C0; } .cursor pre .f { color: #DCDCAA; } .cursor pre .s { color: #CE9178; } .cursor pre .v { color: #9CDCFE; } .cursor pre .y { color: #4EC9B0; }
+.cursor .agent { background: #181818; border-left: 1px solid #252525; display: grid; grid-template-rows: 38px 1fr auto; min-height: 0; }
+.cursor .ah { display: flex; align-items: center; gap: 14px; padding: 0 14px; color: #8a8a8a; font-size: 12.5px; border-bottom: 1px solid #252525; }
+.cursor .ah b { color: #e6e6e6; font-weight: 500; }
+.cursor .empty { display: grid; place-items: center; color: #555; font-size: 12.5px; }
+.cursor .box { margin: 12px; border: 1px solid #3a3a3a; border-radius: 10px; background: #1F1F1F; padding: 10px 12px; }
+.cursor .ctx { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #aaa; border: 1px solid #3a3a3a; border-radius: 5px; padding: 1px 6px; margin-bottom: 8px; }
+.cursor .field { min-height: 66px; color: #e6e6e6; font-size: 13.5px; line-height: 1.5; }
+.cursor .cbar { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 11.5px; color: #8a8a8a; }
+.cursor .chip { border-radius: 5px; background: #2a2a2a; padding: 2px 7px; color: #ccc; }
+.cursor .go { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; background: #3a3a3a; display: grid; place-items: center; color: #ddd; }
+.cursor .go.ready { background: #e6e6e6; color: #111; }
+
+/* ---------- Terminal and Claude Code ---------- */
+.term { background: #1E1E1E; color: #D4D4D4; display: grid; grid-template-rows: 30px 1fr; font-family: "GeistMono", Menlo, monospace; font-size: 13px; }
+.term .top { display: flex; align-items: center; padding: 0 12px; background: #2B2B2B; color: #aaa; font-family: -apple-system, sans-serif; font-size: 12.5px; }
+.term .top .t { flex: 1; text-align: center; margin-right: 52px; }
+.term .scr { padding: 14px 18px; line-height: 1.55; overflow: hidden; }
+.cc-box { border: 1px solid #D97757; border-radius: 6px; padding: 10px 14px; color: #c7c7c7; width: 70%; }
+.cc-box b { color: #D97757; font-weight: 400; }
+.cc-dim { color: #8a8a8a; }
+.cc-in { margin-top: 14px; border: 1px solid #6a6a6a; border-radius: 6px; padding: 8px 12px; min-height: 40px; color: #eee; }
+.cc-in::before { content: "> "; color: #aaa; }
+.cc-out { margin-top: 12px; white-space: pre-wrap; }
+.cc-out .dot { color: #4AA36A; } .cc-out .tool { color: #fff; }
+
+/* ---------- Apple Notes ---------- */
+.notes { background: #fff; display: grid; grid-template-columns: 190px 250px 1fr; color: #1d1d1f; }
+.notes .fold { background: #F0EFEE; padding: 40px 10px 10px; font-size: 13.5px; }
+.notes .fold .lights { position: absolute; left: 14px; top: 14px; }
+.notes .fold .g { color: #8a8a8a; font-size: 11.5px; font-weight: 600; margin: 6px 8px; }
+.notes .fold .it { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; border-radius: 6px; }
+.notes .fold .it.on { background: #DCDAD7; }
+.notes .fold svg.i { color: #E1A92E; }
+.notes .list { border-right: 1px solid #e5e5e5; padding: 44px 10px 10px; }
+.notes .list .it { padding: 8px 10px; border-radius: 7px; font-size: 13px; color: #6e6e73; }
+.notes .list .it b { display: block; color: #1d1d1f; font-size: 14px; }
+.notes .list .it.on { background: #FCE18A; }
+.notes .page { padding: 20px 34px; }
+.notes .date { text-align: center; color: #8a8a8a; font-size: 12px; margin-bottom: 14px; }
+.notes h3 { margin: 0 0 10px; font-size: 24px; font-weight: 700; }
+.notes .field { font-size: 15px; line-height: 1.7; white-space: pre-line; }
+
+/* ---------- Google Meet ---------- */
+.meet { position: absolute; inset: 0; background: #202124; display: grid; grid-template-rows: 1fr 80px; padding: 16px 16px 0; font-family: Roboto, -apple-system, Arial, sans-serif; color: #e8eaed; }
+.meet .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.meet .tile { position: relative; background: #3C4043; border-radius: 10px; display: grid; place-items: center; }
+.meet .tile .gav { width: 86px; height: 86px; border-radius: 50%; display: grid; place-items: center; font-size: 36px; color: #fff; }
+.meet .tile .nm { position: absolute; left: 14px; bottom: 10px; font-size: 14px; }
+.meet .tile.talk { box-shadow: inset 0 0 0 3px #8AB4F8; }
+.meet .ctl { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; font-size: 15px; }
+.meet .btns { display: flex; gap: 10px; }
+.meet .btns span { width: 44px; height: 44px; border-radius: 50%; background: #3C4043; display: grid; place-items: center; }
+.meet .btns span.end { width: 64px; border-radius: 22px; background: #EA4335; }
+.meet .btns svg.i { width: 20px; height: 20px; }
+
+/* ---------- Google Slides, presenting ---------- */
+.slide { position: absolute; inset: 0; background: #fff; display: grid; place-items: center; }
+.slide .in { width: 78%; }
+.slide .stag { color: #1a73e8; font-weight: 700; letter-spacing: .08em; font-size: 14px; }
+.slide h1 { font-size: 44px; line-height: 1.1; margin: 12px 0 18px; font-family: -apple-system, Arial, sans-serif; letter-spacing: -.02em; }
+.slide .ch { display: flex; gap: 14px; } .slide .ch div { flex: 1; border-radius: 10px; padding: 16px; background: #F1F3F4; font-size: 16px; }
+.slide .ch b { display: block; font-size: 22px; margin-bottom: 4px; }
+
+/* ---------- Claude ---------- */
+.claude { background: #FAF9F5; display: grid; grid-template-columns: 230px 1fr; color: #3d3929; font-family: -apple-system, "Helvetica Neue", sans-serif; }
+.claude .cside { background: #F0EEE6; padding: 44px 12px 12px; font-size: 13.5px; position: relative; }
+.claude .cside .lights { position: absolute; left: 14px; top: 14px; }
+.claude .new { display: flex; align-items: center; gap: 8px; color: #C96442; font-weight: 600; margin-bottom: 16px; }
+.claude .rec { color: #8a8574; font-size: 12px; margin: 12px 4px 6px; }
+.claude .ci { padding: 6px 8px; border-radius: 7px; white-space: nowrap; overflow: hidden; }
+.claude .ci.on { background: #E5E2D8; }
+.claude .cmain { display: grid; grid-template-rows: 1fr auto; padding: 24px 0 18px; min-width: 0; }
+.claude .thread { width: 82%; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; font-size: 15px; line-height: 1.6; overflow: hidden; }
+.claude .you { align-self: flex-end; background: #F0EEE6; border-radius: 14px; padding: 10px 14px; max-width: 80%; }
+.claude .mark { width: 22px; height: 22px; background: url("apps/claude.png") center / 150% no-repeat; border-radius: 6px; }
+.claude .toolrow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b6657; border: 1px solid #E5E2D8; background: #fff; border-radius: 8px; padding: 6px 10px; width: max-content; }
+.claude .toolrow img { width: 16px; height: 16px; border-radius: 4px; }
+.claude .ans { white-space: pre-line; }
+.claude .cin { width: 82%; margin: 0 auto; border: 1px solid #E0DDD2; background: #fff; border-radius: 16px; padding: 12px 14px; color: #a09b8b; font-size: 15px; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.claude .cin .up { margin-left: auto; width: 30px; height: 30px; border-radius: 9px; background: #D97757; color: #fff; display: grid; place-items: center; }
+
+/* ---------- SigmaFlow's own overlays (the app's DS tokens) ---------- */
+.sf { font-family: "Pixel", ui-monospace, monospace; color: #EDEDED; }
+.sf-panel { position: absolute; z-index: 8; background: rgba(16,16,16,.78); border: 1px solid rgba(255,255,255,.20); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.55); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); opacity: 0; transform: translateY(6px); transition: opacity .3s cubic-bezier(.22,1,.36,1), transform .3s cubic-bezier(.22,1,.36,1); }
+.sf-panel.on { opacity: 1; transform: none; transition-duration: .16s; }
+.sf-hud { left: 50%; width: 440px; margin-left: -220px; padding: 14px 18px; }
+.sf-row { display: flex; align-items: center; gap: 10px; font-size: 13px; letter-spacing: .04em; }
+.sf-dot { width: 8px; height: 8px; border-radius: 50%; background: #EDEDED; }
+.sf-row svg.i { width: 13px; height: 13px; }
+.sf-meter { display: flex; gap: 3px; } .sf-meter i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.18); } .sf-meter i.lit { background: #32D74B; }
+.sf-text { margin-top: 10px; font-size: 15px; line-height: 1.5; min-height: 1.5em; }
+.sf-ask { display: grid; grid-template-columns: 64px 1fr; gap: 12px; margin-top: 10px; align-items: start; }
+.sf-shot { width: 64px; height: 40px; border-radius: 3px; border: 1px solid rgba(255,255,255,.2); background: linear-gradient(#cfcfcf, #cfcfcf) 70% 34% / 44% 3px no-repeat, linear-gradient(#cfcfcf, #cfcfcf) 64% 56% / 32% 3px no-repeat, linear-gradient(#E8710A, #E8710A) 34% 34% / 5px 5px no-repeat, linear-gradient(90deg, #3F0E40 0 26%, #fff 26% 100%); }
+.sf-ask .q { font-size: 14px; line-height: 1.5; color: #EDEDED; }
+.sf-ask .q.dim { color: #8F8F8F; }
+.sf-write { margin-top: 8px; font-size: 15px; line-height: 1.55; color: #EDEDED; }
+.sf-key { position: absolute; z-index: 8; height: 34px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 4px; background: rgba(10,10,10,.6); border: 1px solid rgba(255,255,255,.25); color: #A1A1A1; font-size: 13px; letter-spacing: .04em; transition: all .16s; }
+.sf-key.down { background: #EDEDED; color: #0A0A0A; border-color: #EDEDED; }
+.sf-notice { left: 50%; width: 440px; margin-left: -220px; padding: 14px 18px 0; overflow: hidden; }
+.sf-notice .e { font-size: 12px; letter-spacing: .06em; color: #A1A1A1; }
+.sf-notice .pair { display: flex; align-items: center; gap: 10px; font-size: 15px; margin: 6px 0 14px; }
+.sf-notice .pair s { color: #8F8F8F; }
+.sf-btn { position: absolute; right: 14px; top: 14px; height: 30px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.145); font-size: 13px; color: #EDEDED; }
+.sf-line { height: 2px; background: rgba(255,255,255,.14); } .sf-line i { display: block; height: 100%; width: 100%; background: #EDEDED; transform-origin: left; }
+.sf-call { left: 50%; width: 420px; margin-left: -210px; padding: 16px 18px 0; overflow: hidden; }
+.sf-call .r { display: grid; grid-template-columns: 38px 1fr; gap: 14px; align-items: center; }
+.sf-call .r img { width: 38px; height: 38px; border-radius: 9px; }
+.sf-call .q { font-size: 16px; }
+.sf-call .bs { display: flex; gap: 8px; margin: 12px 0 16px 52px; }
+.sf-call .bs span { height: 30px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.145); font-size: 13px; transition: background .16s; }
+.sf-call .bs span.press { background: rgba(255,255,255,.2); }
+.sf-notes { right: 16px; top: 42px; width: 400px; padding: 12px 16px 14px; }
+.sf-notes .sf-row .bt { margin-left: auto; display: flex; gap: 6px; }
+.sf-notes .sf-row .bt span { height: 26px; padding: 0 8px; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.145); font-size: 12px; }
+.sf-lines { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 330px; overflow: hidden; }
+.sf-ln { display: grid; grid-template-columns: 50px 1fr; gap: 10px; font-size: 14px; line-height: 1.5; }
+.sf-ln .tm { color: #8F8F8F; font-size: 12.5px; padding-top: 2px; }
+.sf-ln .ph { width: 64px; height: 40px; border-radius: 3px; background: #F1F3F4 linear-gradient(#1a73e8 0 0) 10px 10px / 30px 3px no-repeat; border: 1px solid rgba(255,255,255,.2); }
+.spot { position: absolute; inset: 0; z-index: 3; background: rgba(0,0,0,.42); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.spot.on { opacity: 1; }
+.spot-lift { z-index: 4 !important; }
+.pointer { position: absolute; z-index: 9; width: 18px; height: 26px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 26'%3E%3Cpath d='M1 1v20l5-5 4 9 3-1-4-9h7z' fill='%23000' stroke='%23fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat; transition: left .7s cubic-bezier(.22,1,.36,1), top .7s cubic-bezier(.22,1,.36,1), opacity .3s; opacity: 0; }
+.pointer.on { opacity: 1; }
+
+.w { opacity: 0; filter: blur(3px); transition: opacity .34s cubic-bezier(.22,1,.36,1), filter .34s cubic-bezier(.22,1,.36,1); }
+.w.in { opacity: 1; filter: none; }
+
+/* phones and narrow columns: the same desks with the side panes put away */
+.desk.narrow .slack .wb { grid-template-columns: 1fr; } .desk.narrow .slack .rail, .desk.narrow .slack .side { display: none; }
+.desk.narrow .gmail { grid-template-columns: 1fr; } .desk.narrow .gmail nav, .desk.narrow .gmail .gsearch { display: none; }
+.desk.narrow .gmail .gcard { margin-left: 14px; }
+.desk.narrow .cursor .wb { grid-template-columns: 1fr; } .desk.narrow .cursor .act, .desk.narrow .cursor .ctree, .desk.narrow .cursor .ed { display: none; }
+.desk.narrow .notes { grid-template-columns: 1fr; } .desk.narrow .notes .fold, .desk.narrow .notes .list { display: none; }
+.desk.narrow .claude { grid-template-columns: 1fr; } .desk.narrow .claude .cside { display: none; }
+.desk.narrow .chrome .ctab.off { display: none; }
+.desk.narrow .slide h1 { font-size: 36px; } .desk.narrow .slide .ch { flex-direction: column; } .desk.narrow .slide .in { width: 50%; margin-left: 6%; }
+.desk.narrow .sf-notes { width: 300px; }
+.desk.narrow .sf-hud, .desk.narrow .sf-notice { width: 520px; margin-left: -260px; }
+.desk.narrow .sf-text, .desk.narrow .sf-write { font-size: 18px; }
+.desk.narrow .dock span:nth-child(n+7) { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .w { opacity: 1; filter: none; transition: none; } }

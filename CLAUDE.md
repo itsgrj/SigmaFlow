@@ -995,6 +995,31 @@ there. Loosening it is how the Dictionary page fills up with rules nobody wanted
 The Windows port and its `shared/` vectors folder were removed in September 2026; do not
 recreate either.
 
+### Website
+
+14 Nov 2026, live at <https://itsgrj.github.io/SigmaFlow/> (GitHub Pages, free; a domain can be
+added later without breaking the link). Gokul picked the light look after a dark one and an
+app-styled first draft were turned down. Source is `site/`: `index.html` (the page),
+`scenes.css` and `scenes.js` (the demos), `apps/` (app icons). `site/build.sh` assembles it with
+the fonts, the painting and two README pictures copied from where the app keeps them, so nothing
+is stored twice; `make site` builds it into the build cache, `make site-preview` serves it on
+localhost:8765, and `.github/workflows/pages.yml` publishes it on every push to main that touches
+`site/` or `docs/readme/`. Never publish `docs/` itself: every mockup would get an indexed URL.
+
+- **The page is a website, the app lives inside screens.** Readable Geist Sans for everything
+  read at length, Geist Pixel only for headlines, numbers and the wordmark. SigmaFlow's own look
+  (glass, pixel type, the painting) appears only inside a framed Mac screen. Gokul: the first
+  draft, where the whole page looked like the app, was unreadable and you could not tell page from
+  app.
+- **Every demo shows the real app** (Gokul, emphatically): Slack that looks like Slack, Gmail in
+  Chrome, Cursor, Claude Code in Terminal, Apple Notes, Google Meet, Google Slides, Claude Desktop,
+  with real icons in the Dock and the keyboard of apps. Generic grey windows are what he rejected.
+  SigmaFlow's overlays in them (REC card, Autowrite, ADDING TO DICTIONARY, Record this meeting?,
+  the notes card) follow the app's real ones; redraw them when the app's change.
+- **Icons**: installed apps exported from this Mac, web apps from their official logos or Simple
+  Icons, made into Mac-style tiles. The footer says the logos belong to their owners.
+- The before and after sentences are written by hand; check them with `--cleanup-check`.
+
 ## Design system
 
 [UI/DesignSystem.swift](Sources/SigmaFlow/UI/DesignSystem.swift) (`DS`) holds every color,

@@ -41,7 +41,7 @@ ifeq ($(strip $(SIGN_ID)),)
 SIGN_ID := -
 endif
 
-.PHONY: all build app run install clean dmg release sparkle-tools extension-zip
+.PHONY: all build app run install clean dmg release sparkle-tools extension-zip site site-preview
 
 all: app
 
@@ -241,6 +241,17 @@ release: sparkle-tools
 	@git commit -q -m "Appcast: SigmaFlow $(VERSION)" -- appcast.xml && git push -q origin HEAD:main
 	@git worktree remove --force "$(RELSRC)"
 	@echo "released SigmaFlow $(VERSION): every copy picks it up within a day"
+
+## The website (site/), assembled outside this synced folder like everything else built here.
+## GitHub Pages builds the same folder from .github/workflows/pages.yml.
+SITE := $(STAGE)/site
+
+site:
+	@site/build.sh "$(SITE)"
+
+site-preview: site
+	@echo "http://localhost:8765"
+	@python3 -m http.server 8765 --bind 127.0.0.1 -d "$(SITE)"
 
 clean:
 	@rm -rf .build "$(STAGE)" "$(SCRATCH)"
