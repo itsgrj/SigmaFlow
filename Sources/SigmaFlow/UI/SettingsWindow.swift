@@ -413,7 +413,7 @@ struct SettingsPage: View {
                         browserRow(browser, isLast: index == browsers.count - 1)
                     }
                 } footer: {
-                    CardFooter(hint: "What you write on websites goes to SigmaFlow on this Mac, and nowhere else.") { EmptyView() }
+                    CardFooter(hint: "What SigmaFlow reads on websites goes to SigmaFlow on this Mac, and from Autowrite only to the AI model you chose on Styles.") { EmptyView() }
                 }
             }
         }

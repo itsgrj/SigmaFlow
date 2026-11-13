@@ -28,6 +28,20 @@ O7 Updates: O7.1 and O7.2 are 2.1 Transcriptions with the line Ready and Restart
 UPDATED notice above the Dock, drawn on O2.5's desktop. components.js still writes the old plain
 version text; the file, not the script, is the record.
 
+On 13 Nov 2026 the browser extension was drawn (docs/mockups/browser-extension.html, picks 01 02 07,
+and docs/mockups/autowrite-what-it-read.html, 09 without its WHOLE PAGE line; built on 12 and 13 Nov).
+Screens 9.18 and 9.19 start a third row in the Settings section: Connections with Your browser under
+the connections card, a row per browser with its own icon (Dia connected, Chrome waiting after Add,
+Arc not added; then nothing added, the default browser with the inverted Add). Overlays gained
+section O8 Browser extension: O8.1 the one-time card above the Dock, O8.2 and O8.3 the toolbar card
+on and off for a site, O8.4 Autowrite with the screenshot framed by four corners because the page
+was read, O8.5 the toolbar card while SigmaFlow isn't open. The Components page has Icon/earth on the
+Icons board, App icon/Dia, App icon/Chrome and App icon/Arc (each browser's real icon, 18 px), and
+the component set Browser toolbar card (State=On, Off, Not open), drawn from the extension's own CSS
+in Geist with the file's tracking, since scripts can't load Pixel. The Button component's Inverted
+kind keeps a swapped icon white; the Add buttons here set theirs to ink/on-inverted by hand. O6 is
+still titled Write for me; O8.4 is the Autowrite overlay as built.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,

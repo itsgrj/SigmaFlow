@@ -883,8 +883,9 @@ extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser
   12 Nov 2026 against headless Chrome 147 with the extension loaded over the DevTools pipe
   (`Extensions.loadUnpacked`; branded Chrome ignores `--load-extension`).
 - Safari needs an app extension built in Xcode; Firefox needs its own manifest. Neither is done.
-- **Figma is behind**: the card, the one-time card, the toolbar card and the stack were built
-  from the mockup; draw them in "[ SIGMAFLOW ]".
+- **In Figma** (13 Nov 2026): Screens 9.18 and 9.19 (Connections, Your browser), Overlays O8
+  (the one-time card, the toolbar card in three states, Autowrite with the scan corners) and the
+  component set Browser toolbar card. See docs/figma/README.md.
 
 ### Snippets
 
