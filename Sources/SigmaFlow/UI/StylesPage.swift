@@ -137,7 +137,7 @@ struct StylesPage: View {
         ) {
             HStack(spacing: DS.Space.tight) {
                 AppButton(title: "Change engine") { isChoosingEngine = true }
-                if settings.styleEngine != .apple {
+                if settings.styleEngine == .claude || settings.styleEngine == .openRouter {
                     AppButton(title: "Change key") { isChoosingEngine = true }
                 }
             }
@@ -149,7 +149,23 @@ struct StylesPage: View {
         case .apple: "On this Mac, free, no key."
         case .claude: "Your Anthropic key is saved in the Mac's Keychain."
         case .openRouter: "Your OpenRouter key is saved in the Mac's Keychain."
+        case .local:
+            switch localServer {
+            case .some(let server) where server.kind != .other:
+                "In \(server.name), on this Mac. Your text never leaves it."
+            case .some(let server):
+                "On this Mac, at \(server.place). Your text never leaves it."
+            case nil:
+                "On this Mac. Your text never leaves it."
+            }
         }
+    }
+
+    /// The saved model's server, read from `settings` so the row follows a new pick.
+    private var localServer: LocalServer? {
+        guard let kind = LocalServer.Kind(rawValue: settings.localModelServer),
+              let address = LocalModels.normalised(settings.localModelAddress) else { return nil }
+        return LocalServer(kind: kind, address: address)
     }
 
     private func engineName(_ engine: StyleEngineChoice) -> String {
@@ -157,6 +173,7 @@ struct StylesPage: View {
         case .apple: "Apple Intelligence"
         case .claude: "Claude"
         case .openRouter: "OpenRouter"
+        case .local: settings.localModelName.isEmpty ? "your own model" : settings.localModelName
         }
     }
 
@@ -165,6 +182,7 @@ struct StylesPage: View {
         case .apple: true
         case .claude: Keychain.hasAnthropicKey
         case .openRouter: Keychain.hasOpenRouterKey
+        case .local: !settings.localModelName.isEmpty
         }
     }
 
@@ -287,8 +305,10 @@ private struct CustomStyleTile: View {
 
 // MARK: - Engine chooser
 
-/// Three rows, pick one. A cloud engine opens a key field under its name; Save key
-/// stores it in the Keychain and closes the chooser. Apple Intelligence needs nothing.
+/// Four rows in two groups (docs/mockups/local-model.html, 1B): on this Mac, Apple
+/// Intelligence and the person's own model; with your key, Claude and OpenRouter. A cloud
+/// engine opens a key field under its name; Save key stores it in the Keychain and closes
+/// the chooser. The own model opens `LocalModelPicker`. Apple Intelligence needs nothing.
 private struct EngineChooser: View {
     let settings: Settings
     let onDone: () -> Void
@@ -297,11 +317,18 @@ private struct EngineChooser: View {
     @State private var openRouterKey = Keychain.openRouterKey ?? ""
 
     var body: some View {
+        group("On this Mac")
         engineRow(
             .apple, name: "Apple Intelligence",
             blurb: "On this Mac, free, no key. Needs an M-series Mac with Apple Intelligence turned on. Best for short texts."
         )
         CardDivider()
+        engineRow(
+            .local, name: "Your own model",
+            blurb: "Ollama or LM Studio, with a model you choose. Free, no key."
+        )
+        CardDivider()
+        group("With your key")
         engineRow(
             .claude, name: "Claude",
             blurb: "Anthropic's model with your own API key. The best rewrites; you pay Anthropic per use.",
@@ -313,6 +340,13 @@ private struct EngineChooser: View {
             blurb: "Your own OpenRouter key, free models only. Quality varies by model.",
             key: $openRouterKey, prompt: "Paste your OpenRouter API key"
         ) { Keychain.openRouterKey = $0 }
+    }
+
+    private func group(_ title: String) -> some View {
+        Eyebrow(title)
+            .padding(.horizontal, DS.Space.rowPadX)
+            .padding(.top, DS.Space.rowPadY)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -357,11 +391,239 @@ private struct EngineChooser: View {
                 }
                 .padding(.leading, DS.Space.radioIndent)
             }
+
+            if isOn, engine == .local {
+                LocalModelPicker(settings: settings, onDone: onDone)
+                    .padding(.leading, DS.Space.radioIndent)
+            }
         }
         .padding(.horizontal, DS.Space.rowPadX)
         .padding(.vertical, DS.Space.rowPadY + DS.Space.hair)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(isOn ? DS.Color.editorFill : Color.clear)
+    }
+}
+
+// MARK: - Your own model
+
+/// The open Your own model row (docs/mockups/local-model.html, 2A and 3B): every model
+/// SigmaFlow finds on this Mac in one popup, under its server's name, and Use this model;
+/// under it, faint, where it was found and Change, for any other address. When nothing
+/// answers, Open Ollama (or LM Studio) if it is on this Mac, otherwise Look again.
+private struct LocalModelPicker: View {
+    let settings: Settings
+    let onDone: () -> Void
+
+    private enum Phase: Equatable {
+        case looking
+        case found([LocalModel])
+        /// It answers, with no models in it.
+        case empty(LocalServer)
+        /// Installed and closed.
+        case closed(LocalServer)
+        case opening(LocalServer)
+        case nothing
+    }
+
+    @Environment(\.isSnapshotting) private var isSnapshotting
+    @State private var phase: Phase = .looking
+    @State private var chosen: LocalModel?
+    @State private var isChangingAddress = false
+    @State private var address = ""
+    @State private var addressMissed = false
+
+    /// A snapshot can't wait for a server, so it draws one model found in Ollama.
+    private static let snapshotModel = LocalModel(name: "gemma4:e4b", server: LocalModels.ollama)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DS.Space.base) {
+            if isChangingAddress {
+                addressLine
+            } else if isSnapshotting {
+                phaseLine(.found([Self.snapshotModel]), chosen: Self.snapshotModel)
+            } else {
+                phaseLine(phase, chosen: chosen)
+            }
+        }
+        .task { await look() }
+    }
+
+    @ViewBuilder
+    private func phaseLine(_ shown: Phase, chosen model: LocalModel?) -> some View {
+        switch shown {
+        case .looking:
+            Caption("Looking on this Mac")
+        case .found(let models):
+            HStack(spacing: DS.Space.base) {
+                LocalModelPopup(models: models, selection: $chosen, shown: model)
+                AppButton(title: "Use this model", kind: .secondary, isEnabled: model != nil) {
+                    guard let model else { return }
+                    settings.useLocalModel(model)
+                    onDone()
+                }
+            }
+            if let server = model?.server { whereLine(found(server)) }
+        case .empty(let server):
+            HStack(spacing: DS.Space.base) {
+                Caption("\(server.kind == .other ? "The server at \(server.place)" : server.name) has no models yet. Add one there, then look again.")
+                AppButton(title: "Look again", kind: .secondary) { Task { await look() } }
+            }
+        case .closed(let server):
+            HStack(spacing: DS.Space.base) {
+                Caption("\(server.name) is on this Mac but not open.")
+                AppButton(title: "Open \(server.name)", kind: .primary) {
+                    Task {
+                        phase = .opening(server)
+                        _ = await LocalModels.open(server)
+                        await look()
+                    }
+                }
+            }
+            whereLine(nil)
+        case .opening(let server):
+            Caption("Opening \(server.name)")
+        case .nothing:
+            HStack(spacing: DS.Space.base) {
+                Caption("Open Ollama or LM Studio, then look again.")
+                AppButton(title: "Look again", kind: .secondary) { Task { await look() } }
+            }
+            whereLine(nil)
+        }
+    }
+
+    private var addressLine: some View {
+        VStack(alignment: .leading, spacing: DS.Space.base) {
+            HStack(spacing: DS.Space.base) {
+                FormField(prompt: LocalModels.ollama.address.absoluteString, text: $address, onSubmit: lookThere)
+                    .frame(width: DS.Control.localAddressWidth)
+                AppButton(title: "Look there", kind: .secondary, isEnabled: LocalModels.normalised(address) != nil) {
+                    lookThere()
+                }
+                AppButton(title: "Cancel") {
+                    isChangingAddress = false
+                    addressMissed = false
+                }
+            }
+            Text(addressMissed ? "Nothing answered at that address." : "Any server that works like Ollama or LM Studio")
+                .font(DS.Font.mono)
+                .foregroundStyle(DS.Color.dim)
+        }
+    }
+
+    private func found(_ server: LocalServer) -> String {
+        server.kind == .other ? "Found at \(server.place)" : "Found in \(server.name) at \(server.place)"
+    }
+
+    /// Where the model came from, faint, and Change; with nothing found, Another address.
+    private func whereLine(_ text: String?) -> some View {
+        HStack(spacing: DS.Space.base) {
+            if let text {
+                Text(text)
+                    .font(DS.Font.mono)
+                    .foregroundStyle(DS.Color.dim)
+            }
+            Button(text == nil ? "Another address" : "Change") {
+                address = chosen?.server.kind == .other ? chosen?.server.address.absoluteString ?? "" : ""
+                addressMissed = false
+                isChangingAddress = true
+            }
+            .buttonStyle(.plain)
+            .font(DS.Font.mono)
+            .foregroundStyle(DS.Color.inkSecondary)
+            .underline(true, color: DS.Color.borderStrong)
+            .handCursor()
+        }
+    }
+
+    /// Ollama and LM Studio at their usual addresses, and the saved one if it is elsewhere.
+    private func look() async {
+        phase = .looking
+        var servers = [LocalModels.ollama, LocalModels.lmStudio]
+        if let kind = LocalServer.Kind(rawValue: settings.localModelServer),
+           let saved = LocalModels.normalised(settings.localModelAddress),
+           !servers.contains(where: { $0.address == saved }) {
+            servers.insert(LocalServer(kind: kind, address: saved), at: 0)
+        }
+        let answers = await withTaskGroup(of: (Int, [LocalModel]?).self) { group in
+            for (index, server) in servers.enumerated() {
+                group.addTask { (index, await LocalModels.models(on: server)) }
+            }
+            var answers = [[LocalModel]?](repeating: nil, count: servers.count)
+            for await (index, models) in group { answers[index] = models }
+            return answers
+        }
+        let models = answers.compactMap { $0 }.flatMap { $0 }
+        if !models.isEmpty {
+            show(models)
+        } else if let index = answers.firstIndex(where: { $0 != nil }) {
+            phase = .empty(servers[index])
+        } else if let installed = [LocalModels.ollama, LocalModels.lmStudio]
+            .first(where: { LocalModels.appURL(for: $0.kind) != nil }) {
+            phase = .closed(installed)
+        } else {
+            phase = .nothing
+        }
+    }
+
+    private func lookThere() {
+        let typed = address
+        Task {
+            guard let answer = await LocalModels.identify(typed) else {
+                addressMissed = true
+                return
+            }
+            isChangingAddress = false
+            addressMissed = false
+            if answer.models.isEmpty {
+                phase = .empty(answer.server)
+            } else {
+                show(answer.models)
+            }
+        }
+    }
+
+    /// The models in the popup, set to the saved one when it is there, else the first.
+    private func show(_ models: [LocalModel]) {
+        phase = .found(models)
+        chosen = models.first {
+            $0.name == settings.localModelName && $0.server.address.absoluteString == settings.localModelAddress
+        } ?? models.first
+    }
+}
+
+/// The models found, each server's under its name, in `PopupButton`'s face.
+private struct LocalModelPopup: View {
+    let models: [LocalModel]
+    @Binding var selection: LocalModel?
+    /// What the face says; the selection, except in a snapshot.
+    let shown: LocalModel?
+
+    private var servers: [LocalServer] {
+        models.reduce(into: []) { list, model in
+            if !list.contains(model.server) { list.append(model.server) }
+        }
+    }
+
+    var body: some View {
+        Menu {
+            ForEach(servers, id: \.self) { server in
+                Section(server.kind == .other ? server.place : server.name) {
+                    Picker("", selection: $selection) {
+                        ForEach(models.filter { $0.server == server }, id: \.self) { model in
+                            Text(model.name).tag(Optional(model))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+            }
+        } label: {
+            PopupLabel(text: shown?.name ?? "", width: DS.Control.popupWidthModel)
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .handCursor()
     }
 }
 

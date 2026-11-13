@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your own model</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);--edfill:rgba(255,255,255,.03);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--menu:rgba(34,34,34,.97);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:56px 0 6px}
+h3{font-size:15px;font-weight:500;margin:40px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+.pick{font:11px var(--mono);color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.note code,.lead code,.how code{font:12px var(--mono);color:var(--ink)}
+.scroll{overflow-x:auto}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;max-width:1180px;margin:10px 0 0;padding:0;list-style:none}
+.index li{font-size:13px;color:var(--ink2);line-height:1.5}
+.index a{text-decoration:none;color:var(--ink2)}.index a:hover{color:var(--ink)}
+.index .k{font:11px var(--mono);color:var(--dim);margin-right:8px}
+.how{border:1px dashed var(--strong);border-radius:6px;padding:16px 20px;max-width:1080px;font-size:13px;line-height:1.6;color:var(--ink2)}
+.how b{color:var(--ink);font-weight:500}
+.how ol,.how ul{margin:6px 0 10px;padding-left:20px}
+.how li{margin:3px 0}
+.cap{font:12px var(--mono);color:var(--dim);margin:8px 0 0}
+.pair{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+
+/* the window at its real size */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:220px;flex:0 0 220px;background:#000;border-right:1px solid var(--border);padding:22px 10px;position:relative}
+.rail .wm{font:24px var(--pixel);padding:30px 10px 26px;display:flex;align-items:center;gap:10px}
+.rail .wm i{width:28px;height:28px;border:1px solid var(--strong);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:16px}
+.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border-radius:5px;font-size:14px;margin-bottom:8px}
+.rail .it.on{background:var(--sel)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.rail .foot{position:absolute;left:20px;bottom:14px;font:12px var(--mono);color:var(--dim)}
+.pg{flex:1;padding:24px 28px;min-width:0;display:flex;flex-direction:column;gap:20px;position:relative}
+.hd{display:flex;justify-content:space-between;align-items:flex-start}
+.hd h4{font-size:22px;font-weight:400;margin:0 0 8px}
+.hd .sub{font-size:14px;color:var(--ink2);max-width:540px;line-height:1.4}
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:7px 13px;background:var(--fill);white-space:nowrap;display:inline-flex;gap:8px;align-items:center;color:var(--ink);font-family:var(--pixel)}
+.btn img{width:13px;height:13px;filter:invert(1)}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink2)}
+.btn.solid{background:var(--ink);color:#000;border-color:var(--ink)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.off{opacity:.4}
+.tabs{display:flex;gap:26px;border-bottom:1px solid var(--border);font-size:14px;margin-top:-6px}
+.tabs span{padding:0 0 9px;color:var(--ink2)}.tabs span.on{color:var(--ink);border-bottom:1px solid var(--ink)}
+.card{border:1px solid var(--border);border-radius:6px;background:var(--glass);display:flex;flex-direction:column;overflow:hidden;position:relative;flex:0 0 auto}
+
+/* the engine chooser */
+.er{padding:13px 16px 14px;border-bottom:1px solid var(--border)}
+.er:last-child{border-bottom:0}
+.er.on{background:var(--edfill)}
+.er .top{display:flex;gap:14px;align-items:flex-start}
+.radio{width:14px;height:14px;border-radius:50%;border:1px solid var(--strong);flex:0 0 14px;margin-top:2px;position:relative}
+.radio.on{border-color:var(--ink)}.radio.on:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--ink)}
+.er .nm{font-size:14px}
+.er .bl{font-size:12px;color:var(--ink2);margin-top:4px;max-width:560px;line-height:1.45}
+.er .bl.faint{color:var(--ph)}
+.er .open{margin:12px 0 0 28px;display:flex;flex-direction:column;gap:10px}
+.line{display:flex;gap:10px;align-items:center}
+.fld{height:30px;border:1px solid var(--border);border-radius:5px;background:var(--fill);display:flex;align-items:center;padding:0 10px;font-size:13px;color:var(--ink)}
+.fld.ph{color:var(--ph)}
+.pop{height:30px;border:1px solid var(--border);border-radius:5px;background:var(--fill);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:13px;gap:12px}
+.pop:after{content:"";width:6px;height:6px;border-right:1px solid var(--ink2);border-bottom:1px solid var(--ink2);transform:rotate(45deg) translate(-2px,-2px)}
+.where{font:12px var(--mono);color:var(--dim)}
+.where u{color:var(--ink2);text-decoration-color:var(--strong);text-underline-offset:3px}
+.eyebrow{font:11px var(--mono);letter-spacing:.08em;color:var(--ink2);padding:12px 16px 4px}
+.sub2{display:flex;gap:12px;align-items:center;font-size:13px;padding:5px 0}
+.sub2 .radio{margin-top:0}
+.sub2 .sz{font:12px var(--mono);color:var(--dim);margin-left:auto;width:70px;text-align:right}
+.pline{height:2px;background:var(--border);position:relative;width:240px}.pline i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+
+/* the summary row */
+.sumrow{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.sumrow small{display:block;font-size:12px;color:var(--ink2);margin-top:4px}
+.sumrow .acts{display:flex;gap:4px}
+
+/* tiles under the card */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tile{border:1px solid var(--border);border-radius:6px;background:var(--glass);padding:18px 20px;height:200px;display:flex;flex-direction:column;gap:10px}
+.tile .tn{font-size:19px;display:flex;gap:10px;align-items:center}
+.kc{font:11px var(--mono);border:1px solid var(--strong);border-radius:4px;padding:2px 6px}
+.tile .tl{font-size:12px;color:var(--ink2);line-height:1.5}
+.tile .ra{margin-top:auto;display:flex;gap:28px;font-size:14px;color:var(--ink2)}
+
+/* the model popup, open */
+.menu{background:var(--menu);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:5px;width:300px;box-shadow:0 12px 32px rgba(0,0,0,.6);font:13px var(--geist);color:var(--ink)}
+.menu .mh{font:11px var(--mono);letter-spacing:.06em;color:var(--dim);padding:6px 10px 3px}
+.menu .mi{display:flex;justify-content:space-between;gap:20px;padding:4px 10px;border-radius:4px}
+.menu .mi.hl{background:rgba(255,255,255,.16)}
+.menu .mi .sc{color:var(--ink2);font:12px var(--mono)}
+.menu .mi.off{color:var(--ph)}
+.menu hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:5px 6px}
+
+/* a lone card, drawn at the Autowrite column's width */
+.lone{width:512px;font-family:var(--pixel)}
+.lone .sumrow{align-items:flex-start}
+.lone .sumrow>div:first-child{max-width:330px}
+</style>
+</head>
+<body><main class="review">
+
+<h1>Your own model, on this Mac</h1>
+<p class="lead"><b>Picks, 12 Nov 2026: 1B 2A 3B 4A 5A.</b> Built the same day. Two changes from the drawing: the popup shows each server’s models under its name but not their sizes (a Mac menu can’t line them up on the right), and the opening state is a line of words with no bar. When nothing answers, Another address sits under Look again or Open Ollama, so a server elsewhere can still be found.</p>
+<p class="lead"><b>Asked 12 Nov 2026:</b> “Currently, the only key we allow SigmaFlow to use is the Anthropic key. What if somebody wants to use their locally run models as the brain instead?” Yes. Ollama and LM Studio both answer at an address on the Mac, in the same language the OpenRouter choice already speaks. So a fourth engine can sit beside Apple Intelligence, Claude and OpenRouter, run custom styles and Autowrite, and need no key and no account. Text never leaves the Mac.</p>
+<p class="lead"><b>Already decided:</b> SigmaFlow finds Ollama (port 11434) and LM Studio (port 1234) by itself, lists their models, and has an address for any other server of the same kind (llama.cpp, Jan, MLX). Dictation cleanup, meeting titles and search stay as they are.</p>
+<p class="lead"><b>This page is only about how it looks.</b> Five questions, from where the choice sits to what Autowrite sends it. The example Mac has Ollama with three models; this Mac really has Ollama with <code>gemma4:e4b</code>, which is what it will be tested on.</p>
+<p class="lead"><b>Reply with one letter per question</b>, for example “1A 2A 3B 4A 5A”. <b>My picks are marked.</b></p>
+<p class="note"><b>Elsewhere.</b> Editors that run local models, Zed and Raycast among them, name the server, list the models it already has, and keep the address somewhere you rarely touch.</p>
+
+<ul class="index" id="index"></ul>
+
+<h2>1. Where it sits in the chooser</h2>
+
+<h3 id="q1A"><span class="tag">1A</span>A fourth row, Your own model<span class="pick">MY PICK</span></h3>
+<p class="note">The chooser on Custom styles grows by one row, under OpenRouter. Picked, it opens like a key row does, with the model in place of the key. Same card, same rule: one look for every engine.</p>
+<div class="scroll" data-m="1A"></div>
+
+<h3 id="q1B"><span class="tag">1B</span>Two groups: on this Mac, and with your key</h3>
+<p class="note">The four rows split under two small headings, so “never leaves the Mac” is said once, by where the row sits. Clearer about privacy; one more thing on a card that is otherwise a plain list.</p>
+<div class="scroll" data-m="1B"></div>
+
+<h3 id="q1C"><span class="tag">1C</span>A row per server SigmaFlow finds</h3>
+<p class="note">Ollama and LM Studio each get their own row, by name, once they are on the Mac; a server that is installed but not open is faint. Another server is the last row. Says exactly what it found; the list changes from Mac to Mac.</p>
+<div class="scroll" data-m="1C"></div>
+
+<h2>2. What the row opens to</h2>
+
+<h3 id="q2A"><span class="tag">2A</span>The model, and where it was found<span class="pick">MY PICK</span></h3>
+<p class="note">A popup of every model SigmaFlow found, already set to the first one, and Use this model. Under it, faint, the server it came from and Change, which turns that line into an address field. The popup lists each server’s models under its name (right).</p>
+<div class="scroll" data-m="2A"></div>
+
+<h3 id="q2B"><span class="tag">2B</span>Address and model, side by side</h3>
+<p class="note">Two fields, as Zed does it: the address, already filled in, and the model. Everything in view; the address is the part almost nobody changes.</p>
+<div class="scroll" data-m="2B"></div>
+
+<h3 id="q2C"><span class="tag">2C</span>The models as a list</h3>
+<p class="note">Every model as its own line with its size, pick one. Easier to compare at a glance; the card grows with every model you download.</p>
+<div class="scroll" data-m="2C"></div>
+
+<h2>3. When nothing is open</h2>
+
+<h3 id="q3A"><span class="tag">3A</span>Say so, and Look again</h3>
+<p class="note">“Open Ollama or LM Studio, then look again.” One button. The same words whether a server is installed or not.</p>
+<div class="scroll" data-m="3A"></div>
+
+<h3 id="q3B"><span class="tag">3B</span>Open Ollama for you<span class="pick">MY PICK</span></h3>
+<p class="note">When Ollama or LM Studio is on the Mac but closed (this Mac today), the row offers to open it. SigmaFlow opens the app, waits for it to answer, and the row becomes 2A. With neither installed, it reads like 3A, with Look again. The same happens later: a rewrite or Autowrite with the server closed opens it first, then writes.</p>
+<div class="scroll" data-m="3B"></div>
+
+<h3 id="q3C"><span class="tag">3C</span>No row until a server answers</h3>
+<p class="note">The row appears only once Ollama or LM Studio is running. Nothing to explain; nobody who hasn’t set one up ever learns it is possible.</p>
+<div class="scroll" data-m="3C"></div>
+
+<h2>4. What it says once picked</h2>
+
+<h3 id="q4A"><span class="tag">4A</span>The model, by name<span class="pick">MY PICK</span></h3>
+<p class="note">“Rewrites run on gemma4:e4b”, with “In Ollama, on this Mac. Your text never leaves it.” under it. Autowrite’s AI model row says the same name. The person chose the model, so its name is the useful part; Change engine reopens the chooser.</p>
+<div class="scroll" data-m="4A"></div>
+
+<h3 id="q4B"><span class="tag">4B</span>Your own model, the name underneath</h3>
+<p class="note">“Rewrites run on your own model”, with the model and server in the caption. Matches the row’s name; one step further from what is actually running.</p>
+<div class="scroll" data-m="4B"></div>
+
+<h2>5. What Autowrite gives it</h2>
+
+<h3 id="q5A"><span class="tag">5A</span>The screen’s words<span class="pick">MY PICK</span></h3>
+<p class="note">As OpenRouter gets today: the words SigmaFlow read off the screen, or the page’s words in a browser with the extension. Nothing to draw; Autowrite looks the same. A small model on a laptop answers in a few seconds this way.</p>
+
+<h3 id="q5B"><span class="tag">5B</span>The screenshot too, when the model can see</h3>
+<p class="note">As Claude gets today. Ollama says which of its models can see pictures; those get the screenshot beside the words, the rest get words only. Better on screens that are mostly pictures; a picture can add many seconds on a laptop before the first word appears.</p>
+
+<h2>How it would work underneath</h2>
+<div class="how">
+<ol>
+<li><b>One more engine, <code>StyleEngineChoice.local</code></b>, through the same <code>CloudTextClient</code> as OpenRouter: <code>/v1/chat/completions</code>, streamed for Autowrite. No key, nothing in the Keychain, so no Keychain question after an update either.</li>
+<li><b>Finding servers</b>: <code>GET /v1/models</code> on <code>localhost:11434</code> and <code>localhost:1234</code> when the chooser opens, half a second each. The address and the model are settings, exported with the others.</li>
+<li><b>Opening Ollama</b> (3B) is <code>open -a Ollama</code> (or LM Studio’s <code>lms server start</code>), then asking every half second for up to 20 seconds.</li>
+<li><b>Slower first answer.</b> A local model loads into memory on its first request, which can take 10 to 30 seconds before anything comes back. Local rewrites get 90 seconds in place of 30, so a cold start doesn’t fail; Autowrite’s overlay shows its waiting state meanwhile, as it does now.</li>
+<li><b>Failures</b> read like the others: “Ollama isn’t open.” or “Ollama doesn’t have gemma4:e4b any more.”, and the text is left alone.</li>
+</ol>
+<b>Also possible, not on this page:</b> SigmaFlow already downloads its own Gemma 4 (for picture search and Tamil titles). That model could be an engine too, with no Ollama at all. It is smaller than most people’s Ollama models, and holds 4 GB while it writes. A separate ask if wanted.
+</div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const ico=n=>`<img src="${ICON(n)}" alt="">`;
+const NAV=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']];
+const rail=on=>`<div class="rail"><div class="wm"><i>Σ</i>Sigma<span>flow</span></div>${NAV.map(([t,i])=>`<div class="it ${t===on?'on':''}">${ico(i)}${t}</div>`).join('')}<div class="foot">1.1.0</div></div>`;
+const btn=(t,cls='',i='')=>`<span class="btn ${cls}">${i?ico(i):''}${t}</span>`;
+
+const TILES=`<div class="tiles">${[['Clean','1','Rewrite the text so it reads clearly, in my voice. Keep my meaning exactly.'],['Boss mode','2','Short, direct messages. Lead with the ask, then the reason.'],['Friendly','3','Warm and easy, the way I write to people I know well.']].map(([n,k,l])=>`<div class="tile"><div class="tn">${n}<span class="kc">⌥${k}</span></div><div class="tl">${l}</div><div class="ra"><span>Edit</span><span>Delete</span></div></div>`).join('')}</div>`;
+
+const styles=card=>`<div class="win">${rail('Styles')}<div class="pg">
+ <div class="hd"><div><h4>Styles</h4><div class="sub">A default style shapes every dictation you type. Custom styles rewrite selected text in a voice you define, each with its own shortcut.</div></div>${btn('New style','','add')}</div>
+ <div class="tabs"><span>Default styles</span><span class="on">Custom styles</span></div>
+ <div class="card">${card}</div>
+ ${TILES}
+</div></div>`;
+
+const er=(name,blurb,{on=false,open='',faint=false}={})=>`<div class="er ${on?'on':''}"><div class="top"><span class="radio ${on?'on':''}"></span><div><div class="nm" ${faint?'style="color:var(--ink2)"':''}>${name}</div><div class="bl ${faint?'faint':''}">${blurb}</div></div></div>${open?`<div class="open">${open}</div>`:''}</div>`;
+
+const APPLE=er('Apple Intelligence','On this Mac, free, no key. Needs an M-series Mac with Apple Intelligence turned on. Best for short texts.');
+const CLAUDE=er('Claude','Anthropic’s model with your own API key. The best rewrites; you pay Anthropic per use.');
+const OR=er('OpenRouter, free models','Your own OpenRouter key, free models only. Quality varies by model.');
+const LOCAL_BLURB='A model you run on this Mac with Ollama or LM Studio. Free, no key, and your text never leaves the Mac.';
+
+const OPEN_2A=`<div class="line"><span class="pop" style="width:260px">gemma4:e4b</span>${btn('Use this model')}</div>
+ <div class="where">Found in Ollama at localhost:11434 &nbsp; <u>Change</u></div>`;
+const local=(open,blurb=LOCAL_BLURB)=>er('Your own model',blurb,{on:true,open});
+
+const M={};
+
+M['1A']=styles(APPLE+CLAUDE+OR+local(OPEN_2A));
+
+M['1B']=styles(`<div class="eyebrow">ON THIS MAC</div>${APPLE}${local(OPEN_2A,'Ollama or LM Studio, with a model you choose. Free, no key.')}
+ <div class="eyebrow" style="border-top:1px solid var(--border)">WITH YOUR KEY</div>${CLAUDE}${OR}`);
+
+M['1C']=styles(APPLE+CLAUDE+OR
+ +er('Ollama','On this Mac. Free, no key, and your text never leaves it.',{on:true,open:`<div class="line"><span class="pop" style="width:260px">gemma4:e4b</span>${btn('Use this model')}</div>`})
+ +er('LM Studio','On this Mac, not open.',{faint:true})
+ +er('Another server','Any server of the same kind, at an address you type.'));
+
+const MENU=`<div class="menu">
+ <div class="mh">OLLAMA</div>
+ <div class="mi hl">gemma4:e4b<span class="sc">6.1 GB</span></div>
+ <div class="mi">qwen3:8b<span class="sc">5.2 GB</span></div>
+ <div class="mi">llama3.2:3b<span class="sc">2.0 GB</span></div>
+ <hr><div class="mh">LM STUDIO</div>
+ <div class="mi off">Not open</div>
+</div>`;
+M['2A']=`<div class="pair"><div>${M['1A']}<p class="cap">PICKED, MODELS FOUND</p></div>
+ <div><div style="padding:16px;border:1px solid var(--border);border-radius:10px;background:#0c0c0c">${MENU}</div><p class="cap">THE POPUP, OPEN</p>
+ <div style="margin-top:22px;width:520px;border:1px solid var(--border);border-radius:6px;background:var(--glass);font-family:var(--pixel)">${local(`<div class="line"><span class="fld" style="width:300px">http://localhost:8080</span>${btn('Look there')}</div><div class="where">Any server that works like Ollama or LM Studio</div>`)}</div><p class="cap">AFTER CHANGE</p></div></div>`;
+
+M['2B']=styles(APPLE+CLAUDE+OR+local(`<div class="line" style="align-items:flex-end">
+ <div><div class="where" style="margin-bottom:6px">ADDRESS</div><span class="fld" style="width:240px">http://localhost:11434</span></div>
+ <div><div class="where" style="margin-bottom:6px">MODEL</div><span class="pop" style="width:200px">gemma4:e4b</span></div>
+ ${btn('Use this model')}</div>`));
+
+M['2C']=styles(APPLE+CLAUDE+OR+local(`<div style="width:420px">
+ ${[['gemma4:e4b','6.1 GB',true],['qwen3:8b','5.2 GB'],['llama3.2:3b','2.0 GB']].map(([n,s,o])=>`<div class="sub2"><span class="radio ${o?'on':''}"></span>${n}<span class="sz">${s}</span></div>`).join('')}</div>
+ <div class="line">${btn('Use this model')}<span class="where">Found in Ollama at localhost:11434 &nbsp; <u>Change</u></span></div>`));
+
+M['3A']=styles(APPLE+CLAUDE+OR+local(`<div class="line"><span style="font-size:13px;color:var(--ink2)">Open Ollama or LM Studio, then look again.</span>${btn('Look again','sm')}</div>`));
+
+M['3B']=`<div class="pair"><div>${styles(APPLE+CLAUDE+OR+local(`<div class="line"><span style="font-size:13px;color:var(--ink2)">Ollama is on this Mac but not open.</span>${btn('Open Ollama','solid sm')}</div>`))}<p class="cap">OLLAMA INSTALLED, CLOSED</p></div>
+ <div><div style="width:520px;border:1px solid var(--border);border-radius:6px;background:var(--glass);font-family:var(--pixel)">${local(`<div class="line"><span style="font-size:13px;color:var(--ink2)">Opening Ollama</span></div><div class="pline"><i style="width:45%"></i></div>`)}</div><p class="cap">WAITING FOR IT TO ANSWER, THEN 2A</p></div></div>`;
+
+M['3C']=styles(APPLE+CLAUDE+er('OpenRouter, free models','Your own OpenRouter key, free models only. Quality varies by model.',{on:true,open:`<div class="line"><span class="fld ph" style="width:360px">Paste your OpenRouter API key</span>${btn('Save key','off')}</div>`}));
+
+const sum=(title,caption)=>`<div class="sumrow"><div>${title}<small>${caption}</small></div><div class="acts">${btn('Change engine','ghost')}</div></div>`;
+const aw=caption=>`<div class="card lone"><div class="sumrow" style="border-bottom:1px solid var(--border)"><div>Key<small>Hold it while you talk. Dictation uses Right ⌘, so Autowrite uses Right ⌥.</small></div><span class="kc" style="font-size:12px">Right ⌥</span></div>
+ <div class="sumrow"><div>AI model<small>${caption}</small></div>${btn('Open Styles','ghost')}</div></div>`;
+
+M['4A']=`<div>${styles(sum('Rewrites run on gemma4:e4b','In Ollama, on this Mac. Your text never leaves it.'))}<p class="cap">STYLES</p>
+ <div style="margin-top:22px">${aw('gemma4:e4b writes your text, on this Mac. Your styles use the same model, so you change it on the Styles page.')}</div><p class="cap">AUTOWRITE</p></div>`;
+M['4B']=`<div>${styles(sum('Rewrites run on your own model','gemma4:e4b in Ollama, on this Mac.'))}<p class="cap">STYLES</p>
+ <div style="margin-top:22px">${aw('Your own model writes your text, on this Mac. Your styles use the same model, so you change it on the Styles page.')}</div><p class="cap">AUTOWRITE</p></div>`;
+
+document.querySelectorAll('[data-m]').forEach(el=>{el.innerHTML=M[el.dataset.m]||''});
+document.getElementById('index').innerHTML=[...document.querySelectorAll('h3[id]')].map(h=>`<li><a href="#${h.id}"><span class="k">${h.id.slice(1)}</span>${h.childNodes[1].textContent}</a></li>`).join('');
+</script>
+</body>
+</html>

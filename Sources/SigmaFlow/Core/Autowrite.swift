@@ -110,6 +110,28 @@ enum WritePrompt {
     static let appleScreenLimitBesideTicket = 3_000
     static let appleTicketLimit = 3_000
     static let cloudTicketLimit = 400_000
+
+    /// How much of each goes to a model that writes from the screen's words.
+    struct Limits {
+        let screen: Int
+        let screenBesideTicket: Int
+        let ticket: Int
+
+        static let cloud = Limits(screen: cloudScreenLimit, screenBesideTicket: cloudScreenLimit, ticket: cloudTicketLimit)
+        /// Ollama, at `LocalModels.ollamaContext` tokens. Kept well under it: Tamil and other
+        /// non-Latin text takes two or three times the tokens English does, and past the
+        /// window Ollama drops the start, which is where the instructions are.
+        static let ollama = Limits(screen: 16_000, screenBesideTicket: 8_000, ticket: 12_000)
+        /// Any other server on this Mac runs at the window it was loaded with, often 4,096
+        /// tokens, so it gets Apple's share.
+        static let smallWindow = Limits(
+            screen: appleScreenLimit, screenBesideTicket: appleScreenLimitBesideTicket, ticket: appleTicketLimit)
+
+        static func `for`(_ credentials: CloudCredentials) -> Limits {
+            guard credentials.provider == .local else { return .cloud }
+            return credentials.target?.server.kind == .ollama ? .ollama : .smallWindow
+        }
+    }
     /// Apple's model reads this many words of the custom instructions; what's left of its
     /// window after the screen goes to the reply. A cloud model reads them whole.
     static let appleInstructionWords = 300
@@ -264,6 +286,9 @@ enum WriteEngines {
         case .openRouter:
             guard let key = Keychain.openRouterKey, !key.isEmpty else { throw CloudTextError.missingKey(.openRouter) }
             engine = CloudWriter(credentials: CloudCredentials(provider: .openRouter, apiKey: key), instructions: instructions)
+        case .local:
+            guard let target = LocalModels.saved else { throw LocalModelError.noModel }
+            engine = CloudWriter(credentials: .onThisMac(target), instructions: instructions)
         }
         return WithoutPreamble(engine: engine)
     }
@@ -302,15 +327,18 @@ extension StyleEngineChoice {
         case .apple: "Apple Intelligence"
         case .claude: "Claude"
         case .openRouter: "OpenRouter"
+        case .local: LocalModels.saved?.model ?? "Your own model"
         }
     }
 
-    /// A cloud engine needs its key before it can write.
+    /// A cloud engine needs its key before it can write, and the person's own model needs
+    /// picking.
     var hasKey: Bool {
         switch self {
         case .apple: true
         case .claude: Keychain.hasAnthropicKey
         case .openRouter: Keychain.hasOpenRouterKey
+        case .local: LocalModels.saved != nil
         }
     }
 }
@@ -346,20 +374,25 @@ struct AppleWriter: WritingEngine {
     }
 }
 
-/// Claude or OpenRouter, with the user's own key from the Styles page.
+/// Claude or OpenRouter with the user's own key from the Styles page, or the user's own
+/// model on this Mac, which gets the screen's words only (pick 5A) cut to its window.
 struct CloudWriter: WritingEngine {
     let credentials: CloudCredentials
     let instructions: String
 
     func write(ask: String, context: ScreenContext) -> AsyncThrowingStream<String, Error> {
+        let limits = WritePrompt.Limits.for(credentials)
         let pieces = CloudTextClient.stream(
             system: WritePrompt.system(instructions: instructions),
-            user: WritePrompt.user(ask: ask, context: context, screenLimit: WritePrompt.cloudScreenLimit, ticketLimit: WritePrompt.cloudTicketLimit),
+            user: WritePrompt.user(
+                ask: ask, context: context,
+                screenLimit: context.ticket == nil ? limits.screen : limits.screenBesideTicket,
+                ticketLimit: limits.ticket),
             jpeg: credentials.provider == .anthropic ? context.jpeg : nil,
             maxTokens: 1_500,
             temperature: 0.4,
             credentials: credentials,
-            timeout: 30
+            timeout: credentials.provider == .local ? CloudTextClient.localTimeout : 30
         )
         return AsyncThrowingStream { continuation in
             let task = Task {
@@ -381,7 +414,7 @@ struct CloudWriter: WritingEngine {
 
 // MARK: - Checking it from the command line
 
-/// `SigmaFlow --write-check "ASK" [--engine apple|claude|openRouter] [--sample chat]` writes for the ask
+/// `SigmaFlow --write-check "ASK" [--engine apple|claude|openRouter|local] [--sample chat]` writes for the ask
 /// against a sample message, printing the writing as it arrives, and quits instead
 /// of starting the app. Safe to run beside the installed copy.
 ///
@@ -445,7 +478,11 @@ enum WriteCheck {
         }
         guard let ref = DeskReader.Reference(reference) else { throw CheckError("Not a ticket number, id or Desk link: \(reference)") }
         let client = MCPClient(url: url)
-        let limit = (choice ?? Settings.shared.styleEngine) == .apple ? WritePrompt.appleTicketLimit : WritePrompt.cloudTicketLimit
+        let limit = switch choice ?? Settings.shared.styleEngine {
+        case .apple: WritePrompt.appleTicketLimit
+        case .local: LocalModels.saved?.server.kind == .ollama ? WritePrompt.Limits.ollama.ticket : WritePrompt.appleTicketLimit
+        case .claude, .openRouter: WritePrompt.cloudTicketLimit
+        }
 
         func read(_ detail: DeskReader.Detail) async throws -> DeskTicket {
             let started = Date()

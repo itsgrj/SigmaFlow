@@ -190,12 +190,41 @@ one-word protocol (`status` / `pause` / `play`), documented in the C file. AGENT
 few-shot examples of the user's own writing, bound to Option+1…5. `SelectionRewriter` reads
 the selection by synthesizing ⌘C (there is no cross-app "read selection" API), watching the
 pasteboard's `changeCount` rather than its contents, then pastes the rewrite back and
-restores what was there. `StyleRewriting` has three backends (`StyleEngineChoice`): Apple
-FoundationModels on-device, the Anthropic API, or OpenRouter's free-model router
-(`openrouter/free`, never a paid model). Both cloud calls go through
-`Support/CloudTextClient.swift` with the user's own key from `Styles/Keychain.swift`; an
-Anthropic key tied to a workspace also needs the workspace ID stored beside it. 30s timeout,
-and on any failure the user's text is left untouched.
+restores what was there. `StyleRewriting` has four backends (`StyleEngineChoice`): Apple
+FoundationModels on-device, the Anthropic API, OpenRouter's free-model router
+(`openrouter/free`, never a paid model), or the person's own model on this Mac (`.local`,
+below). Every call goes through `Support/CloudTextClient.swift`, the cloud ones with the
+user's own key from `Styles/Keychain.swift`; an Anthropic key tied to a workspace also needs
+the workspace ID stored beside it. 30s timeout (local: 90s quiet, 120s for the shortcut), and
+on any failure the user's text is left untouched.
+
+**Your own model** (12 Nov 2026, [docs/mockups/local-model.html](docs/mockups/local-model.html),
+picks 1B 2A 3B 4A 5A; `Support/LocalModels.swift`). Ollama, LM Studio or any server speaking
+the OpenAI chat format, as the engine for custom styles and Autowrite: no key, nothing in the
+Keychain, the text goes to localhost only. The chooser is in two groups, On this Mac (Apple,
+Your own model) and With your key (Claude, OpenRouter); the row looks at `localhost:11434` and
+`localhost:1234` (`/api/tags`, `/v1/models`), lists every model in one popup under its server's
+name, and Change takes any other address. Settings keeps `localModelServer`, `localModelAddress`
+and `localModelName` (exported); `LocalModels.saved` reads the same keys off the main actor.
+
+- **Ollama goes through its own `/api/chat`, never `/v1`.** Its OpenAI endpoint runs every
+  model at 4,096 tokens (checked: `/api/ps` showed 4096) and drops the start of a longer
+  prompt, which is where the instructions are. `/api/chat` takes `num_ctx`
+  (`LocalModels.ollamaContext`, 16,384, the same on every call or Ollama reloads the model) and
+  `think: false` (gemma4 thinks otherwise); a 400 about thinking is retried without it. Other
+  servers get `/v1/chat/completions` and Apple's small limits (`WritePrompt.Limits.smallWindow`),
+  since they run at whatever window the model was loaded with.
+- **Nothing answering opens the app (3B):** a refused connection with Ollama or LM Studio on
+  this Mac opens it hidden (LM Studio also gets `lms server start`), waits up to 20 s, and sends
+  once more. Tested 12 Nov 2026 with Ollama stopped: opened, loaded and wrote in 7.8 s.
+- **Autowrite gets the screen's words only (5A)**, never the screenshot, and Ollama's model is
+  loaded (`LocalModels.warm`) when the write key counts, so the cold load (about 9 s for
+  gemma4:e4b here) happens while you talk. A `<think>` block a model writes into its answer is
+  held back (`ThinkingFilter`).
+- `SigmaFlow --write-check "ASK" --engine local` writes with the saved model; run it from the
+  staged bundle, since a bare binary reads another defaults domain and finds no model.
+- **Figma is behind**: the two-group chooser, the open row and its states were built from the
+  mockup; draw them in "[ SIGMAFLOW ]".
 
 Provider marks on the Styles page load from `Resources/ProviderMarks/` as template images,
 so they render in the current ink and stay inside the monochrome rule.
@@ -751,7 +780,7 @@ reads the screen and types the writing where the cursor is. It never presses Ret
   copies it and shows it under COPIED for 5 s; anything else types it. Couldn't write shows the
   reason for 4 s. Its own 60 s watchdog; the dictation watchdog ends at the ask.
 - **Not saved to Transcriptions**, not watched by the learner, never Power mode.
-- `SigmaFlow --write-check "ASK" [--engine apple|claude|openRouter] [--sample chat]` writes against that sample
+- `SigmaFlow --write-check "ASK" [--engine apple|claude|openRouter|local] [--sample chat]` writes against that sample
   (an email in Mail, or a letter-like Cliq message)
   and prints it as it streams. A cloud engine reads its key from the Keychain, which asks for
   permission from any copy but the one that saved it; check Claude in the app itself.

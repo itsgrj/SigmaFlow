@@ -30,10 +30,11 @@ enum SelectionRewriter {
                 controller.beginStyleActivity(style.name, message: "Rewriting")
 
                 let engine = StyleEngines.current()
+                let limit = engine.timeLimit
                 let rewritten = try await withThrowingTaskGroup(of: String.self) { group in
                     group.addTask { try await engine.rewrite(selected, style: style) }
                     group.addTask {
-                        try await Task.sleep(for: .seconds(45))
+                        try await Task.sleep(for: limit)
                         throw StyleError.timedOut
                     }
                     guard let first = try await group.next() else { throw StyleError.timedOut }

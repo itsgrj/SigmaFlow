@@ -1146,25 +1146,36 @@ struct PopupButton<Selection: Hashable>: View {
             .pickerStyle(.inline)
             .labelsHidden()
         } label: {
-            HStack(spacing: DS.Space.snug) {
-                Text(currentLabel)
-                    .font(DS.Font.body)
-                    .foregroundStyle(DS.Color.ink)
-                    .lineLimit(1)
-                Spacer(minLength: 0)
-                PopupChevrons()
-            }
-            .padding(.leading, DS.Control.padX)
-            .padding(.trailing, DS.Control.padXQuiet)
-            .frame(width: width, height: DS.Control.height)
-            .background(DS.Color.controlFill, in: RoundedRectangle(cornerRadius: DS.Radius.control))
-            .overlay(RoundedRectangle(cornerRadius: DS.Radius.control).strokeBorder(DS.Color.border, lineWidth: DS.Border.hairline))
-            .contentShape(RoundedRectangle(cornerRadius: DS.Radius.control))
+            PopupLabel(text: currentLabel, width: width)
         }
         .menuStyle(.button)
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .handCursor()
+    }
+}
+
+/// A popup's face: the current choice and the chevrons in the control fill. Shared by
+/// `PopupButton` and popups whose menu has sections (the Styles page's own model).
+struct PopupLabel: View {
+    let text: String
+    var width: CGFloat = DS.Control.popupWidth
+
+    var body: some View {
+        HStack(spacing: DS.Space.snug) {
+            Text(text)
+                .font(DS.Font.body)
+                .foregroundStyle(DS.Color.ink)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+            PopupChevrons()
+        }
+        .padding(.leading, DS.Control.padX)
+        .padding(.trailing, DS.Control.padXQuiet)
+        .frame(width: width, height: DS.Control.height)
+        .background(DS.Color.controlFill, in: RoundedRectangle(cornerRadius: DS.Radius.control))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.control).strokeBorder(DS.Color.border, lineWidth: DS.Border.hairline))
+        .contentShape(RoundedRectangle(cornerRadius: DS.Radius.control))
     }
 }
 

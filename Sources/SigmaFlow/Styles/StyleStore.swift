@@ -85,12 +85,16 @@ enum StyleEngineChoice: String, CaseIterable, Sendable {
     case apple
     case claude
     case openRouter
+    /// The person's own model in Ollama, LM Studio or another server on this Mac
+    /// (`LocalModels`, docs/mockups/local-model.html).
+    case local
 
     var displayName: String {
         switch self {
         case .apple: "Apple, on this Mac"
         case .claude: "Claude, with your API key"
         case .openRouter: "OpenRouter, free models"
+        case .local: "Your own model, on this Mac"
         }
     }
 }

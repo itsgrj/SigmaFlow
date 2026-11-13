@@ -1,10 +1,16 @@
 import Foundation
 import FoundationModels
 
-/// Whatever actually performs a rewrite: the model built into macOS, Anthropic, or
-/// OpenRouter through the user's own key.
+/// Whatever actually performs a rewrite: the model built into macOS, Anthropic or
+/// OpenRouter through the user's own key, or the user's own model on this Mac.
 protocol StyleRewriting: Sendable {
     func rewrite(_ text: String, style: WritingStyle) async throws -> String
+    /// How long the shortcut waits before leaving the text alone.
+    var timeLimit: Duration { get }
+}
+
+extension StyleRewriting {
+    var timeLimit: Duration { .seconds(45) }
 }
 
 enum StyleError: LocalizedError {
@@ -37,6 +43,7 @@ enum StyleEngines {
         case .apple: AppleStyleRewriter()
         case .claude: ClaudeStyleRewriter()
         case .openRouter: OpenRouterStyleRewriter()
+        case .local: LocalStyleRewriter()
         }
     }
 }
@@ -103,6 +110,25 @@ struct OpenRouterStyleRewriter: StyleRewriting {
             throw CloudTextError.missingKey(.openRouter)
         }
         try await CloudTextClient.verify(.init(provider: .openRouter, apiKey: key))
+    }
+}
+
+// MARK: - The user's own model, on this Mac
+
+struct LocalStyleRewriter: StyleRewriting {
+    /// Room for opening Ollama (up to 20 s) and loading the model before it writes.
+    var timeLimit: Duration { .seconds(120) }
+
+    func rewrite(_ text: String, style: WritingStyle) async throws -> String {
+        guard let target = LocalModels.saved else { throw LocalModelError.noModel }
+        return try await CloudTextClient.complete(
+            system: style.systemPrompt,
+            user: "Rewrite this text:\n\n\(text)",
+            maxTokens: 4_000,
+            temperature: 0.3,
+            credentials: .onThisMac(target),
+            timeout: CloudTextClient.localTimeout
+        )
     }
 }
 

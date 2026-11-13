@@ -121,6 +121,12 @@ struct AutowritePage: View {
     }
 
     private var engineCaption: String {
+        if engine == .local {
+            guard !settings.localModelName.isEmpty else {
+                return "Pick your own model on the Styles page before SigmaFlow can write with it."
+            }
+            return "\(settings.localModelName) writes your text, on this Mac. Your styles use the same model, so you change it on the Styles page."
+        }
         guard engine.hasKey else {
             let provider = engine == .claude ? "Anthropic" : engine.shortName
             return "\(engine.shortName) needs your \(provider) key before it can write. Add it on the Styles page."

@@ -344,6 +344,8 @@ final class DictationController {
         // The screen as it is now, while you talk. SigmaFlow's own windows are left out, so
         // the overlay and the dimming coming up are never part of it.
         let generation = runGeneration + 1  // the run beginDictation is about to start
+        // The person's own model loads while they talk, not after they let go.
+        if Settings.shared.styleEngine == .local, let target = LocalModels.saved { LocalModels.warm(target) }
         screenTask = Task { @MainActor [weak self] in
             let context = await ScreenReader.read()
             if let self, self.runGeneration == generation, self.isWriting {

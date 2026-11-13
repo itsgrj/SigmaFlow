@@ -95,6 +95,28 @@ final class Settings {
         didSet { defaults.set(styleEngine.rawValue, forKey: Keys.styleEngine) }
     }
 
+    /// The person's own model, when `styleEngine` is `.local`: the server kind, its address
+    /// and the model's name (docs/mockups/local-model.html). Empty until picked. Engines off
+    /// the main actor read the same keys through `LocalModels.saved`.
+    var localModelServer: String {
+        didSet { defaults.set(localModelServer, forKey: LocalModels.Keys.kind) }
+    }
+
+    var localModelAddress: String {
+        didSet { defaults.set(localModelAddress, forKey: LocalModels.Keys.address) }
+    }
+
+    var localModelName: String {
+        didSet { defaults.set(localModelName, forKey: LocalModels.Keys.model) }
+    }
+
+    /// Picks a model on the Styles page, all three at once.
+    func useLocalModel(_ model: LocalModel) {
+        localModelServer = model.server.kind.rawValue
+        localModelAddress = model.server.address.absoluteString
+        localModelName = model.name
+    }
+
     /// What SigmaFlow follows every time Autowrite writes (docs/mockups/autowrite-page.html,
     /// round 1 2A 3A): how to sound, how to sign off, who people are. Autowrite only; styles
     /// and smart cleanup never read it.
@@ -166,6 +188,7 @@ final class Settings {
         Keys.cleanupEnabled, Keys.smartCleanup, Keys.soundEnabled,
         Keys.startSound, Keys.stopSound, Keys.pauseMedia, Keys.styleEngine, Keys.learnFromCorrections,
         Keys.defaultStyle, Keys.powerMode, Keys.askToRecordCalls, Keys.recordVideo, Keys.autowriteInstructions,
+        LocalModels.Keys.kind, LocalModels.Keys.address, LocalModels.Keys.model,
     ]
 
     /// A JSON-safe snapshot of the portable settings.
@@ -220,6 +243,9 @@ final class Settings {
         pauseMediaWhileRecording = defaults.object(forKey: Keys.pauseMedia) as? Bool ?? pauseMediaWhileRecording
         styleEngine = StyleEngineChoice(rawValue: defaults.string(forKey: Keys.styleEngine) ?? "") ?? styleEngine
         autowriteInstructions = defaults.string(forKey: Keys.autowriteInstructions) ?? autowriteInstructions
+        localModelServer = defaults.string(forKey: LocalModels.Keys.kind) ?? localModelServer
+        localModelAddress = defaults.string(forKey: LocalModels.Keys.address) ?? localModelAddress
+        localModelName = defaults.string(forKey: LocalModels.Keys.model) ?? localModelName
         defaultStyle = DefaultStyle(rawValue: defaults.string(forKey: Keys.defaultStyle) ?? "") ?? defaultStyle
         learnFromCorrections = defaults.object(forKey: Keys.learnFromCorrections) as? Bool ?? learnFromCorrections
     }
@@ -308,6 +334,9 @@ final class Settings {
         // Apple by default: styles work on a fresh install with no key and no account.
         styleEngine = StyleEngineChoice(rawValue: defaults.string(forKey: Keys.styleEngine) ?? "") ?? .apple
         autowriteInstructions = defaults.string(forKey: Keys.autowriteInstructions) ?? ""
+        localModelServer = defaults.string(forKey: LocalModels.Keys.kind) ?? ""
+        localModelAddress = defaults.string(forKey: LocalModels.Keys.address) ?? ""
+        localModelName = defaults.string(forKey: LocalModels.Keys.model) ?? ""
         // Casual to start, as the Figma tiles show it.
         defaultStyle = DefaultStyle(rawValue: defaults.string(forKey: Keys.defaultStyle) ?? "") ?? .casual
         sigmaFlowFolderBookmark = defaults.data(forKey: Keys.sigmaFlowFolderBookmark)

@@ -484,6 +484,10 @@ enum DS {
         /// The cleanup popup carries "With Apple Intelligence", which 200 cannot hold.
         static let popupWidthWide: CGFloat = 240
         static let popupWidthShortcut: CGFloat = 120
+        /// The Styles page's own-model popup: room for names like qwen3-coder:30b-a3b.
+        static let popupWidthModel: CGFloat = 260
+        /// The address field under it, when Change is pressed.
+        static let localAddressWidth: CGFloat = 300
         /// The search icon inside the search box, and the check inside a selected tile.
         static let iconSizeSmall: CGFloat = 14
         static let iconSizeTiny: CGFloat = 12
