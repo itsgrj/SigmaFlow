@@ -1111,5 +1111,5 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - `log` is shadowed in this shell. Use `/usr/bin/log show --predicate 'subsystem == "com.grj.sigmaflow"'`.
 - `tccutil reset Accessibility com.grj.sigmaflow` — **always with the bundle ID**; a bare
   reset wipes every app on the machine.
-- `CFBundleShortVersionString` is `1.1.0`, `CFBundleVersion` 9, since 12 Nov 2026 (1.0.0 was the
-  first public build, 1.0.1 on 28 Oct); the sidebar foot reads it. Raise both for every release.
+- `CFBundleShortVersionString` is `1.2.0`, `CFBundleVersion` 10, since 13 Nov 2026 (1.0.0 was the
+  first public build, 1.0.1 on 28 Oct, 1.1.0 on 12 Nov); the sidebar foot reads it. Raise both for every release.
