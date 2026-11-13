@@ -104,6 +104,10 @@ final class DictationController {
     /// The screen as Autowrite read it, for the small picture in the overlay (O6, 4-09):
     /// proof it is looking, and at what. Nil until the screen is in, or without permission.
     private(set) var screenPicture: NSImage?
+    /// The page Autowrite read through the browser extension (pick 09): while it is here the
+    /// overlay frames the picture with scan corners, so you can see it read the whole page.
+    /// Nil outside a browser with the extension, or a site switched off.
+    private(set) var pageRead: PageRead?
     private var writeArmTask: Task<Void, Never>?
     private var screenTask: Task<ScreenContext, Never>?
     private var writeTask: Task<Void, Never>?
@@ -340,14 +344,24 @@ final class DictationController {
         writeClearTask = nil
         writing = nil
         screenPicture = nil
+        pageRead = nil
         isWriting = true
         // The screen as it is now, while you talk. SigmaFlow's own windows are left out, so
         // the overlay and the dimming coming up are never part of it.
         let generation = runGeneration + 1  // the run beginDictation is about to start
+        // In a browser with SigmaFlow's extension the page itself is read too, as text, while
+        // the screen is captured: the whole thread, not only what fits on the screen.
+        let browser = BrowserBridge.shared.connectedBrowser(NSWorkspace.shared.frontmostApplication)
         // The person's own model loads while they talk, not after they let go.
         if Settings.shared.styleEngine == .local, let target = LocalModels.saved { LocalModels.warm(target) }
         screenTask = Task { @MainActor [weak self] in
-            let context = await ScreenReader.read()
+            let pageTask = Task { @MainActor [weak self] () -> PageRead? in
+                guard let browser, let page = await BrowserBridge.shared.readPage(in: browser) else { return nil }
+                if let self, self.runGeneration == generation, self.isWriting { self.pageRead = page }
+                return page
+            }
+            var context = await ScreenReader.read()
+            context.page = await pageTask.value
             if let self, self.runGeneration == generation, self.isWriting {
                 self.screenPicture = context.jpeg.flatMap { NSImage(data: $0) }
             }
@@ -415,6 +429,7 @@ final class DictationController {
             writing = Writing(phase: .copied, ask: ask, text: output)
             isWriting = false
             screenPicture = nil
+            pageRead = nil
             state = .idle
             writeClearTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .seconds(DS.Motion.writeCopiedHold))
@@ -431,6 +446,7 @@ final class DictationController {
         writing = nil
         isWriting = false
         screenPicture = nil
+        pageRead = nil
         state = .idle
         transcript = ""
     }
@@ -446,6 +462,7 @@ final class DictationController {
         writing = Writing(phase: .failed, ask: ask, text: message)
         isWriting = false
         screenPicture = nil
+        pageRead = nil
         holdStarted = nil
         releasedAt = nil
         transcript = ""
@@ -468,6 +485,7 @@ final class DictationController {
         writeTask = nil
         isWriting = false
         screenPicture = nil
+        pageRead = nil
         if writing?.phase == .writing { writing = nil }
     }
 
@@ -701,16 +719,22 @@ final class DictationController {
             // Holding the key while SigmaFlow itself is the front app is the test: the
             // transcript is saved to the list above, but nothing gets typed anywhere.
             if !NSApp.isActive {
+                let front = NSWorkspace.shared.frontmostApplication
                 let target = TextInjector.insert(output, pressingReturn: sendOnLand)
                 // A sent message leaves the field; there is no edit left to learn from, and
                 // what was sent is what was said. Otherwise an edit reaches the saved
-                // transcript, and may become a rule when learning is on.
-                if !sendOnLand, let target {
-                    CorrectionLearner.shared.watch(
-                        target, inserted: output, run: run,
-                        learn: Settings.shared.learnFromCorrections
-                    )
+                // transcript, and may become a rule when learning is on. In a browser with
+                // SigmaFlow's extension the extension reads the box; Accessibility can't.
+                if !sendOnLand {
+                    let learn = Settings.shared.learnFromCorrections
+                    if let browser = BrowserBridge.shared.connectedBrowser(front) {
+                        CorrectionLearner.shared.watch(BrowserField(browser), inserted: output, run: run, learn: learn)
+                    } else if let target {
+                        CorrectionLearner.shared.watch(target, inserted: output, run: run, learn: learn)
+                    }
                 }
+                // The first dictation into a browser without the extension: offered once (02).
+                BrowserAsk.shared.dictationLanded(in: front, controller: self)
             }
             SystemSounds.playStop()
 

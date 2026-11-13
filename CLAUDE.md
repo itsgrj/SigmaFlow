@@ -117,8 +117,9 @@ Load-bearing invariants, all with a failure mode that is silent rather than loud
   stands in the dictation's place, rewording included. Nothing in between is kept, only
   the latest. It gives up, leaving the last good text, when the text around the dictation
   changes, the dictation is emptied or mostly gone, or much more was typed than said.
-  Fields Accessibility can't read (most browsers, Electron) keep the text as typed, and a
-  power-mode send is never followed.
+  In a browser with SigmaFlow's extension the extension reads the box (`BrowserField`, see
+  Browser extension below); fields nothing can read (Electron, a browser without it) keep
+  the text as typed, and a power-mode send is never followed.
 - **Nothing is injected when SigmaFlow is the front app** (`!NSApp.isActive`) — that's how
   you test without typing into your own window.
 - **Hold to talk on Settings is a preview run** (`DictationController.isPreview`, drawn by
@@ -826,6 +827,65 @@ install over, which also stops its scheduler. There is no Check now and no switc
   waiting) at the foot of every Sidebar variant, and Overlays section O7 Updates (O7.1 ready,
   O7.2 after this, O7.3 the UPDATED notice).
 
+### Browser extension
+
+12 Nov 2026, [docs/mockups/browser-extension.html](docs/mockups/browser-extension.html), picks
+01 02 04 07 09. Browsers don't let Accessibility read their text boxes, so in Gmail, Cliq on
+the web or a help desk the learner never fired and Autowrite only had a screenshot. A Chromium
+extension (`BrowserExtension/`, Manifest V3) does both from inside the page, and nothing else:
+the box SigmaFlow just typed into, and the page's words while the Autowrite key is held.
+
+```
+extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser  <- unix socket ->  Support/BrowserBridge.swift
+```
+
+- **The helper** (`Sources/SigmaFlowBrowserHost`, bundled as `Contents/MacOS/sigmaflow-browser`,
+  signed before the app like the MCP helper) is a relay: Chrome's framing (4-byte length, JSON)
+  both ways, plus its own `browser` frame (who started it) and `status` frames (SigmaFlow there
+  or not). It never exits while the port is open, waiting for the app: the open port keeps the
+  extension's worker alive. It names the browser by its parent's `Contents/MacOS` path, not by
+  `.app`: Chrome runs from a code-sign clone called `Google Chrome.app.bundle` in a temp folder.
+- **The app** listens on `Application Support/SigmaFlow/browser.sock` (0600) and writes the
+  helper's manifest (`com.grj.sigmaflow.json`) into the NativeMessagingHosts folder of every
+  installed Chromium browser (`KnownBrowser.all`: Dia, Chrome, Arc, Brave, Edge, Vivaldi,
+  Chromium) at launch, except those removed in Settings (`Settings.browsersRemoved`). One
+  connection per browser profile; a request goes to each in turn, first yes wins.
+- **The extension ID is fixed** (`gcaepogaaolbllpamlfmbdnliikmmgfj`) by the `key` in its
+  manifest. The private key is at `~/.config/sigmaflow/browser-extension-key.pem`, off the repo
+  on purpose: upload it with the first Chrome Web Store submission so the store keeps that ID.
+  Until it is on the store (`BrowserBridge.storeURL` nil), Add copies the extension to
+  `Application Support/SigmaFlow/Browser Extension`, shows it in Finder and opens the browser's
+  extensions page; it is dragged in with Developer mode on.
+- **Every site from the start (04)**: `<all_urls>`, one install warning. Content scripts are
+  never told to do anything by the page; the background calls `globalThis.sigmaflow` through
+  `chrome.scripting` only when the app asks. Password inputs never count. A site switched off in
+  the toolbar card (07, `chrome.storage.local` `off`) answers nothing.
+- **Learning (point 1)**: `CorrectionLearner.watch` takes a `WatchedField`: `AccessibilityField`
+  as before, or `BrowserField` when the front app is a connected browser. The page remembers
+  the focused box under a token (a WeakRef), so later reads follow that box as an AX element
+  would. No new screen: the correction card is the same as in Mail.
+- **Autowrite (point 2)**: `ScreenContext.page` stands in for the screen's words in the
+  prompt (cloud up to `cloudPageLimit`, start and end kept, `headAndTail`). The overlay keeps
+  the screenshot and frames it with four white scan corners (`ScreenScan`) when the page was
+  read too ([docs/mockups/autowrite-what-it-read.html](docs/mockups/autowrite-what-it-read.html),
+  09 without its WHOLE PAGE line, 13 Nov 2026). Gokul turned down a card with the site, title
+  and word count in place of the screenshot (the screenshot always stays), and then a stack of
+  sheets behind it (07, 12 Nov): blank or carrying the page's tiny words, they still read as
+  plain white paper on screen.
+- **Settings, Connections (01)**: "Your browser", a row per installed browser, Add / Connected
+  and Remove. **The one-time card (02)**, `UI/BrowserAskPanel.swift`: the first dictation into a
+  browser without the extension, learning on, once per browser ever (`Settings.browsersAsked`).
+- `SigmaFlow --browser-check [SECONDS] --browser chrome [--draw FOLDER]` in place of the app
+  (quit it first, they share the socket): waits for that browser's extension, prints the
+  focused box twice and the page, draws the framed picture as FOLDER/scan.png, quits. Always
+  name a throwaway browser with `--browser`: without it the check reads whatever page is open
+  in Gokul's own browser (it did once, 12 Nov 2026, his inbox in Dia). Tested
+  12 Nov 2026 against headless Chrome 147 with the extension loaded over the DevTools pipe
+  (`Extensions.loadUnpacked`; branded Chrome ignores `--load-extension`).
+- Safari needs an app extension built in Xcode; Firefox needs its own manifest. Neither is done.
+- **Figma is behind**: the card, the one-time card, the toolbar card and the stack were built
+  from the mockup; draw them in "[ SIGMAFLOW ]".
+
 ### Snippets
 
 `Snippets/SnippetStore.swift` — a trigger phrase → saved text, matched whole-phrase and
@@ -847,6 +907,8 @@ Recording/              a meeting while it records (mic, plus <id>.call.m4a, or 
                         moved into ~/SigmaFlow at Stop
 Search/                 search's index, a rebuildable cache (see Search above)
 Models/                 IndicConformer, EmbeddingGemma2, Gemma4E2B, MLX kernels
+browser.sock            the browser extension's helper connects here (see Browser extension)
+Browser Extension/      a copy of the extension for a browser to load until it is on the store
 ```
 
 Meetings themselves live in the user-visible `~/SigmaFlow/Meetings/` (see Meetings above).

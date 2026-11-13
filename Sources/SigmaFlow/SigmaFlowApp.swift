@@ -78,6 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if MeetingCheck.runIfRequested() { return }
         if SearchCheck.runIfRequested() { return }
         if WriteCheck.runIfRequested() { return }
+        if BrowserCheck.runIfRequested() { return }
         if ReadmeFrames.runIfRequested(controller: controller) { return }
 
         // A regular app now: dock icon, app menu, standard windows. The HUD is still a
@@ -109,6 +110,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if !CommandLine.arguments.contains("--snapshot-dir") { PictureReader.shared.catchUp() }
         // Watches for a call app opening the microphone, to offer to record the call.
         CallPrompter.shared.start()
+        // SigmaFlow's browser extension: the socket its helper connects to, and the helper's
+        // manifest in each browser (Support/BrowserBridge.swift).
+        BrowserBridge.shared.start()
 
         if !controller.activate() {
             // The setup window asks for Accessibility itself, in its own step.

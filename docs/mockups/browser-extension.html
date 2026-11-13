@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigmaFlow in the browser</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:PixelCircle;src:url("../../Resources/Fonts/GeistPixel-Circle.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+@font-face{font-family:GeistMed;src:url("../../Resources/Fonts/Geist-Medium.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.22);--fill:rgba(255,255,255,.06);--sel:rgba(255,255,255,.10);
+ --glass:rgba(10,10,10,.72);--scrim:rgba(0,0,0,.58);--hud:rgba(14,14,14,.94);--green:#30d158;--meterOff:rgba(255,255,255,.18);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+ /* someone else's website, drawn light and plain so SigmaFlow's own pieces stand out */
+ --web:#f2f2f0;--webcard:#fff;--webink:#1d1d1d;--webink2:#6b6b6b;--webline:#e2e2df;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:56px 0 6px}
+h3{font-size:15px;font-weight:500;margin:40px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+h3 .mine{font:11px var(--mono);color:#111;background:var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1080px}
+.note b{color:var(--ink);font-weight:500}
+.scroll{overflow-x:auto}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;max-width:1180px;margin:10px 0 0;padding:0;list-style:none}
+.index li{font-size:13px;color:var(--ink2);line-height:1.5}
+.index a{text-decoration:none;color:var(--ink2)}.index a:hover{color:var(--ink)}
+.index .k{font:11px var(--mono);color:var(--dim);margin-right:8px}
+.pair{display:flex;gap:18px;align-items:flex-start}
+.pair>div{flex:0 0 auto}
+.cap{font:11px var(--mono);color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
+
+/* ---------- the Mac ---------- */
+.desk{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;font-family:var(--geist)}
+.desk:before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.desk>*{position:absolute}
+.mbar{left:0;right:0;top:0;height:26px;background:rgba(20,20,20,.82);backdrop-filter:blur(10px);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:13px;color:#eee;z-index:3}
+.mbar b{font-weight:600}
+.mbar .sp{margin-left:auto;color:#ddd}
+.dock{left:50%;transform:translateX(-50%);bottom:8px;height:62px;padding:7px 10px;border-radius:18px;background:rgba(60,60,60,.45);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(14px);display:flex;gap:9px;align-items:flex-end;z-index:3}
+.dock .app{width:46px;height:46px;border-radius:11px;background:#3a3a3a;border:1px solid rgba(255,255,255,.08)}
+.dock .app.dia{background:url("icons/dia.png") center/100%;border:0}
+.dock .app.sf{background:url("icons/appicon.png") center/100%;border:0}
+
+/* ---------- the browser ---------- */
+.bw{left:40px;top:44px;width:1080px;height:612px;border-radius:10px;overflow:hidden;background:#1e1e1e;border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 70px rgba(0,0,0,.6);display:flex;flex-direction:column;z-index:1}
+.bw .tabsrow{height:38px;display:flex;align-items:flex-end;gap:2px;padding:0 10px 0 78px;position:relative;background:#262626}
+.bw .lights{position:absolute;left:14px;top:13px;display:flex;gap:7px}.bw .lights i{width:12px;height:12px;border-radius:50%;background:#4a4a4a}
+.bw .tab{height:30px;min-width:190px;max-width:230px;border-radius:8px 8px 0 0;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:12px;color:#bbb;white-space:nowrap;overflow:hidden}
+.bw .tab.on{background:#333;color:#eee}
+.bw .tab .fav{width:14px;height:14px;border-radius:3px;background:#777;flex:0 0 14px}
+.bw .tab .fav.k{background:#d9d9d9}
+.bw .tab .fav.m{background:#bdbdbd}
+.bw .navrow{height:40px;background:#333;display:flex;align-items:center;gap:12px;padding:0 12px;border-bottom:1px solid rgba(0,0,0,.4)}
+.bw .arr{color:#999;font-size:15px;width:16px;text-align:center}
+.bw .addr{flex:1;height:28px;border-radius:14px;background:#222;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:13px;color:#ddd}
+.bw .addr img{width:12px;filter:invert(1);opacity:.55}
+.bw .addr .path{color:#888}
+.bw .tbi{display:flex;align-items:center;gap:6px;position:relative}
+.bw .tbi .b{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative}
+.bw .tbi .b.on{background:rgba(255,255,255,.14)}
+.bw .tbi .b img{width:16px;height:16px}
+.bw .tbi .b img.inv{filter:invert(1);opacity:.75;width:14px;height:14px}
+.bw .tbi .b .sfi{width:18px;height:18px;border-radius:4px;background:url("icons/appicon.png") center/100%}
+.bw .tbi .b .dot{position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #333}
+.puzzle{width:14px;height:14px;display:inline-block;position:relative}
+.puzzle:before{content:"";position:absolute;left:1px;top:3px;width:10px;height:10px;border:1.5px solid #bbb;border-radius:2px}
+.puzzle:after{content:"";position:absolute;left:4px;top:0;width:4px;height:4px;border:1.5px solid #bbb;border-radius:50%;background:#333}
+.bw .page{flex:1;background:var(--web);position:relative;overflow:hidden;color:var(--webink);font-family:var(--geist)}
+
+/* a webmail page */
+.mail{display:flex;height:100%}
+.mail .side{width:190px;padding:18px 14px;border-right:1px solid var(--webline);font-size:13px;color:var(--webink2);line-height:2.3}
+.mail .side b{display:block;color:var(--webink);font-weight:500;background:#e4e4e1;border-radius:14px;padding:0 12px;margin:0 -12px 6px;line-height:30px}
+.mail .side .compose{display:inline-block;background:#fff;border:1px solid var(--webline);border-radius:12px;padding:0 16px;line-height:38px;color:var(--webink);margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.mail .main{flex:1;padding:22px 30px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.mail h5{font:20px var(--geist);margin:0 0 4px;font-weight:400}
+.msg{background:var(--webcard);border:1px solid var(--webline);border-radius:10px;padding:14px 18px;font-size:13.5px;line-height:1.55}
+.msg .who{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.msg .av{width:28px;height:28px;border-radius:50%;background:#cfcfcb;display:flex;align-items:center;justify-content:center;font-size:12px;color:#555}
+.msg .nm{font-weight:500;font-family:GeistMed,var(--geist)}
+.msg .when{margin-left:auto;color:var(--webink2);font-size:12px}
+.msg.collapsed{padding:10px 18px;color:var(--webink2);display:flex;gap:10px;align-items:center}
+.reply{background:var(--webcard);border:1px solid #9a9a9a;border-radius:10px;padding:14px 18px;font-size:13.5px;line-height:1.55;min-height:120px;position:relative}
+.reply .to{color:var(--webink2);font-size:12.5px;margin-bottom:8px}
+.caret{display:inline-block;width:1.5px;height:16px;background:#111;vertical-align:-3px;margin-left:1px}
+.fixed{background:#fff2b3;border-radius:2px;padding:0 1px}
+.btnw{display:inline-block;background:#1d1d1d;color:#fff;border-radius:16px;padding:0 16px;line-height:30px;font-size:13px;margin-top:10px}
+
+/* a support desk page */
+.desk2{display:flex;height:100%}
+.desk2 .list{width:250px;border-right:1px solid var(--webline);font-size:12.5px}
+.desk2 .list .it{padding:12px 16px;border-bottom:1px solid var(--webline);line-height:1.45;color:var(--webink2)}
+.desk2 .list .it b{display:block;color:var(--webink);font-weight:500;font-family:GeistMed,var(--geist)}
+.desk2 .list .it.on{background:#fff}
+.desk2 .main{flex:1;padding:18px 26px;display:flex;flex-direction:column;gap:10px;min-width:0;position:relative}
+.desk2 .tkt{display:flex;align-items:baseline;gap:12px}
+.desk2 .tkt h5{font:18px var(--geist);margin:0;font-weight:400}
+.desk2 .tkt .n{font:12px var(--mono);color:var(--webink2)}
+.desk2 .st{margin-left:auto;font-size:12px;border:1px solid var(--webline);border-radius:10px;padding:1px 9px;color:var(--webink2)}
+
+/* ---------- SigmaFlow's own pieces ---------- */
+.hudw{left:50%;transform:translateX(-50%);bottom:84px;width:560px;z-index:6}
+.hud{background:var(--hud);border:1px solid var(--strong);border-radius:12px;padding:12px 16px;font-family:var(--pixel);box-shadow:0 12px 34px rgba(0,0,0,.55);color:var(--ink)}
+.hud .st{display:flex;align-items:center;gap:10px;height:16px}
+.hud .g{width:12px;height:12px;display:flex;align-items:center;justify-content:center;flex:0 0 12px}
+.hud .g i{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.hud .g img{width:12px;height:12px;filter:invert(1)}
+.hud .e{font-size:11.5px;letter-spacing:.7px;text-transform:uppercase;white-space:nowrap}
+.hud .t{font-size:12px;color:var(--ink2)}
+.hud .m{display:flex;gap:3px}.hud .m i{width:4px;height:4px;border-radius:50%;background:var(--meterOff)}.hud .m i.l{background:var(--green)}
+.hud .w{margin-top:9px;font-size:14px;line-height:19px}
+.hud .w.sec{color:var(--ink2)}
+.hud .undo{margin-left:auto;font-size:12px;border:1px solid var(--strong);border-radius:5px;padding:2px 9px}
+.hud .bar{height:2px;background:var(--border);margin-top:10px;position:relative}.hud .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.hud .body{display:flex;gap:14px;align-items:flex-start}
+.hud .body .w{flex:1}
+.shot{width:118px;height:74px;border:1px solid var(--strong);border-radius:5px;background:#e9e9e6;flex:0 0 118px;margin-top:9px;position:relative;overflow:hidden}
+.shot:before{content:"";position:absolute;left:8px;top:9px;width:60px;height:4px;background:#bbb;box-shadow:0 9px 0 #ccc,40px 18px 0 #ccc,0 27px 0 #ccc,0 44px 0 #9a9a9a}
+.readchip{flex:0 0 240px;margin-top:9px;border:1px solid var(--strong);border-radius:5px;padding:8px 10px;font-size:12px;line-height:1.5}
+.readchip .h{display:flex;gap:6px;align-items:center;color:var(--ink2);font:11px var(--mono)}
+.readchip .h img{width:11px;filter:invert(1);opacity:.7}
+.readchip .tt{margin-top:3px}
+.readchip .sub{color:var(--ink2)}
+
+/* SigmaFlow's card above the Dock, like the call card */
+.ask{left:50%;transform:translateX(-50%);bottom:84px;width:470px;z-index:6;background:var(--hud);border:1px solid var(--strong);border-radius:12px;padding:16px 18px;font-family:var(--pixel);box-shadow:0 12px 34px rgba(0,0,0,.55);display:flex;gap:14px}
+.ask .ic{width:40px;height:40px;border-radius:9px;background:url("icons/appicon.png") center/100%;flex:0 0 40px}
+.ask .tx{flex:1}
+.ask .tt{font-size:15px;margin-top:1px}
+.ask .ln{font-size:13px;color:var(--ink2);margin-top:5px;line-height:1.45}
+.ask .acts{display:flex;gap:8px;margin-top:13px}
+
+/* SigmaFlow buttons and switches */
+.btn{font-size:13px;border:1px solid var(--border);border-radius:5px;padding:7px 13px;background:var(--fill);white-space:nowrap;display:inline-flex;gap:8px;align-items:center;color:var(--ink);font-family:var(--pixel)}
+.btn img{width:13px;height:13px}
+.btn img.inv{filter:invert(1)}
+.btn.inv{background:var(--ink);color:#111;border-color:var(--ink)}
+.btn.ghost{background:none}
+.btn.sm{padding:4px 10px;font-size:12px}
+.sw{width:30px;height:18px;border-radius:9px;background:var(--strong);position:relative;flex:0 0 30px}
+.sw:after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#777}
+.sw.on{background:var(--ink)}.sw.on:after{left:14px;background:#111}
+
+/* the extension's own card under its toolbar icon */
+.pop{position:absolute;z-index:9;width:310px;background:#0b0b0b;border:1px solid var(--strong);border-radius:10px;box-shadow:0 18px 44px rgba(0,0,0,.6);font-family:var(--pixel);color:var(--ink);overflow:hidden}
+.pop .ph{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.pop .ph .sfi{width:22px;height:22px;border-radius:5px;background:url("icons/appicon.png") center/100%}
+.pop .ph .wm{font-size:15px}.pop .ph .wm span{font-family:PixelCircle,var(--pixel)}
+.pop .ph .stt{margin-left:auto;font-size:11.5px;color:var(--ink2);display:flex;gap:6px;align-items:center}
+.pop .ph .stt i{width:6px;height:6px;border-radius:50%;background:var(--ink)}
+.pop .pr{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.pop .pr .l{flex:1;line-height:1.4}
+.pop .pr .l small{display:block;color:var(--ink2);font-size:12px;margin-top:2px}
+.pop .pr img{width:13px;filter:invert(1);opacity:.7}
+.pop .lr{padding:11px 16px;border-bottom:1px solid var(--border)}
+.pop .lr .k{font:11px var(--mono);color:var(--dim);letter-spacing:.06em}
+.pop .lr .r{font:12.5px var(--mono);margin-top:7px;display:flex;gap:8px;color:var(--ink)}
+.pop .lr .r s{color:var(--ink2);text-decoration:none}
+.pop .pf{padding:11px 16px;font-size:12px;color:var(--dim);display:flex;justify-content:space-between}
+.pop .big{padding:18px 16px 16px;font-size:13px;line-height:1.5}
+.pop .big .ln{color:var(--ink2);margin:6px 0 14px}
+
+/* the browser's own pieces, which SigmaFlow can't style */
+.chromemenu{position:absolute;z-index:9;width:300px;background:#2b2b2b;border:1px solid rgba(255,255,255,.12);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.6);font:13px var(--geist);color:#e8e8e8;padding:8px 0}
+.chromemenu .hdr{padding:6px 16px 4px;font-size:14px}
+.chromemenu .sub{padding:0 16px 8px;font-size:11.5px;color:#9a9a9a}
+.chromemenu .sec{padding:8px 16px 2px;font-size:11.5px;color:#9a9a9a}
+.chromemenu .ext{display:flex;align-items:center;gap:10px;padding:7px 16px}
+.chromemenu .ext.hl{background:rgba(255,255,255,.08)}
+.chromemenu .ext .sfi{width:16px;height:16px;border-radius:4px;background:url("icons/appicon.png") center/100%}
+.chromemenu .ext .ot{width:16px;height:16px;border-radius:4px;background:#666}
+.chromemenu .ext .pin{margin-left:auto;color:#9a9a9a;font-size:12px}
+.chromemenu hr{border:0;border-top:1px solid rgba(255,255,255,.1);margin:6px 0}
+.chromemenu .mg{padding:6px 16px;color:#cfcfcf}
+.cdlg{position:absolute;z-index:9;width:420px;background:#2b2b2b;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.6);font:13px var(--geist);color:#e8e8e8;padding:20px 22px}
+.cdlg .t{font-size:15px;display:flex;gap:10px;align-items:center}
+.cdlg .t .sfi{width:22px;height:22px;border-radius:5px;background:url("icons/appicon.png") center/100%}
+.cdlg .can{margin:14px 0 6px;color:#bbb}
+.cdlg ul{margin:0;padding:0 0 0 18px;line-height:1.7}
+.cdlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.cdlg .cb{border-radius:16px;padding:0 16px;line-height:30px;border:1px solid #555;color:#cfe0ff}
+.cdlg .cb.p{background:#a8c7fa;color:#0b2a57;border-color:#a8c7fa}
+.cbub{position:absolute;z-index:10;width:330px;background:#2b2b2b;border:1px solid rgba(255,255,255,.12);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.6);font:13px var(--geist);color:#e8e8e8;padding:16px 18px}
+.cbub .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.cbub .cb{border-radius:16px;padding:0 14px;line-height:28px;border:1px solid #555;color:#cfe0ff;font-size:12.5px}
+.cbub .cb.p{background:#a8c7fa;color:#0b2a57;border-color:#a8c7fa}
+
+/* spotlight */
+.spot{position:absolute;z-index:4;border:1.5px solid #fff;border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.55)}
+.spotlbl{position:absolute;z-index:5;font:11px var(--mono);letter-spacing:.06em;color:#fff;background:#000;border:1px solid #fff;border-radius:4px;padding:2px 7px}
+
+/* pointer */
+.cursor{position:absolute;z-index:30;width:16px;height:22px;pointer-events:none}
+
+/* ---------- SigmaFlow's window ---------- */
+.win{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;position:relative;font-family:var(--pixel)}
+.win:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.win>*{position:relative}
+.rail{width:210px;flex:0 0 210px;background:#000;border-right:1px solid var(--border);padding:22px 10px}
+.rail .wm{font:22px var(--pixel);padding:0 10px 18px}.rail .wm span{font-family:PixelCircle,var(--pixel)}
+.rail .it{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:5px;font-size:14px}
+.rail .it.on{background:var(--sel)}
+.rail img{width:14px;height:14px;filter:invert(1);opacity:.75}
+.pg{flex:1;padding:30px 34px;min-width:0;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.pg h4{font-size:22px;font-weight:400;margin:0}
+.pg .tabs{display:flex;gap:22px;border-bottom:1px solid var(--border);font-size:13px}
+.pg .tabs span{padding:0 0 9px;color:var(--ink2)}.pg .tabs span.on{color:var(--ink);border-bottom:1px solid var(--ink)}
+.card{border:1px solid var(--border);border-radius:6px;background:var(--glass);overflow:hidden}
+.card .cr{display:flex;align-items:center;gap:18px;padding:14px 18px;border-bottom:1px solid var(--border);min-height:64px}
+.card .cr:last-child{border-bottom:0}
+.card .cr .l{flex:1;min-width:0}
+.card .cr .l .ti{font-size:14px;display:flex;align-items:center;gap:9px}
+.card .cr .l .ti img{width:18px;height:18px;border-radius:4px}
+.card .cr .l .ca{font-size:13px;color:var(--ink2);margin-top:4px;line-height:1.4}
+.card .cr .data{font:12px var(--mono);color:var(--ink2)}
+.card .cf{padding:12px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--ink2);background:rgba(0,0,0,.25)}
+.eyebrow{font:12px var(--mono);letter-spacing:.06em;color:var(--ink2);margin:0 0 -10px}
+
+/* first open */
+.welcome{width:1160px;height:760px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;background:#0a0a0a url("../../Resources/background-colour.jpg") center/cover;font-family:var(--pixel);display:flex;align-items:center;justify-content:center}
+.welcome:before{content:"";position:absolute;inset:0;background:var(--scrim)}
+.welcome>*{position:relative}
+.wbox{width:660px;display:flex;flex-direction:column;gap:18px}
+.wbox .step{font:12px var(--mono);color:var(--dim);letter-spacing:.06em}
+.wbox h5{font-size:28px;font-weight:400;margin:0}
+.wbox .ln{font-size:14px;color:var(--ink2);line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.tile{border:1px solid var(--border);border-radius:6px;background:var(--glass);padding:20px;min-height:180px;display:flex;flex-direction:column;gap:12px}
+.tile .big{font-size:16px}
+.tile .sm{font-size:13px;color:var(--ink2);line-height:1.45}
+.tile .ex{margin-top:auto;font:12.5px var(--mono);border-top:1px solid var(--border);padding-top:12px;line-height:1.7}
+.tile .ex s{color:var(--ink2);text-decoration:none}
+.wfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.dots{display:flex;gap:6px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--strong)}.dots i.on{background:var(--ink)}
+</style>
+</head>
+<body><main class="review">
+
+<h1>SigmaFlow in the browser</h1>
+<p class="lead"><b>Picks, 12 Nov 2026: 01 02 04 07 09.</b> Built the same day.</p>
+<p class="lead"><b>Asked 12 Nov 2026:</b> build a browser extension for two things the Mac app can't do in a browser today. <b>1.</b> Learn from your fixes, and keep the saved transcript in step with them. Browsers don't let Accessibility read their text boxes, so in Gmail, Cliq on the web or any help desk the learner never fires. <b>2.</b> Let Autowrite read the whole conversation as text, every email in the thread and not just the part a screenshot catches.</p>
+<p class="lead">The extension works out of sight, so it needs very little design. These are the four places it can be seen, with <b>10 options</b> across them. <b>Reply with the numbers you want</b>, one or more from each group, for example "01 05 07 09". Options in one group fight for the same spot, so pick one there unless the note says they combine. Names and sites are made up, and the browser is drawn as Dia.</p>
+<p class="note"><b>From Mobbin:</b> apps with a desktop app and an extension list each one with its own Add button: <a href="https://mobbin.com/flows/645a25b7-f46c-4f03-8114-25b5f3459621">Grammarly's Apps page</a>, <a href="https://mobbin.com/screens/119276a0-2f55-4c00-af36-6184f0312d34">Toggl's Browser extensions tab</a> and <a href="https://mobbin.com/screens/6ed703c7-635c-42f2-91d0-f6c826c8c868">Perplexity's three download tiles</a>. <a href="https://mobbin.com/flows/49f9c562-d7ff-48fe-a1a3-8e98f37c48fc">n8n's Browser Use</a> checks whether the extension is there and turns the row to "connected" by itself. <a href="https://mobbin.com/screens/e4415dfe-b92a-49b2-b46a-5da821d1543a">1Password</a> asks at the moment you'd miss it. <a href="https://mobbin.com/screens/489aab37-ce31-49e3-ad2b-7658c306822d">Matter</a> makes it one step of setup, then asks you to <a href="https://mobbin.com/screens/ac2e780d-158a-4c3e-a96d-e9bb29b2d86f">pin the extension</a>. <a href="https://mobbin.com/screens/a460f97f-5faf-49f8-be34-91a3b864b0db">Arcade</a> puts a small card under its toolbar icon. <a href="https://mobbin.com/screens/fb19269f-489e-4b9b-abe5-c31969cf67e2">n8n</a> asks before it reads any tab.</p>
+
+<ul class="index" id="index"></ul>
+
+<h2>Already decided: fixes in a browser look like fixes anywhere else</h2>
+<p class="note">Point 1 adds no screen of its own. Fix a word SigmaFlow typed into Gmail, and the same correction card shows above the Dock as it does in Mail: the bar runs, then ADDED with Undo, and the Dictionary shows the rule as LEARNED. The saved transcript follows the edit the same way. The extension only gives SigmaFlow the text of that one box, so all four guardrails stay as they are. Drawn once for reference.</p>
+<div class="scroll" data-m="ref"></div>
+
+<h2>A. How you add it</h2>
+
+<h3 id="m01"><span class="tag">01</span>A card on Settings, Connections</h3>
+<p class="note">Under the Claude connections, a card lists the browsers on this Mac, each with its own Add. Add opens the browser's store page. Once the extension says hello, the row turns to Connected by itself, with no step to confirm. This is where privacy is said, once, in the card's footer. Mobbin: <a href="https://mobbin.com/flows/645a25b7-f46c-4f03-8114-25b5f3459621">Grammarly</a>, <a href="https://mobbin.com/flows/49f9c562-d7ff-48fe-a1a3-8e98f37c48fc">n8n</a>.</p>
+<div class="scroll" data-m="01"></div>
+
+<h3 id="m02"><span class="tag">02</span>Asked the first time you dictate into a browser</h3>
+<p class="note">The moment it matters: you've just dictated into Dia. A card shows above the Dock, once per browser and never again. SigmaFlow can't see a fix in a browser yet, so "the first dictation into a browser" is the only moment it can know about. Combines with 01, which stays the place to find it later. Mobbin: <a href="https://mobbin.com/screens/e4415dfe-b92a-49b2-b46a-5da821d1543a">1Password</a>.</p>
+<div class="scroll" data-m="02"></div>
+
+<h3 id="m03"><span class="tag">03</span>A step in the first open</h3>
+<p class="note">After the Meetings step, one more: "Your browser too". It only shows when a browser is installed. The two tiles show the before and after rather than describe them. Skip leaves 01 to find later. Combines with 01. Mobbin: <a href="https://mobbin.com/screens/489aab37-ce31-49e3-ad2b-7658c306822d">Matter</a>, <a href="https://mobbin.com/screens/6ed703c7-635c-42f2-91d0-f6c826c8c868">Perplexity</a>.</p>
+<div class="scroll" data-m="03"></div>
+
+<h2>B. Which sites it can read</h2>
+<p class="note">This choice decides the browser's warning at install, which SigmaFlow can't change or style. Either way, the extension reads only the box SigmaFlow just typed into, and the page only while the Autowrite key is held. What it reads goes straight to SigmaFlow on this Mac and nowhere else.</p>
+
+<h3 id="m04"><span class="tag">04</span>Every site, from the start</h3>
+<p class="note">One warning at install, the browser's own words: "Read and change all your data on all websites". After that, learning and Autowrite work on every site with nothing more to click. The words are scary next to "100% privacy", but they show once. Mobbin: <a href="https://mobbin.com/screens/c0f8ad37-8b72-4d0b-9b6a-b4f7717ca5a7">ChatGPT's connector install</a> asks the same "all or some" question.</p>
+<div class="scroll" data-m="04"></div>
+
+<h3 id="m05"><span class="tag">05</span>Each site, allowed by you</h3>
+<p class="note">The install warning is milder ("Communicate with cooperating native applications"), and the extension reads nothing until you allow a site. Browsers only let an extension ask after a click on it, so the first time you dictate on a new site, SigmaFlow's toolbar icon gets a dot. You click it and allow that site. More clicks, but each site is your choice, and the extension needs pinning to the toolbar to be seen. Mobbin: <a href="https://mobbin.com/screens/fb19269f-489e-4b9b-abe5-c31969cf67e2">n8n</a>.</p>
+<div class="scroll" data-m="05"></div>
+
+<h2>C. What its toolbar icon does</h2>
+
+<h3 id="m06"><span class="tag">06</span>Nothing to click</h3>
+<p class="note">The extension stays in the browser's extensions menu and isn't pinned. Clicking it opens SigmaFlow on Settings, Connections. It has no card of its own and no settings: one place to change things, the app. Works with 04, not with 05 (05 needs a card to allow sites in).</p>
+<div class="scroll" data-m="06"></div>
+
+<h3 id="m07"><span class="tag">07</span>A small card with one switch for this site</h3>
+<p class="note">Pinned, its icon opens a card: SigmaFlow, Connected, and one switch that turns it off on the site you're on. Banking, a password manager's page, anything you'd rather it left alone. Works with 04 and 05; with 05, the switch reads Allow until you've allowed the site. Mobbin: <a href="https://mobbin.com/screens/a460f97f-5faf-49f8-be34-91a3b864b0db">Arcade</a>.</p>
+<div class="scroll" data-m="07"></div>
+
+<h3 id="m08"><span class="tag">08</span>A card with a switch for each, and what it learned here</h3>
+<p class="note">The same card, but learning and Autowrite are switched on this site one at a time, and the last fixes learned on this site are listed under them. It shows the extension doing something, not just sitting there. More to read, and the list repeats what the Dictionary already shows.</p>
+<div class="scroll" data-m="08"></div>
+
+<h2>D. When Autowrite reads a page</h2>
+
+<h3 id="m09"><span class="tag">09</span>The overlay names what it read</h3>
+<p class="note">Today a small screenshot sits beside your words. With the extension, the screenshot gives way to what was actually read: the site, the ticket or subject, and how much ("all 6 emails"), so you know it saw the part scrolled out of view. Where the extension can't read (another app, or a site you turned off), the screenshot comes back as today.</p>
+<div class="scroll" data-m="09"></div>
+
+<h3 id="m10"><span class="tag">10</span>The spotlight lights the part it read</h3>
+<p class="note">Today the spotlight dims everything but the front window. In a browser it can narrow to the conversation it read and the box it will write into, with a thin white edge, drawn by the extension inside the page. It shows exactly where the writing comes from, for as long as the key is held. Combines with 09.</p>
+<div class="scroll" data-m="10"></div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const MICON=n=>`icons/${n}.svg`;
+const ico=(n,cls='')=>`<img src="${ICON(n)}" class="${cls}" alt="">`;
+const POINTER=`<svg class="cursor" viewBox="0 0 16 22" style="__POS__"><path d="M1 1v17l4.5-4.3 3 6.8 2.6-1.1-3-6.6H14z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>`;
+const cursor=(l,t)=>POINTER.replace('__POS__',`left:${l}px;top:${t}px`);
+const meter=(n=8)=>`<span class="m">${Array.from({length:10},(_,i)=>`<i class="${i<n?'l':''}"></i>`).join('')}</span>`;
+
+/* ---------- the browser and its pages ---------- */
+function browser(o={}){
+ const tabs=o.tabs||[['m','Kettle launch notes - Mail',true],['k','Ticket 4412 - Kettle Help',false]];
+ const sf=o.pinned?`<span class="b ${o.sfOn?'on':''}"><span class="sfi"></span>${o.dot?'<span class="dot"></span>':''}</span>`:'';
+ return `<div class="bw">
+  <div class="tabsrow"><span class="lights"><i></i><i></i><i></i></span>${tabs.map(([f,t,on])=>`<span class="tab ${on?'on':''}"><span class="fav ${f}"></span>${t}</span>`).join('')}</div>
+  <div class="navrow"><span class="arr">‹</span><span class="arr">›</span>
+   <div class="addr"><img src="${MICON('earth')}">${o.url||'mail.northwind.com'}<span class="path">${o.path||'/inbox/kettle-launch-notes'}</span></div>
+   <div class="tbi">${sf}<span class="b ${o.puzzleOn?'on':''}"><span class="puzzle"></span></span></div></div>
+  <div class="page">${o.page||mailPage()}</div>
+ </div>`;
+}
+function mailPage(o={}){
+ return `<div class="mail"><div class="side"><span class="compose">Compose</span><b>Inbox</b>Starred<br>Sent<br>Drafts</div>
+  <div class="main"><h5>Kettle launch notes</h5>
+   <div class="msg"><div class="who"><span class="av">MC</span><span class="nm">Maya Chen</span><span class="when">9.48 am</span></div>
+    Hi, I’ve put the Kettle launch notes in the shared folder. Could you check the pricing section before Thursday? Priya wants it final by Wednesday evening.</div>
+   <div class="reply"><div class="to">To: Maya Chen</div>${o.reply||`Thanks Maya, the <span class="fixed">Kettle</span> launch notes look good. I’ll go through pricing tonight and send it to Priya by Wednesday.<span class="caret"></span>`}</div>
+  </div></div>`;
+}
+function ticketPage(o={}){
+ const it=(n,t,s,on)=>`<div class="it ${on?'on':''}"><b>${t}</b>${n} ${s}</div>`;
+ return `<div class="desk2"><div class="list">
+   ${it('#4412','Order arrived with a cracked lid','Sam Ortiz',true)}
+   ${it('#4409','Can I change my delivery date?','Lena Park')}
+   ${it('#4405','Descaling the Kettle Pro','Ravi Menon')}
+   ${it('#4398','Refund for a double charge','Tom Hale')}
+   ${it('#4391','Warranty on a 2024 model','Ana Ruiz')}
+  </div>
+  <div class="main">
+   <div class="tkt"><h5>Order arrived with a cracked lid</h5><span class="n">#4412</span><span class="st">Open</span></div>
+   <div class="msg collapsed"><span class="av" style="width:22px;height:22px;font-size:10px">SO</span>4 earlier emails from Sam Ortiz and Kettle Help, 3 to 8 Nov</div>
+   <div class="msg"><div class="who"><span class="av">KH</span><span class="nm">Kettle Help</span><span class="when">10 Nov</span></div>
+    Sorry about that, Sam. We’ve sent a replacement lid. It should be with you by Friday.</div>
+   <div class="msg"><div class="who"><span class="av">SO</span><span class="nm">Sam Ortiz</span><span class="when">Today, 8.12 am</span></div>
+    The lid came, but it’s the one for the 1.2 litre model and mine is the 1.7. Can you send the right one? I’d rather not wait another week.</div>
+   <div class="reply" style="min-height:96px"><div class="to">Reply to Sam Ortiz</div>${o.reply||'<span class="caret"></span>'}</div>
+  </div></div>`;
+}
+function desk(inner,o={}){
+ return `<div class="desk"><div class="mbar"><b>Dia</b><span>File</span><span>Edit</span><span>View</span><span>Tabs</span><span class="sp">Thu 12 Nov 10.02</span></div>
+  ${inner}
+  <div class="dock"><span class="app"></span><span class="app"></span><span class="app dia"></span><span class="app"></span><span class="app sf"></span><span class="app"></span></div>
+ </div>`;
+}
+function hud(o={}){
+ return `<div class="hudw"><div class="hud">
+  <div class="st"><span class="g">${o.glyph||'<i></i>'}</span><span class="e">${o.label||'REC'}</span>${o.noTimer?'':`<span class="t">${o.time||'00:04'}</span>${meter()}`}${o.right||''}</div>
+  ${o.body||`<div class="w">${o.words||''}</div>`}${o.bar!==undefined?`<div class="bar"><i style="width:${o.bar}%"></i></div>`:''}
+ </div></div>`;
+}
+
+/* ---------- SigmaFlow's window ---------- */
+const NAV=[['Models','chip'],['Transcriptions','text--align--left'],['Meetings','microphone'],['Conversations','notebook'],['Dictionary','book'],['Snippets','text--short-paragraph'],['Styles','magic-wand'],['Autowrite','edit'],['Settings','settings']];
+const rail=on=>`<div class="rail"><div class="wm">Sigma<span>flow</span></div>${NAV.map(([t,i])=>`<div class="it ${t===on?'on':''}">${ico(i)}${t}</div>`).join('')}</div>`;
+const cr=(ti,ca,right,data='')=>`<div class="cr"><div class="l"><div class="ti">${ti}</div>${ca?`<div class="ca">${ca}</div>`:''}</div>${data?`<span class="data">${data}</span>`:''}${right||''}</div>`;
+function settings(browserCard){
+ return `<div class="win">${rail('Settings')}<div class="pg">
+  <h4>Settings</h4>
+  <div class="tabs"><span>Dictation</span><span class="on">Connections</span><span>Your data</span></div>
+  <div class="card">
+   ${cr('Claude Desktop','Ask Claude about your dictations.',`<span class="btn">${ico('close','inv')}Disconnect</span>`,'Connected')}
+   ${cr('Claude Code','Paste one command in the terminal and Claude Code can read your dictations too.',`<span class="btn">${ico('copy','inv')}Copy command</span>`)}
+   ${cr('Other apps','Any app that speaks MCP can connect with this path.',`<span class="btn">${ico('copy','inv')}Copy path</span>`)}
+  </div>
+  ${browserCard}
+ </div></div>`;
+}
+
+/* ---------- the options ---------- */
+const M={};
+
+M.ref=desk(browser({page:mailPage()})+hud({label:'ADDED',noTimer:true,right:`<span class="undo">Undo</span>`,words:`Kettel <span style="color:var(--ink2)">→</span> Kettle`,bar:100}));
+
+M['01']=`<div class="pair"><div><p class="cap">Before it's added</p>${settings(`
+  <p class="eyebrow">YOUR BROWSER</p>
+  <div class="card">
+   ${cr(`<img src="icons/dia.png">Dia`,'SigmaFlow learns from your fixes on websites too, and Autowrite reads the whole conversation.',`<span class="btn inv">${ico('add')}Add to Dia</span>`)}
+   ${cr(`<span style="width:18px;height:18px;border-radius:50%;background:#555;display:inline-block"></span>Chrome`,'',`<span class="btn">${ico('add','inv')}Add to Chrome</span>`)}
+   <div class="cf">What you write on websites goes to SigmaFlow on this Mac, and nowhere else.</div>
+  </div>`)}</div></div>
+ <div class="pair" style="margin-top:18px"><div><p class="cap">Once the extension says hello, by itself</p>${settings(`
+  <p class="eyebrow">YOUR BROWSER</p>
+  <div class="card">
+   ${cr(`<img src="icons/dia.png">Dia`,'Learning from your fixes, and Autowrite reads the whole conversation.',`<span class="btn">${ico('close','inv')}Remove</span>`,'Connected')}
+   ${cr(`<span style="width:18px;height:18px;border-radius:50%;background:#555;display:inline-block"></span>Chrome`,'',`<span class="btn">${ico('add','inv')}Add to Chrome</span>`)}
+   <div class="cf">What you write on websites goes to SigmaFlow on this Mac, and nowhere else.</div>
+  </div>`)}</div></div>`;
+
+M["02"]=desk(browser({page:mailPage({reply:`Thanks Maya, the Kettle launch notes look good. I’ll go through pricing tonight and send it to Priya by Wednesday.<span class="caret"></span>`})})+`<div class="ask"><span class="ic"></span><div class="tx">
+  <div class="tt">Learn from your fixes in Dia too?</div>
+  <div class="ln">Add SigmaFlow to Dia and it learns from what you fix on websites, the way it does in Mail.</div>
+  <div class="acts"><span class="btn inv">${ico('add')}Add to Dia</span><span class="btn ghost">Not now</span></div></div></div>`);
+
+M['03']=`<div class="welcome"><div class="wbox">
+  <div class="step">STEP 8 OF 8</div>
+  <h5>Your browser too</h5>
+  <div class="ln">Add SigmaFlow to Dia. It learns from your fixes on websites, and Autowrite reads the whole conversation.</div>
+  <div class="two">
+   <div class="tile"><div class="big">Learns from your fixes</div><div class="sm">Fix a word once in Gmail or any site, and SigmaFlow gets it right after that.</div>
+    <div class="ex"><s>Kettel</s> → Kettle<br><s>Maya Chan</s> → Maya Chen</div></div>
+   <div class="tile"><div class="big">Reads the whole conversation</div><div class="sm">Autowrite reads every email in the thread, not only what fits on the screen.</div>
+    <div class="ex">Ticket 4412<br>all 6 emails, 1,240 words</div></div>
+  </div>
+  <div class="wfoot"><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+   <div style="display:flex;gap:8px"><span class="btn ghost">Skip</span><span class="btn inv"><img src="icons/dia.png" style="border-radius:3px">Add to Dia</span></div></div>
+ </div></div>`;
+
+M['04']=desk(browser({url:'chromewebstore.google.com',path:'/detail/sigmaflow',tabs:[['m','SigmaFlow - Chrome Web Store',true],['m','Kettle launch notes - Mail',false]],page:`<div style="padding:40px 60px;color:var(--webink2);font-size:13px"><div style="display:flex;gap:16px;align-items:center"><span style="width:64px;height:64px;border-radius:14px;background:url(icons/appicon.png) center/100%"></span><div><div style="font-size:22px;color:var(--webink)">SigmaFlow</div>Learns from your fixes and reads the conversation for Autowrite.</div><span class="btnw" style="margin-left:auto">Add to Dia</span></div></div>`})
+ +`<div class="cdlg" style="left:370px;top:110px"><div class="t"><span class="sfi"></span>Add “SigmaFlow”?</div>
+  <div class="can">It can:</div><ul><li>Read and change all your data on all websites</li><li>Communicate with cooperating native applications</li></ul>
+  <div class="acts"><span class="cb">Cancel</span><span class="cb p">Add extension</span></div></div>`);
+
+M['05']=`<div class="pair"><div><p class="cap">At install: no sites yet</p>${desk(browser({url:'chromewebstore.google.com',path:'/detail/sigmaflow',tabs:[['m','SigmaFlow - Chrome Web Store',true],['m','Kettle launch notes - Mail',false]],page:`<div style="padding:40px 60px;color:var(--webink2);font-size:13px"><div style="display:flex;gap:16px;align-items:center"><span style="width:64px;height:64px;border-radius:14px;background:url(icons/appicon.png) center/100%"></span><div><div style="font-size:22px;color:var(--webink)">SigmaFlow</div>Learns from your fixes and reads the conversation for Autowrite.</div><span class="btnw" style="margin-left:auto">Add to Dia</span></div></div>`})
+ +`<div class="cdlg" style="left:370px;top:110px"><div class="t"><span class="sfi"></span>Add “SigmaFlow”?</div>
+  <div class="can">It can:</div><ul><li>Communicate with cooperating native applications</li></ul>
+  <div class="acts"><span class="cb">Cancel</span><span class="cb p">Add extension</span></div></div>`)}</div></div>
+ <div class="pair" style="margin-top:18px"><div><p class="cap">First dictation on a new site: a dot, a click, the browser asks</p>${desk(browser({pinned:true,dot:false,sfOn:true,page:mailPage()})
+ +`<div class="pop" style="right:84px;top:118px"><div class="ph"><span class="sfi"></span><span class="wm">Sigma<span>flow</span></span></div>
+   <div class="big">SigmaFlow can’t read this site yet.<div class="ln">Allow it, and SigmaFlow learns from your fixes here and Autowrite can read this page.</div>
+   <span class="btn inv">${ico('checkmark')}Allow on mail.northwind.com</span></div></div>
+  <div class="cbub" style="right:420px;top:118px">Allow SigmaFlow to read and change your data on mail.northwind.com?<div class="acts"><span class="cb">Deny</span><span class="cb p">Allow</span></div></div>
+  ${cursor(890,268)}`)}</div></div>`;
+
+M['06']=desk(browser({puzzleOn:true,page:mailPage()})
+ +`<div class="chromemenu" style="right:54px;top:118px"><div class="hdr">Extensions</div>
+  <div class="sec">Full access</div><div class="sub">These extensions can see and change information on this site.</div>
+  <div class="ext hl"><span class="sfi"></span>SigmaFlow<span class="pin"><img src="icons/pin.svg" style="width:13px;filter:invert(1);opacity:.6"></span></div>
+  <div class="ext"><span class="ot"></span>uBlock Origin<span class="pin"><img src="icons/pin.svg" style="width:13px;filter:invert(1);opacity:.6"></span></div>
+  <hr><div class="mg">Manage extensions</div></div>${cursor(940,214)}
+  <div style="position:absolute;right:370px;top:150px;width:300px;font:12px var(--pixel);color:var(--ink);background:#000;border:1px solid var(--strong);border-radius:6px;padding:10px 12px;z-index:9;line-height:1.5">Click opens SigmaFlow on Settings, Connections. Nothing opens in the browser.</div>`);
+
+M['07']=`<div class="pair"><div><p class="cap">On a site it reads</p>${desk(browser({pinned:true,sfOn:true,page:mailPage()})
+ +`<div class="pop" style="right:84px;top:118px"><div class="ph"><span class="sfi"></span><span class="wm">Sigma<span>flow</span></span><span class="stt"><i></i>Connected</span></div>
+  <div class="pr"><img src="${MICON('earth')}"><span class="l">On mail.northwind.com<small>Learns from your fixes, and Autowrite reads the page.</small></span><span class="sw on"></span></div>
+  <div class="pf"><span>Open SigmaFlow</span></div></div>`)}</div></div>
+ <div class="pair" style="margin-top:18px"><div><p class="cap">Switched off on a site</p>${desk(browser({pinned:true,sfOn:true,url:'online.bank.example',path:'/accounts',tabs:[['m','Accounts - Bank',true]],page:`<div style="padding:40px;color:var(--webink2)">Your accounts</div>`})
+ +`<div class="pop" style="right:84px;top:118px"><div class="ph"><span class="sfi"></span><span class="wm">Sigma<span>flow</span></span><span class="stt"><i></i>Connected</span></div>
+  <div class="pr"><img src="${MICON('earth')}"><span class="l">On online.bank.example<small>Off here. SigmaFlow still types, it just doesn’t read this site.</small></span><span class="sw"></span></div>
+  <div class="pf"><span>Open SigmaFlow</span></div></div>`)}</div></div>`;
+
+M['08']=desk(browser({pinned:true,sfOn:true,page:mailPage()})
+ +`<div class="pop" style="right:84px;top:118px;width:330px"><div class="ph"><span class="sfi"></span><span class="wm">Sigma<span>flow</span></span><span class="stt"><i></i>Connected</span></div>
+  <div class="pr" style="padding-bottom:8px;border:0;color:var(--ink2);font-size:12px"><img src="${MICON('earth')}"><span class="l">On mail.northwind.com</span></div>
+  <div class="pr" style="border-top:1px solid var(--border)"><span class="l">Learn from my fixes</span><span class="sw on"></span></div>
+  <div class="pr"><span class="l">Autowrite reads this page</span><span class="sw on"></span></div>
+  <div class="lr"><div class="k">LEARNED HERE</div><div class="r"><s>Kettel</s>→ Kettle</div><div class="r"><s>Maya Chan</s>→ Maya Chen</div><div class="r"><s>pricing deck</s>→ pricing sheet</div></div>
+  <div class="pf"><span>Open SigmaFlow</span></div></div>`);
+
+const ASK='Reply to Sam, sorry, the 1.7 litre lid ships today by express';
+const pen=`<img src="${ICON('edit')}">`;
+M['09']=`<div class="pair"><div><p class="cap">Today: a picture of the screen</p>${desk(browser({url:'help.kettle.com',path:'/tickets/4412',tabs:[['k','Ticket 4412 - Kettle Help',true],['m','Kettle launch notes - Mail',false]],page:ticketPage()})
+ +hud({glyph:pen,label:'AUTOWRITE',body:`<div class="body"><div class="w">${ASK}</div><span class="shot"></span></div>`}))}</div></div>
+ <div class="pair" style="margin-top:18px"><div><p class="cap">With the extension: what it read</p>${desk(browser({url:'help.kettle.com',path:'/tickets/4412',tabs:[['k','Ticket 4412 - Kettle Help',true],['m','Kettle launch notes - Mail',false]],page:ticketPage()})
+ +hud({glyph:pen,label:'AUTOWRITE',body:`<div class="body"><div class="w">${ASK}</div><div class="readchip"><div class="h"><img src="${MICON('earth')}">help.kettle.com</div><div class="tt">Order arrived with a cracked lid</div><div class="sub">All 6 emails</div></div></div>`}))}</div></div>`;
+
+M['10']=desk(browser({url:'help.kettle.com',path:'/tickets/4412',tabs:[['k','Ticket 4412 - Kettle Help',true],['m','Kettle launch notes - Mail',false]],page:ticketPage()})
+ +`<div class="spot" style="left:296px;top:130px;width:816px;height:518px"></div>`
+ +hud({glyph:pen,label:'AUTOWRITE',body:`<div class="body"><div class="w">${ASK}</div><div class="readchip"><div class="h"><img src="${MICON('earth')}">help.kettle.com</div><div class="tt">Order arrived with a cracked lid</div><div class="sub">All 6 emails</div></div></div>`}));
+
+document.querySelectorAll('[data-m]').forEach(el=>{el.innerHTML=M[el.dataset.m]||''});
+document.getElementById('index').innerHTML=[...document.querySelectorAll('h3[id]')].map(h=>`<li><a href="#${h.id}"><span class="k">${h.querySelector('.tag').textContent}</span>${h.childNodes[1].textContent}</a></li>`).join('');
+</script>
+</body>
+</html>

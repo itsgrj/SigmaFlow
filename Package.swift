@@ -69,6 +69,13 @@ let package = Package(
             path: "Sources/SigmaFlowMCP",
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
+        // The helper a browser starts for SigmaFlow's extension (native messaging). A relay
+        // between the extension's stdio and the app's socket; Foundation only.
+        .executableTarget(
+            name: "SigmaFlowBrowserHost",
+            path: "Sources/SigmaFlowBrowserHost",
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
         .testTarget(
             name: "SigmaFlowDictionaryTests",
             dependencies: ["SigmaFlowDictionary"],

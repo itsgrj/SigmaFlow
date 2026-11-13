@@ -127,13 +127,20 @@ struct HUDView: View {
     }
 
     /// While Autowrite listens and writes, the screen it read sits beside the words, small
-    /// (round 3, 4-09): proof it is looking, and at what.
+    /// (round 3, 4-09): proof it is looking, and at what. When SigmaFlow's browser extension
+    /// read the whole page as well, four corners frame the picture, as a scanner frames a
+    /// page: read, not only seen (docs/mockups/autowrite-what-it-read.html, 09 without its
+    /// WHOLE PAGE line).
     @ViewBuilder
     private var transcriptView: some View {
         if let picture = controller.screenPicture,
            controller.isWriting || controller.writing?.phase == .writing {
             HStack(alignment: .top, spacing: DS.Space.snug + DS.Space.hair) {
-                ScreenThumb(image: picture)
+                if controller.pageRead != nil {
+                    ScreenScan(image: picture)
+                } else {
+                    ScreenThumb(image: picture)
+                }
                 transcriptContent
             }
         } else {
@@ -225,6 +232,36 @@ struct ScreenThumb: View {
             .frame(width: DS.Material.writeThumbWidth, height: DS.Material.writeThumbHeight)
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.chip))
             .overlay(RoundedRectangle(cornerRadius: DS.Radius.chip).strokeBorder(DS.Color.borderStrong, lineWidth: DS.Border.hairline))
+    }
+}
+
+/// The screenshot with four white corners just outside it, as a document scanner frames a
+/// page: the page it came from was read whole, as text, not only the part on the screen.
+struct ScreenScan: View {
+    let image: NSImage
+
+    var body: some View {
+        ScreenThumb(image: image)
+            .padding(DS.Material.writeScanGap)
+            .overlay(ScanCorners().stroke(DS.Color.ink, lineWidth: DS.Material.writeScanLine))
+    }
+}
+
+/// Four L-shaped corners on the edge of the rect, each arm `writeScanCorner` long.
+struct ScanCorners: Shape {
+    func path(in rect: CGRect) -> Path {
+        let arm = DS.Material.writeScanCorner
+        let r = rect.insetBy(dx: DS.Material.writeScanLine / 2, dy: DS.Material.writeScanLine / 2)
+        var path = Path()
+        for (corner, dx, dy) in [
+            (CGPoint(x: r.minX, y: r.minY), arm, arm), (CGPoint(x: r.maxX, y: r.minY), -arm, arm),
+            (CGPoint(x: r.minX, y: r.maxY), arm, -arm), (CGPoint(x: r.maxX, y: r.maxY), -arm, -arm),
+        ] {
+            path.move(to: CGPoint(x: corner.x + dx, y: corner.y))
+            path.addLine(to: corner)
+            path.addLine(to: CGPoint(x: corner.x, y: corner.y + dy))
+        }
+        return path
     }
 }
 

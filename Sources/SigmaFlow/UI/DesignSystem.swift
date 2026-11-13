@@ -344,6 +344,12 @@ enum DS {
         /// The screen Autowrite read, drawn small beside the words in the overlay (4-09).
         static let writeThumbWidth: CGFloat = 64
         static let writeThumbHeight: CGFloat = 40
+        /// In a browser with the extension, four corners frame the picture
+        /// (docs/mockups/autowrite-what-it-read.html, 09): this far outside it, arms this
+        /// long, lines this thick.
+        static let writeScanGap: CGFloat = 3
+        static let writeScanCorner: CGFloat = 5
+        static let writeScanLine: CGFloat = 1
         /// The Autowrite page (docs/mockups/autowrite-page.html round 3): the steps run down
         /// a column of their own on the painting, each number in a ring joined to the next
         /// by a line, never in a card (only what you can change has one).
@@ -490,6 +496,8 @@ enum DS {
         static let localAddressWidth: CGFloat = 300
         /// The search icon inside the search box, and the check inside a selected tile.
         static let iconSizeSmall: CGFloat = 14
+        /// An app's icon before a card row's label (Settings, Connections: the browsers).
+        static let rowAppIcon: CGFloat = 18
         static let iconSizeTiny: CGFloat = 12
         /// The control lane at the right edge of a card row is at least this wide.
         static let laneMinWidth: CGFloat = 32
@@ -747,6 +755,11 @@ enum DS {
         /// How long the call card waits for With video or Sound only before it goes, and
         /// nothing is recorded (docs/mockups/meeting-video.html, 33).
         static let callAnswerWindow: TimeInterval = 20
+        /// The one-time "Learn from your fixes in Dia too?" card (browser-extension.html, 02):
+        /// how long after the dictation lands it comes, once the overlay has gone, and how long
+        /// it stays unanswered.
+        static let browserAskDelay: TimeInterval = 1.2
+        static let browserAskWindow: TimeInterval = 20
         /// A photo in a stack rising under the pointer.
         static let stackLift: TimeInterval = 0.18
         /// The correction notice: how long the bar takes to drain, and how long ADDED holds.

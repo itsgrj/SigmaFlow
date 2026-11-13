@@ -150,6 +150,17 @@ final class Settings {
         didSet { defaults.set(learnFromCorrections, forKey: Keys.learnFromCorrections) }
     }
 
+    /// Browsers whose extension was taken away on Settings, Connections (Remove), by bundle
+    /// identifier: SigmaFlow writes no helper manifest there and never asks about them.
+    var browsersRemoved: [String] {
+        didSet { defaults.set(browsersRemoved, forKey: Keys.browsersRemoved) }
+    }
+
+    /// Browsers the one-time card has asked about (docs/mockups/browser-extension.html, 02).
+    var browsersAsked: [String] {
+        didSet { defaults.set(browsersAsked, forKey: Keys.browsersAsked) }
+    }
+
     /// The page the main window opens on: the one that was open last time.
     var lastPage: String {
         didSet { defaults.set(lastPage, forKey: Keys.lastPage) }
@@ -273,6 +284,8 @@ final class Settings {
         static let sigmaFlowFolderBookmark = "sigmaFlowFolderBookmark"
         static let sigmaFlowFolderPath = "sigmaFlowFolderPath"
         static let lastPage = "lastPage"
+        static let browsersRemoved = "browsersRemoved"
+        static let browsersAsked = "browsersAsked"
         static let openTabs = "openTabs"
         static let firstOpenDone = "firstOpenDone"
     }
@@ -330,6 +343,8 @@ final class Settings {
         pauseMediaWhileRecording = defaults.object(forKey: Keys.pauseMedia) as? Bool ?? true
         learnFromCorrections = defaults.object(forKey: Keys.learnFromCorrections) as? Bool ?? true
         lastPage = defaults.string(forKey: Keys.lastPage) ?? ""
+        browsersRemoved = defaults.stringArray(forKey: Keys.browsersRemoved) ?? []
+        browsersAsked = defaults.stringArray(forKey: Keys.browsersAsked) ?? []
         openTabs = defaults.dictionary(forKey: Keys.openTabs) as? [String: String] ?? [:]
         // Apple by default: styles work on a fresh install with no key and no account.
         styleEngine = StyleEngineChoice(rawValue: defaults.string(forKey: Keys.styleEngine) ?? "") ?? .apple

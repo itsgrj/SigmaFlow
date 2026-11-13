@@ -1,0 +1,29 @@
+/* SigmaFlow's toolbar card (docs/mockups/browser-extension.html, 07): the app's monochrome,
+   white the only ink, Geist Pixel. */
+@font-face { font-family: Pixel; src: url("fonts/GeistPixel-Square.ttf"); }
+@font-face { font-family: PixelCircle; src: url("fonts/GeistPixel-Circle.ttf"); }
+:root {
+  --ink: #ededed; --ink2: #a1a1a1; --dim: #8f8f8f;
+  --border: rgba(255, 255, 255, .145); --strong: rgba(255, 255, 255, .22);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #0b0b0b; color: var(--ink); font: 13px Pixel, ui-monospace, monospace; -webkit-font-smoothing: antialiased; }
+body { width: 310px; }
+header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.mark { width: 22px; height: 22px; border-radius: 5px; }
+.wordmark { font-size: 15px; }
+.wordmark span { font-family: PixelCircle, Pixel, monospace; }
+.status { margin-left: auto; font-size: 11.5px; color: var(--ink2); display: flex; gap: 6px; align-items: center; }
+.status.on::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); }
+.site { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+.globe { width: 13px; height: 13px; filter: invert(1); opacity: .7; flex: 0 0 13px; }
+.words { flex: 1; min-width: 0; line-height: 1.4; }
+#host { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+small { display: block; color: var(--ink2); font-size: 12px; margin-top: 2px; }
+.switch { appearance: none; border: 0; padding: 0; cursor: pointer; width: 30px; height: 18px; border-radius: 9px; background: var(--strong); position: relative; flex: 0 0 30px; }
+.switch::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #777; transition: left .12s; }
+.switch[aria-checked="true"] { background: var(--ink); }
+.switch[aria-checked="true"]::after { left: 14px; background: #111; }
+footer { padding: 11px 16px; }
+.link { appearance: none; border: 0; background: none; padding: 0; font: inherit; font-size: 12px; color: var(--dim); cursor: pointer; }
+.link:hover { color: var(--ink); }

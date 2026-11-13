@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What Autowrite read</title>
+<style>
+@font-face{font-family:Pixel;src:url("../../Resources/Fonts/GeistPixel-Square.ttf")}
+@font-face{font-family:GMono;src:url("../../Resources/Fonts/GeistMono-Regular.otf")}
+@font-face{font-family:Geist;src:url("../../Resources/Fonts/Geist-Regular.otf")}
+:root{
+ --ink:#ededed;--ink2:#a1a1a1;--dim:#8f8f8f;--ph:#6f6f6f;
+ --border:rgba(255,255,255,.145);--strong:rgba(255,255,255,.20);
+ --hud:rgba(14,14,14,.94);--green:#30d158;--meterOff:rgba(255,255,255,.18);
+ --pixel:Pixel,GMono,monospace;--mono:GMono,ui-monospace,monospace;--geist:Geist,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#141414;color:var(--ink);font-family:var(--geist);font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+.review{max-width:1240px;margin:auto;padding:34px 30px 100px}
+.review>h1{font-size:22px;font-weight:500;margin:0 0 8px}
+.lead{color:var(--ink2);line-height:1.55;max-width:1080px;margin:0 0 14px}
+.lead b{color:var(--ink);font-weight:500}
+h2{font:12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:400;margin:52px 0 6px}
+h3{font-size:15px;font-weight:500;margin:36px 0 4px}
+h3 .tag{font:11px var(--mono);color:var(--dim);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:2px}
+h3 .mine{font:11px var(--mono);color:#111;background:var(--ink);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.note{font-size:13px;line-height:1.55;color:var(--ink2);margin:0 0 14px;max-width:1000px}
+.note b{color:var(--ink);font-weight:500}
+.pair{display:flex;gap:18px;flex-wrap:wrap}
+.cap{font:11px var(--mono);color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px}
+
+/* the bottom of the screen: the browser's page, the Dock, the painting */
+.scene{width:980px;height:360px;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;
+ background:#0a0a0a url("../../Resources/background-colour.jpg") center 80%/cover}
+.scene:before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.scene .bw{position:absolute;left:36px;right:36px;top:-10px;height:250px;background:#f2f2f0;border-radius:0 0 10px 10px;border:1px solid rgba(255,255,255,.14)}
+.scene .bw .reply{position:absolute;left:300px;right:30px;top:40px;height:120px;background:#fff;border:1px solid #9a9a9a;border-radius:10px;padding:12px 16px;font:12.5px var(--geist);color:#6b6b6b}
+.scene .bw .reply i{display:block;width:1.5px;height:16px;background:#111;margin-top:8px}
+.scene .bw .list{position:absolute;left:0;top:0;bottom:0;width:250px;border-right:1px solid #e2e2df}
+.scene .dock{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;height:58px;padding:6px 10px;border-radius:17px;background:rgba(60,60,60,.45);border:1px solid rgba(255,255,255,.15);display:flex;gap:9px;align-items:flex-end}
+.scene .dock i{width:44px;height:44px;border-radius:10px;background:#3a3a3a;display:block}
+.scene .dock i.sf{background:url("icons/appicon.png") center/100%}
+.scene .dock i.dia{background:url("icons/dia.png") center/100%}
+.hudw{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);zoom:1.5}
+
+/* the overlay, in points, as the app draws it (DS: 440 wide, 18 by 14 padding) */
+.hud{width:440px;background:var(--hud);border:1px solid var(--strong);border-radius:12px;padding:14px 18px;font-family:var(--pixel);color:var(--ink);box-shadow:0 12px 32px rgba(0,0,0,.55)}
+.st{display:flex;align-items:center;gap:8px;height:14px}
+.g{width:12px;height:12px;display:flex;align-items:center;justify-content:center}
+.g img{width:12px;height:12px;filter:invert(1)}
+.e{font-size:12px;letter-spacing:.72px;text-transform:uppercase}
+.t{font:12px var(--mono);color:var(--ink2)}
+.m{display:flex;gap:3px}.m i{width:5px;height:5px;border-radius:50%;background:var(--meterOff)}.m i.l{background:var(--green)}
+.st .right{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;letter-spacing:.66px;color:var(--ink2);text-transform:uppercase}
+.st .right img{width:10px;filter:invert(1);opacity:.7}
+.body{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+.w{font-size:15px;line-height:20px;flex:1}
+.under{font:11px var(--mono);color:var(--dim);margin-top:6px;display:flex;align-items:center;gap:5px}
+.under img{width:10px;filter:invert(1);opacity:.6}
+
+/* the screenshot: a small copy of the page in front */
+.thumb{width:64px;height:40px;border:1px solid var(--strong);border-radius:4px;overflow:hidden;position:relative;flex:0 0 auto;background:#f2f2f0}
+.mini{position:absolute;left:0;top:0;width:100%}
+.mini .row{height:3px;background:#c9c9c4;margin:4px 0 0 18px;border-radius:1px}
+.mini .row.s{width:26px}.mini .row.m{width:34px}.mini .row.l{width:40px}
+.mini .side{position:absolute;left:0;top:0;bottom:0;width:13px;border-right:1px solid #ddd;background:#ebebe8}
+.mini .box{height:9px;margin:5px 4px 0 18px;border:1px solid #9a9a9a;border-radius:2px;background:#fff}
+.mini .hd{height:4px;width:30px;margin:4px 0 0 18px;background:#8c8c88;border-radius:1px}
+
+/* 01 */
+.badge{position:absolute;left:3px;bottom:3px;background:#000;color:var(--ink);font:7px var(--mono);letter-spacing:.3px;padding:1px 3px;border-radius:2px;text-transform:uppercase}
+/* 02 the whole page as a strip, the screen framed in it */
+.strip{width:30px;height:40px;border:1px solid var(--strong);border-radius:4px;overflow:hidden;position:relative;background:#f2f2f0;flex:0 0 auto}
+.strip .mini .side{width:5px}.strip .mini .row{margin:2px 0 0 8px;height:2px}.strip .mini .row.s{width:12px}.strip .mini .row.m{width:16px}.strip .mini .row.l{width:19px}
+.strip .mini .hd{margin:2px 0 0 8px;width:14px;height:3px}.strip .mini .box{margin:3px 2px 0 8px;height:5px}
+.strip .veil{position:absolute;left:0;right:0;background:rgba(14,14,14,.55)}
+.strip .frame{position:absolute;left:0;right:0;border:1px solid #fff;border-radius:2px}
+.stripwrap{display:flex;gap:8px;align-items:flex-start}
+/* 03 a stack */
+.stack{position:relative;width:72px;height:48px;flex:0 0 auto}
+.stack .sheet{position:absolute;width:64px;height:40px;border:1px solid var(--strong);border-radius:4px;background:#d8d8d4}
+.stack .thumb{position:absolute;left:0;top:8px}
+.stack .s1{left:8px;top:0;background:#bdbdb9}.stack .s2{left:4px;top:4px;background:#d6d6d2}
+/* 06 the picture runs through the page once, then rests on the screen */
+.scroller .mini{animation:runpage 6s ease-in-out infinite}
+@keyframes runpage{0%{transform:translateY(0)}35%{transform:translateY(-70px)}55%{transform:translateY(-70px)}75%,100%{transform:translateY(-38px)}}
+.scroller .frame{position:absolute;inset:0;border:1px solid rgba(255,255,255,0)}
+/* 07 caption under the picture */
+.capt{width:96px;flex:0 0 auto}
+.capt .thumb{width:96px;height:60px}
+.capt .host{font:10px var(--mono);color:var(--ink2);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.capt .wc{font:10px var(--mono);color:var(--dim);margin-top:1px}
+/* 08 bigger picture, title across its foot */
+.big{width:150px;height:94px}
+.big .foot{position:absolute;left:0;right:0;bottom:0;background:#000;padding:4px 6px;font-size:10px;line-height:13px;color:var(--ink)}
+.big .foot small{display:block;font:9px var(--mono);color:var(--ink2)}
+.big .mini .row{margin-left:26px}.big .mini .row.s{width:50px}.big .mini .row.m{width:70px}.big .mini .row.l{width:90px}
+.big .mini .side{width:20px}.big .mini .hd{margin-left:26px;width:60px}.big .mini .box{margin-left:26px;height:14px}
+</style>
+</head>
+<body><main class="review">
+
+<h1>What Autowrite read, round 2</h1>
+<p class="lead"><b>Asked 12 Nov 2026:</b> the page card that replaced the screenshot (browser-extension 09) is out. The screenshot stays in every design. The new piece has one job: show that SigmaFlow read more than the screen, the whole page, scrolled-away parts too. These are eight ways, each drawn on its own, at the overlay's real proportions, made 1.5 times larger to read here. Where the extension can't read (another app, a site switched off), the overlay is today's: the screenshot alone.</p>
+<p class="lead"><b>Reply with the number you want.</b> Made-up ticket, as before.</p>
+
+<h2>For comparison</h2>
+<div class="pair">
+ <div><p class="cap">Before the extension: the screenshot alone</p><div data-o="today"></div></div>
+</div>
+
+<h2>A. The picture tells it, no words</h2>
+
+<h3><span class="tag">01</span>A tag on the picture</h3>
+<p class="note">The screenshot as today, with WHOLE PAGE in a small black tag across its corner. The least change: the picture stays the picture, and two words say the rest.</p>
+<div data-o="01"></div>
+
+<h3><span class="tag">02</span>The whole page as a strip, the screen framed in it<span class="mine">My pick</span></h3>
+<p class="note">The picture becomes a tall, narrow copy of the whole page. The part that was on your screen is bright, in a white frame. What's above and below it is shaded: read, but not on screen. It shows "more than the screen" without a word. It's as tall as the two lines of words, so the overlay grows no taller.</p>
+<div data-o="02"></div>
+
+<h3><span class="tag">03</span>A stack</h3>
+<p class="note">The screenshot sits on two sheets offset behind it, like more pages under it, with the number of words read under your words. Familiar from photo apps: one shown, more behind.</p>
+<div data-o="03"></div>
+
+<h3><span class="tag">04</span>The picture runs through the page once</h3>
+<p class="note">The moment the page is read, the screenshot runs down the whole page in about two seconds, then settles back on what was on your screen. It moves once per Autowrite (the loop here is only for looking). The only option with motion. SigmaFlow's rule is that nothing blinks, and this doesn't, but it is new.</p>
+<div data-o="04"></div>
+
+<h2>B. The picture plus a few words</h2>
+
+<h3><span class="tag">05</span>A caption under the picture</h3>
+<p class="note">A slightly larger screenshot with the site and the word count under it, like a photo's caption. Everything about what was read sits in one column, apart from what you said.</p>
+<div data-o="05"></div>
+
+<h3><span class="tag">06</span>A line under your words</h3>
+<p class="note">The screenshot as today. Under what you said, one faint line: "Read the whole page, 1,240 words". It reads as a sentence, in the spot the eye goes next.</p>
+<div data-o="06"></div>
+
+<h3><span class="tag">07</span>In the status row</h3>
+<p class="note">The screenshot as today. WHOLE PAGE sits at the right end of the row with AUTOWRITE and the timer, faint, like a mode. Nothing moves in the words' area.</p>
+<div data-o="07"></div>
+
+<h3><span class="tag">08</span>A bigger picture, the page's title across its foot</h3>
+<p class="note">The screenshot grows to 150 points wide, with a black band across its foot holding the page's title and the word count. The picture leads, and the overlay is about two lines taller.</p>
+<div data-o="08"></div>
+
+</main>
+<script>
+const ICON=n=>`../../Resources/Icons/${n}.svg`;
+const pen=`<img src="${ICON('edit')}">`;
+const meter=(n=8)=>`<span class="m">${Array.from({length:10},(_,i)=>`<i class="${i<n?'l':''}"></i>`).join('')}</span>`;
+const ASK='Reply to Sam, sorry, the 1.7 litre lid ships today by express';
+const WORDS='1,240';
+
+// a small copy of a page: heading, mail rows, the reply box; `rows` makes it longer
+function mini(rows=4,{box=true}={}){
+ const kinds=['l','m','l','s','m','l','s','m'];
+ let h='<div class="mini"><div class="side"></div><div class="hd"></div>';
+ for(let i=0;i<rows;i++)h+=`<div class="row ${kinds[i%kinds.length]}"></div>`;
+ if(box)h+='<div class="box"></div>';
+ return h+'</div>';
+}
+const thumb=(extra='',cls='')=>`<div class="thumb ${cls}">${mini(5)}${extra}</div>`;
+
+function hud({right='',media=thumb(),under=''}={}){
+ return `<div class="hud"><div class="st"><span class="g">${pen}</span><span class="e">Autowrite</span><span class="t">00:04</span>${meter()}${right}</div>
+  <div class="body">${media}<div style="flex:1"><div class="w">${ASK}</div>${under}</div></div></div>`;
+}
+function scene(h){
+ return `<div class="scene"><div class="bw"><div class="list"></div><div class="reply">Reply to Sam Ortiz<i></i></div></div>
+  <div class="dock"><i></i><i></i><i class="dia"></i><i></i><i class="sf"></i><i></i></div>
+  <div class="hudw">${h}</div></div>`;
+}
+
+const O={};
+O.today=scene(hud());
+O['01']=scene(hud({media:thumb('<span class="badge">Whole page</span>')}));
+
+// the strip: a long page, the screen's part framed and the rest shaded
+function strip(){
+ const top=12,height=14;
+ return `<div class="strip">${mini(9)}
+  <div class="veil" style="top:0;height:${top}px"></div>
+  <div class="veil" style="top:${top+height}px;bottom:0"></div>
+  <div class="frame" style="top:${top}px;height:${height}px"></div></div>`;
+}
+O['02']=scene(hud({media:strip()}));
+
+O['03']=scene(hud({
+ media:`<div class="stack"><div class="sheet s1"></div><div class="sheet s2"></div>${thumb()}</div>`,
+ under:`<div class="under">${WORDS} words</div>`}));
+
+O['04']=scene(hud({media:`<div class="thumb scroller"><div class="mini" style="height:120px">${mini(16).replace('<div class="mini">','<div>')}</div></div>`}));
+
+O['05']=scene(hud({media:`<div class="capt"><div class="thumb">${mini(7)}</div><div class="host">help.kettle.com</div><div class="wc">${WORDS} words</div></div>`}));
+
+O['06']=scene(hud({under:`<div class="under"><img src="icons/earth.svg">Read the whole page, ${WORDS} words</div>`}));
+
+O['07']=scene(hud({right:`<span class="right"><img src="icons/earth.svg">Whole page</span>`}));
+
+O['08']=scene(hud({media:`<div class="thumb big">${mini(9)}<div class="foot">Order arrived with a cracked lid<small>${WORDS} words</small></div></div>`}));
+
+document.querySelectorAll('[data-o]').forEach(el=>{el.innerHTML=O[el.dataset.o]||''});
+</script>
+</body>
+</html>

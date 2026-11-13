@@ -492,14 +492,17 @@ struct CardRow<Control: View>: View {
     var caption: String? = nil
     var data: String? = nil
     var isLast = false
+    /// An app's own icon before the label (Settings, Connections: the browsers).
+    var icon: NSImage? = nil
     @ViewBuilder var control: Control
 
-    init(_ label: String, caption: String? = nil, data: String? = nil, isLast: Bool = false,
+    init(_ label: String, caption: String? = nil, data: String? = nil, isLast: Bool = false, icon: NSImage? = nil,
          @ViewBuilder control: () -> Control = { EmptyView() }) {
         self.label = label
         self.caption = caption
         self.data = data
         self.isLast = isLast
+        self.icon = icon
         self.control = control()
     }
 
@@ -507,9 +510,16 @@ struct CardRow<Control: View>: View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: DS.Space.roomy) {
                 VStack(alignment: .leading, spacing: DS.Space.captionGap) {
-                    Text(label)
-                        .font(DS.Font.body)
-                        .foregroundStyle(DS.Color.ink)
+                    HStack(spacing: DS.Space.snug) {
+                        if let icon {
+                            Image(nsImage: icon)
+                                .resizable()
+                                .frame(width: DS.Control.rowAppIcon, height: DS.Control.rowAppIcon)
+                        }
+                        Text(label)
+                            .font(DS.Font.body)
+                            .foregroundStyle(DS.Color.ink)
+                    }
                     if let caption { Caption(caption) }
                 }
                 .padding(.vertical, DS.Space.rowPadY)

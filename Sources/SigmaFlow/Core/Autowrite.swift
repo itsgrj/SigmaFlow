@@ -30,6 +30,10 @@ struct ScreenContext: Sendable {
     var jpeg: Data?
     /// The Zoho Desk ticket being answered, when one is open and a Zoho MCP server is connected.
     var ticket: DeskTicket? = nil
+    /// The page in front, as text, read by SigmaFlow's browser extension: every part of it,
+    /// what is scrolled out of view too (docs/mockups/browser-extension.html, 09). When it is
+    /// here it stands in for the screen's words.
+    var page: PageRead? = nil
 
     static let empty = ScreenContext(appName: nil, text: "", jpeg: nil)
 
@@ -110,28 +114,38 @@ enum WritePrompt {
     static let appleScreenLimitBesideTicket = 3_000
     static let appleTicketLimit = 3_000
     static let cloudTicketLimit = 400_000
+    /// A page read by the browser extension. Apple's model gets the screen's share of its
+    /// window; a cloud model up to about 15,000 tokens.
+    static let cloudPageLimit = 60_000
 
     /// How much of each goes to a model that writes from the screen's words.
     struct Limits {
         let screen: Int
         let screenBesideTicket: Int
         let ticket: Int
+        let page: Int
 
-        static let cloud = Limits(screen: cloudScreenLimit, screenBesideTicket: cloudScreenLimit, ticket: cloudTicketLimit)
+        static let cloud = Limits(
+            screen: cloudScreenLimit, screenBesideTicket: cloudScreenLimit,
+            ticket: cloudTicketLimit, page: cloudPageLimit)
         /// Ollama, at `LocalModels.ollamaContext` tokens. Kept well under it: Tamil and other
-        /// non-Latin text takes two or three times the tokens English does, and past the
-        /// window Ollama drops the start, which is where the instructions are.
-        static let ollama = Limits(screen: 16_000, screenBesideTicket: 8_000, ticket: 12_000)
+        /// non-Latin text in a browser page takes two or three times the tokens English does,
+        /// and past the window Ollama drops the start, which is where the instructions are.
+        static let ollama = Limits(screen: 16_000, screenBesideTicket: 8_000, ticket: 12_000, page: 20_000)
         /// Any other server on this Mac runs at the window it was loaded with, often 4,096
         /// tokens, so it gets Apple's share.
         static let smallWindow = Limits(
-            screen: appleScreenLimit, screenBesideTicket: appleScreenLimitBesideTicket, ticket: appleTicketLimit)
+            screen: appleScreenLimit, screenBesideTicket: appleScreenLimitBesideTicket,
+            ticket: appleTicketLimit, page: appleScreenLimit)
 
         static func `for`(_ credentials: CloudCredentials) -> Limits {
             guard credentials.provider == .local else { return .cloud }
             return credentials.target?.server.kind == .ollama ? .ollama : .smallWindow
         }
     }
+    /// Over the limit, a page keeps this much of its start and the rest from its end: a mail
+    /// thread or a chat ends in the newest message, which is usually the one being answered.
+    static let pageHeadShare = 0.3
     /// Apple's model reads this many words of the custom instructions; what's left of its
     /// window after the screen goes to the reply. A cloud model reads them whole.
     static let appleInstructionWords = 300
@@ -197,12 +211,24 @@ enum WritePrompt {
     /// `instructions` are the custom instructions, for Apple's model only: it passed over them
     /// in its instructions and followed them here, beside the ask. A cloud model gets them in
     /// the system prompt instead (`system(instructions:)`).
-    static func user(ask: String, context: ScreenContext, screenLimit: Int, ticketLimit: Int, instructions: String = "") -> String {
+    static func user(
+        ask: String, context: ScreenContext, screenLimit: Int, ticketLimit: Int, pageLimit: Int? = nil,
+        instructions: String = ""
+    ) -> String {
         // The instruction is set apart and named as one, last, then the task: a small model
         // otherwise takes the spoken words for the text to type and hands them straight back.
         var parts: [String] = []
         let app = context.appName.flatMap { $0.isEmpty ? nil : " (in \($0))" } ?? ""
-        if !context.text.isEmpty {
+        if let page = context.page {
+            let title = page.title.isEmpty ? "" : ", \"\(page.title)\""
+            parts.append("""
+            The page they are on\(app), \(page.host)\(title), read as text from their browser. It \
+            includes the parts scrolled out of view:
+            <page>
+            \(headAndTail(page.text, limit: pageLimit ?? screenLimit))
+            </page>
+            """)
+        } else if !context.text.isEmpty {
             parts.append("On their screen\(app):\n<screen>\n\(context.text.prefix(screenLimit))\n</screen>")
         } else if !app.isEmpty {
             parts.append("They are\(app).")
@@ -224,6 +250,13 @@ enum WritePrompt {
         parts.append("Their instruction, said out loud (do not repeat it, carry it out):\n<instruction>\n\(ask)\n</instruction>")
         parts.append("Now write the text they asked for, ready to go in the box, and nothing else.")
         return parts.joined(separator: "\n\n")
+    }
+
+    /// `text` cut to `limit` characters: the start and the end kept, the middle left out.
+    static func headAndTail(_ text: String, limit: Int) -> String {
+        guard text.count > limit else { return text }
+        let head = Int(Double(limit) * pageHeadShare)
+        return text.prefix(head) + "\n[…]\n" + text.suffix(limit - head)
     }
 
     /// Models sometimes wrap the whole reply in quotation marks despite being told not to.
@@ -387,7 +420,7 @@ struct CloudWriter: WritingEngine {
             user: WritePrompt.user(
                 ask: ask, context: context,
                 screenLimit: context.ticket == nil ? limits.screen : limits.screenBesideTicket,
-                ticketLimit: limits.ticket),
+                ticketLimit: limits.ticket, pageLimit: limits.page),
             jpeg: credentials.provider == .anthropic ? context.jpeg : nil,
             maxTokens: 1_500,
             temperature: 0.4,

@@ -28,11 +28,12 @@ import Foundation
 /// `runs.jsonl`, rewording included, for as long as they are still recognisably the
 /// dictation (`dictatedText`). That part runs whether or not learning is on.
 ///
-/// Reading a field back is only possible where the app exposes its value through
-/// Accessibility. Apple's own apps do; Electron and browsers mostly do not, and there the
-/// learner simply never fires and the transcript stays as it was typed. It never reads
-/// anything except the one field it just typed into, and it stops when the window closes
-/// or the field can no longer be read.
+/// Reading a field back needs the app to expose its value. Apple's own apps do, through
+/// Accessibility. Browsers don't, so there SigmaFlow's extension reads the box instead
+/// (`BrowserField`, docs/mockups/browser-extension.html, 12 Nov 2026). Electron apps mostly
+/// do neither, and there the learner simply never fires and the transcript stays as it was
+/// typed. It never reads anything except the one field it just typed into, and it stops
+/// when the window closes or the field can no longer be read.
 @MainActor
 final class CorrectionLearner {
     static let shared = CorrectionLearner()
@@ -62,11 +63,18 @@ final class CorrectionLearner {
     /// Starts watching `element` for an edit to `inserted`. Any previous watch is dropped.
     /// An edit updates the saved run `run`, and, when `learn` is on, may offer a rule.
     func watch(_ element: AXUIElement, inserted: String, run: UUID?, learn: Bool) {
+        watch(AccessibilityField(element), inserted: inserted, run: run, learn: learn)
+    }
+
+    /// The same, for any field that can be read again and again: a browser's text box,
+    /// through SigmaFlow's extension.
+    func watch(_ field: any WatchedField, inserted: String, run: UUID?, learn: Bool) {
         stop()
         let insertedWords = LearnedCorrection.words(of: inserted)
         guard !insertedWords.isEmpty, run != nil || learn else { return }
 
         watchTask = Task { @MainActor [weak self] in
+            defer { field.stop() }
             guard let self else { return }
             // Let the target app finish laying the text in before reading the baseline.
             try? await Task.sleep(for: .milliseconds(400))
@@ -74,7 +82,7 @@ final class CorrectionLearner {
             // Autocorrect or smart quotes may have touched the tail; the opening words are
             // enough to prove the text landed in this field.
             let opening = insertedWords.prefix(4).joined(separator: " ")
-            guard let baseline = TextInjector.stringValue(of: element),
+            guard let baseline = await field.read(),
                   baseline.count <= maxLength,
                   baseline.localizedCaseInsensitiveContains(opening)
             else {
@@ -98,7 +106,7 @@ final class CorrectionLearner {
                     if place == nil { return }
                 }
                 try? await Task.sleep(for: .milliseconds(400))
-                guard let current = TextInjector.stringValue(of: element) else { return }
+                guard !Task.isCancelled, let current = await field.read() else { return }
                 if current != last {
                     last = current
                     changedAt = Date()
@@ -265,4 +273,57 @@ final class CorrectionLearner {
 
     // The diff and the test for whether a change looks like a mishearing at all live in
     // `LearnedCorrection`, in the platform-neutral dictionary target, so CI can gate them.
+}
+
+/// A text box the learner reads again and again until it stops watching.
+@MainActor
+protocol WatchedField: AnyObject {
+    /// What the box holds now; nil once it can't be read (closed, gone, not exposed).
+    func read() async -> String?
+    /// The watch is over.
+    func stop()
+}
+
+/// A field in an app that shows its text to Accessibility.
+@MainActor
+final class AccessibilityField: WatchedField {
+    private let element: AXUIElement
+
+    init(_ element: AXUIElement) { self.element = element }
+
+    func read() async -> String? { TextInjector.stringValue(of: element) }
+    func stop() {}
+}
+
+/// The box in the browser in front that SigmaFlow just typed into, read by its extension.
+/// The first read is the page remembering that box; every later one reads that same box,
+/// wherever the focus has gone since, as an Accessibility element would be.
+@MainActor
+final class BrowserField: WatchedField {
+    private let browser: KnownBrowser
+    private var token: String?
+    private var gone = false
+
+    init(_ browser: KnownBrowser) { self.browser = browser }
+
+    func read() async -> String? {
+        guard !gone else { return nil }
+        if let token {
+            let text = await BrowserBridge.shared.readField(token)
+            if text == nil { gone = true }
+            return text
+        }
+        guard let (token, text) = await BrowserBridge.shared.watchField(in: browser) else {
+            gone = true
+            return nil
+        }
+        self.token = token
+        return text
+    }
+
+    func stop() {
+        gone = true
+        if let token { BrowserBridge.shared.forgetField(token) }
+        token = nil
+    }
 }

@@ -19,6 +19,7 @@ struct SettingsPage: View {
 
     // Connections
     @State private var claude = ClaudeConnection.shared
+    @State private var bridge = BrowserBridge.shared
 
     // Your data
     @State private var library = MeetingLibrary.shared
@@ -66,7 +67,9 @@ struct SettingsPage: View {
         } content: {
             switch tab.wrappedValue {
             case .dictation: dictationCard
-            case .connections: connectionsCard
+            case .connections:
+                connectionsCard
+                browserSection
             case .data:
                 folderCard
                 dataCard
@@ -395,6 +398,54 @@ struct SettingsPage: View {
         } footer: {
             CardFooter(hint: "Connected apps read your dictation history on this Mac. Nothing leaves it.") { EmptyView() }
         }
+    }
+
+    /// Your browser (docs/mockups/browser-extension.html, 01): each browser on this Mac with
+    /// its own Add. The row turns to Connected by itself once the extension says hello.
+    @ViewBuilder
+    private var browserSection: some View {
+        let browsers = KnownBrowser.all.filter(\.isInstalled)
+        if !browsers.isEmpty {
+            VStack(alignment: .leading, spacing: DS.Space.eyebrowGap) {
+                Eyebrow("Your browser")
+                Card {
+                    ForEach(Array(browsers.enumerated()), id: \.element.id) { index, browser in
+                        browserRow(browser, isLast: index == browsers.count - 1)
+                    }
+                } footer: {
+                    CardFooter(hint: "What you write on websites goes to SigmaFlow on this Mac, and nowhere else.") { EmptyView() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func browserRow(_ browser: KnownBrowser, isLast: Bool) -> some View {
+        let isDefault = browser.id.caseInsensitiveCompare(Self.defaultBrowser ?? "") == .orderedSame
+        if bridge.isConnected(browser) {
+            CardRow(browser.name, caption: "Learning from your fixes, and Autowrite reads the whole conversation.",
+                    data: "Connected", isLast: isLast, icon: browser.icon) {
+                AppButton(title: "Remove", kind: .secondary, icon: "close") { bridge.remove(browser) }
+            }
+        } else if bridge.waiting.contains(browser.id) {
+            CardRow(browser.name, caption: "In \(browser.name)’s Extensions page, turn on Developer mode, then drag the Browser Extension folder onto it.",
+                    isLast: isLast, icon: browser.icon) {
+                AppButton(title: "Show again", kind: .secondary) { bridge.add(browser) }
+            }
+        } else {
+            CardRow(browser.name,
+                    caption: isDefault ? "SigmaFlow learns from your fixes on websites too, and Autowrite reads the whole conversation." : nil,
+                    isLast: isLast, icon: browser.icon) {
+                AppButton(title: "Add to \(browser.name)", kind: isDefault ? .inverted : .secondary, icon: "add") { bridge.add(browser) }
+            }
+        }
+    }
+
+    /// The browser links open in, by bundle identifier.
+    private static var defaultBrowser: String? {
+        guard let web = URL(string: "https://example.com"),
+              let app = NSWorkspace.shared.urlForApplication(toOpen: web) else { return nil }
+        return Bundle(url: app)?.bundleIdentifier
     }
 
     private var claudeCaption: String? {

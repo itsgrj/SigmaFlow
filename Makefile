@@ -1,5 +1,6 @@
 EXEC     := SigmaFlow
 MCPEXEC  := SigmaFlowMCP
+HOSTEXEC := SigmaFlowBrowserHost
 CONFIG   := debug
 
 ## Build products live OUTSIDE this directory, for the same reason the .app does.
@@ -11,6 +12,7 @@ CONFIG   := debug
 SCRATCH  := $(HOME)/Library/Caches/SigmaFlowBuild/scratch
 BUILD    := $(SCRATCH)/$(CONFIG)/$(EXEC)
 MCPBUILD := $(SCRATCH)/$(CONFIG)/$(MCPEXEC)
+HOSTBUILD := $(SCRATCH)/$(CONFIG)/$(HOSTEXEC)
 ## The MediaRemote bridge /usr/bin/perl loads for "pause media while recording".
 MEDIAHOST  := libSigmaFlowMediaHost.dylib
 MEDIABUILD := $(SCRATCH)/$(CONFIG)/$(MEDIAHOST)
@@ -61,6 +63,9 @@ app: build
 	@# The MCP helper Claude Desktop launches. In MacOS/ so codesign covers it as
 	@# nested code rather than treating it as a stray resource.
 	@if [ -f $(MCPBUILD) ]; then cp $(MCPBUILD) "$(CONTENTS)/MacOS/sigmaflow-mcp"; fi
+	@# The helper a browser starts for SigmaFlow's extension (Sources/SigmaFlowBrowserHost),
+	@# named in the manifest Support/BrowserBridge.swift writes into each browser.
+	@if [ -f $(HOSTBUILD) ]; then cp $(HOSTBUILD) "$(CONTENTS)/MacOS/sigmaflow-browser"; fi
 	@# The MediaRemote bridge, loaded by /usr/bin/perl rather than by the app — see
 	@# Sources/SigmaFlowMediaHost/MediaHost.c. Missing file = pause-media silently off.
 	@if [ -f $(MEDIABUILD) ]; then \
@@ -91,6 +96,9 @@ app: build
 	@# The language check for Tamil meetings: SpeechBrain VoxLingua107 ECAPA (Apache 2.0) as
 	@# CoreML, compiled by the app on first use (Sources/SigmaFlow/Meetings/LanguageCheck.swift).
 	@if [ -d Resources/LanguageCheck ]; then cp -R Resources/LanguageCheck "$(CONTENTS)/Resources/LanguageCheck"; fi
+	@# The browser extension (BrowserExtension/), copied out by Settings, Connections, Add, for
+	@# the browser to load until it is on the Chrome Web Store.
+	@if [ -d BrowserExtension ]; then cp -R BrowserExtension "$(CONTENTS)/Resources/BrowserExtension"; fi
 	@printf 'APPL????' > "$(CONTENTS)/PkgInfo"
 	@# Belt and braces: the staging dir isn't synced, but the copied binary can still carry
 	@# xattrs inherited from the synced .build directory.
@@ -102,6 +110,10 @@ app: build
 	@if [ -f "$(CONTENTS)/MacOS/sigmaflow-mcp" ]; then \
 		codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none \
 			"$(CONTENTS)/MacOS/sigmaflow-mcp"; \
+	fi
+	@if [ -f "$(CONTENTS)/MacOS/sigmaflow-browser" ]; then \
+		codesign --force --sign "$(SIGN_ID)" --options runtime --timestamp=none \
+			"$(CONTENTS)/MacOS/sigmaflow-browser"; \
 	fi
 	@if [ -f "$(CONTENTS)/Frameworks/$(MEDIAHOST)" ]; then \
 		codesign --force --sign "$(SIGN_ID)" --timestamp=none \
