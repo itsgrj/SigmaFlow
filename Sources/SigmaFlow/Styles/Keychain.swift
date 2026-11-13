@@ -37,6 +37,15 @@ enum Keychain {
         set { store(newValue, account: zohoMCPAccount) }
     }
 
+    /// An MCP server's sign-in, its registration and tokens as JSON, one item per server host.
+    static func mcpSignIn(for host: String) -> String? {
+        read("mcp-sign-in:\(host)")
+    }
+
+    static func setMCPSignIn(_ value: String?, for host: String) {
+        store(value, account: "mcp-sign-in:\(host)")
+    }
+
     static var hasAnthropicKey: Bool {
         guard let key = read(keyAccount) else { return false }
         return !key.isEmpty

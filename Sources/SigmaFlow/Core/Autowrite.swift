@@ -487,6 +487,8 @@ enum WriteCheck {
     }
 
     private static func write(_ ask: String, context: ScreenContext, choice: StyleEngineChoice?) async throws {
+        // `print` is buffered and the writing below is not; without this the headings land after it.
+        fflush(stdout)
         let started = Date()
         let engine = try WriteEngines.current(choice)
         var shown = ""
@@ -510,7 +512,7 @@ enum WriteCheck {
             throw CheckError("Save your Zoho MCP server URL first:\n  security add-generic-password -s com.grj.sigmaflow -a zoho-mcp-url -U -w")
         }
         guard let ref = DeskReader.Reference(reference) else { throw CheckError("Not a ticket number, id or Desk link: \(reference)") }
-        let client = MCPClient(url: url)
+        let client = MCPClient(url: url, mayOpenSignIn: true, scopes: DeskReader.scopes)
         let limit = switch choice ?? Settings.shared.styleEngine {
         case .apple: WritePrompt.appleTicketLimit
         case .local: LocalModels.saved?.server.kind == .ollama ? WritePrompt.Limits.ollama.ticket : WritePrompt.appleTicketLimit
@@ -520,11 +522,12 @@ enum WriteCheck {
         func read(_ detail: DeskReader.Detail) async throws -> DeskTicket {
             let started = Date()
             let ticket = try await DeskReader.read(ref, detail: detail, client: client)
-            let whole = ticket.text(limit: .max).count, sent = ticket.text(limit: limit).count
-            let emails = ticket.entries.filter { $0.kind == .email }.count
-            let notes = ticket.entries.count - emails
-            print("[Read #\(ticket.number) in \(String(format: "%.1f", Date().timeIntervalSince(started))) s: \(emails) emails, \(notes) notes; "
-                + "\(sent) characters, about \(sent / 4) tokens" + (whole > sent ? ", oldest \(whole - sent) characters left out to fit" : "") + "]")
+            let whole: Int = ticket.text(limit: Int.max).count
+            let sent: Int = ticket.text(limit: limit).count
+            let emails: Int = ticket.entries.filter { $0.kind == DeskTicket.Entry.Kind.email }.count
+            let seconds = String(format: "%.1f", Date().timeIntervalSince(started))
+            let leftOut = whole > sent ? ", oldest \(whole - sent) characters left out to fit" : ""
+            print("[Read #\(ticket.number) in \(seconds) s: \(emails) emails, \(ticket.entries.count - emails) notes; \(sent) characters, about \(sent / 4) tokens\(leftOut)]")
             return ticket
         }
 

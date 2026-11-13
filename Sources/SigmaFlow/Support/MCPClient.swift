@@ -30,15 +30,22 @@ actor MCPClient {
 
     private let url: URL
     private let timeout: TimeInterval
+    private let signIn: MCPSignIn
+    private let mayOpenSignIn: Bool
     private var session: String?
     private var negotiatedVersion: String?
     private var started = false
     private var nextID = 0
     private var tools: [String]?
 
-    init(url: URL, timeout: TimeInterval = 20) {
+    /// `mayOpenSignIn` lets a refused request open the server's sign-in page in the browser;
+    /// without it a missing sign-in is an error, so nothing pops up in the middle of writing.
+    /// `scopes` picks what to ask for from the scopes the server offers.
+    init(url: URL, mayOpenSignIn: Bool, scopes: @escaping @Sendable (String) -> Bool, timeout: TimeInterval = 20) {
         self.url = url
         self.timeout = timeout
+        self.mayOpenSignIn = mayOpenSignIn
+        signIn = MCPSignIn(server: url, scopeFilter: scopes)
     }
 
     /// The names of the server's tools, asked for once per client.
@@ -89,18 +96,35 @@ actor MCPClient {
 
     /// Posts one message. With an `id`, waits for the response that carries it, whether it
     /// comes back as JSON or inside an event stream; a notification expects nothing.
+    /// A refused token (401) is renewed, or signed in again, once, and the message sent again.
     @discardableResult
     private func post(_ body: [String: any Sendable], expecting id: Int?) async throws -> [String: Any]? {
-        var request = URLRequest(url: url, timeoutInterval: timeout)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "content-type")
-        request.setValue("application/json, text/event-stream", forHTTPHeaderField: "accept")
-        if let session { request.setValue(session, forHTTPHeaderField: "mcp-session-id") }
-        if let negotiatedVersion { request.setValue(negotiatedVersion, forHTTPHeaderField: "mcp-protocol-version") }
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let payload = try JSONSerialization.data(withJSONObject: body)
+        var token = await signIn.currentToken()
+        var renewed = false
+        while true {
+            var request = URLRequest(url: url, timeoutInterval: timeout)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "content-type")
+            request.setValue("application/json, text/event-stream", forHTTPHeaderField: "accept")
+            if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
+            if let session { request.setValue(session, forHTTPHeaderField: "mcp-session-id") }
+            if let negotiatedVersion { request.setValue(negotiatedVersion, forHTTPHeaderField: "mcp-protocol-version") }
+            request.httpBody = payload
 
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
-        guard let http = response as? HTTPURLResponse else { throw Failure.noAnswer }
+            let (bytes, response) = try await URLSession.shared.bytes(for: request)
+            guard let http = response as? HTTPURLResponse else { throw Failure.noAnswer }
+            if http.statusCode == 401, !renewed {
+                renewed = true
+                token = try await signIn.renew(
+                    challenge: http.value(forHTTPHeaderField: "www-authenticate"), interactive: mayOpenSignIn)
+                continue
+            }
+            return try await answer(bytes, http, expecting: id)
+        }
+    }
+
+    private func answer(_ bytes: URLSession.AsyncBytes, _ http: HTTPURLResponse, expecting id: Int?) async throws -> [String: Any]? {
         if let given = http.value(forHTTPHeaderField: "mcp-session-id") { session = given }
         guard (200..<300).contains(http.statusCode) else { throw Failure.http(http.statusCode) }
         guard let id else { return nil }

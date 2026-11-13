@@ -158,6 +158,9 @@ enum DeskReader {
         }
     }
 
+    /// What to ask for when signing in: Zoho Desk, and only to read.
+    static let scopes: @Sendable (String) -> Bool = { $0.hasPrefix("desk.") && $0.hasSuffix(".read") }
+
     private static let conversationPage = 200
     private static let parallelReads = 6
 
