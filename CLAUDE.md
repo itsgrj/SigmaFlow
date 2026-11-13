@@ -856,6 +856,11 @@ extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser
   Until it is on the store (`BrowserBridge.storeURL` nil), Add copies the extension to
   `Application Support/SigmaFlow/Browser Extension`, shows it in Finder and opens the browser's
   extensions page; it is dragged in with Developer mode on.
+- **The store upload** is `make extension-zip` (the manifest without its `key`, which the store
+  refuses), `FIRST=1` once for the first upload only (key.pem at the zip's root); every field
+  the dashboard asks for is in [docs/chrome-web-store.md](docs/chrome-web-store.md), the policy
+  in [PRIVACY.md](PRIVACY.md). Raise the manifest's `version` for each update. The zip is written
+  to the build cache, never the repo.
 - **Every site from the start (04)**: `<all_urls>`, one install warning. Content scripts are
   never told to do anything by the page; the background calls `globalThis.sigmaflow` through
   `chrome.scripting` only when the app asks. Password inputs never count. A site switched off in
