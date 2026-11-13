@@ -41,7 +41,7 @@ ifeq ($(strip $(SIGN_ID)),)
 SIGN_ID := -
 endif
 
-.PHONY: all build app run install clean dmg release sparkle-tools
+.PHONY: all build app run install clean dmg release sparkle-tools extension-zip
 
 all: app
 
@@ -175,6 +175,22 @@ SPARKLE_VERSION := 2.10.1
 SPARKLE_SHA256  := 1a856d2a9edb8e628de88121d7be04cf0e2167f8641650b78fca00b14244cf27
 SPARKLE_HOME    := $(STAGE)/sparkle-$(SPARKLE_VERSION)
 SPARKLE_TOOLS   := $(SPARKLE_HOME)/bin
+
+## The browser extension as the Chrome Web Store takes it, outside the repo. The store
+## refuses the manifest's `key`, so it is left out. `make extension-zip FIRST=1` is for the
+## first upload only: it adds the private key as key.pem, which is how the store keeps the
+## ID the app's helper manifest names (gcaepogaaolbllpamlfmbdnliikmmgfj). Never commit it.
+EXTKEY := $(HOME)/.config/sigmaflow/browser-extension-key.pem
+extension-zip:
+	@rm -rf "$(STAGE)/extension" "$(STAGE)/SigmaFlow-extension.zip"
+	@mkdir -p "$(STAGE)"
+	@cp -R BrowserExtension "$(STAGE)/extension"
+	@python3 -I -c 'import json,sys; p=sys.argv[1]; m=json.load(open(p)); m.pop("key",None); json.dump(m,open(p,"w"),indent=2,ensure_ascii=False)' "$(STAGE)/extension/manifest.json"
+	@if [ "$(FIRST)" = 1 ]; then cp "$(EXTKEY)" "$(STAGE)/extension/key.pem"; fi
+	@find "$(STAGE)/extension" -name .DS_Store -delete
+	@cd "$(STAGE)/extension" && zip -qr -X ../SigmaFlow-extension.zip .
+	@rm -rf "$(STAGE)/extension"
+	@echo "wrote $(STAGE)/SigmaFlow-extension.zip$(if $(filter 1,$(FIRST)), (with key.pem: first upload only),)"
 
 sparkle-tools:
 	@if [ ! -x "$(SPARKLE_TOOLS)/sign_update" ]; then \
