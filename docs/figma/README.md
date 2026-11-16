@@ -42,6 +42,16 @@ in Geist with the file's tracking, since scripts can't load Pixel. The Button co
 kind keeps a swapped icon white; the Add buttons here set theirs to ink/on-inverted by hand. O6 is
 still titled Write for me; O8.4 is the Autowrite overlay as built.
 
+On 16 Nov 2026 spelling fixes in the browser were drawn (docs/mockups/browser-autocorrect.html, picks
+02 04 06 08). Overlays O8.6, at the right of O8, is the reply box on someone else's page with the faint
+dotted line (1.5 px, #8a8a8a) under the word just fixed, the 2 s the extension draws it. Screens 9.18
+and 9.19 have Fix my spelling as I type, with its Toggle, as the Your browser card's last row before the
+footer, and 9.18's connected Dia row names spelling first. The component set Browser toolbar card has a
+Spelling row (On every site in Dia, switch on) under the site row in State=On and State=Off, none in Not
+open, and the site row's line reads "Fixes your spelling, learns from your fixes, and Autowrite reads the
+page." wherever its switch is on. 08 (a kept word into the Dictionary, tagged LEARNED) is not drawn: the
+Dictionary screens have no LEARNED row to follow.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,

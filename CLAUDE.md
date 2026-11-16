@@ -891,6 +891,29 @@ extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser
   in Gokul's own browser (it did once, 12 Nov 2026, his inbox in Dia). Tested
   12 Nov 2026 against headless Chrome 147 with the extension loaded over the DevTools pipe
   (`Extensions.loadUnpacked`; branded Chrome ignores `--load-extension`).
+- **Spelling fixed as you type** (16 Nov 2026, [docs/mockups/browser-autocorrect.html](docs/mockups/browser-autocorrect.html),
+  picks 02 04 06 08; Figma O8.6, 9.18, 9.19, Browser toolbar card). The one thing the extension
+  starts by itself: a word finished with a space or punctuation goes, with up to 120 characters
+  before it, content.js to background to `spell.check` to `TypingFixes` (Support/TypingFixes.swift),
+  which answers `spell.fix` with the Mac's own `NSSpellChecker.correction(forWordRange:)`, the call
+  behind macOS's "Correct spelling automatically" (about 2 ms warm). The SigmaFlow dictionary sits on
+  top: a word in it is right as typed, and a one-word rule is the fix only for a word the Mac also
+  finds wrong. Never touched: all capitals, camelCase, digits, addresses and emails, non-Latin script,
+  email and url inputs, code editors and `spellcheck=false`, and Google Docs, Figma and the hosted code
+  editors (`noFixHosts`). The fix goes in with `execCommand("insertText")`, so the page's editor hears
+  it and ⌘Z undoes it, and is dropped if the text before the cursor changed meanwhile. A dotted line
+  sits under it for 2 s (02). **Delete straight after** (keydown, window capture, before any editor)
+  puts the word back with the space and sends `spell.kept`: a LEARNED term in the Dictionary (08), or,
+  with learning off, remembered until quit. `Settings.fixSpellingAsYouType`, on by default and
+  exported, is one value shown on Settings, Connections (04) and in the toolbar card (06,
+  `settings.set`); the app pushes `settings` at hello and on every change, and the extension sends
+  nothing until it has heard them. Nothing typed is logged. `SigmaFlow --typing-check "TEXT" ...`
+  prints the fix for each text's last word. Tested 16 Nov 2026 against headless Chrome 147 (text
+  area, contenteditable, email input, `<pre>`, ⌘Z, the card's switch).
+- **The extension reloads itself after an app update** (from 1.1.0): until it is on the store, a
+  browser runs the copy `start()` refreshes in `Browser Extension/`, and never reloads it by itself,
+  so an older extension saying hello is sent `reload` once per launch. 1.0.0 doesn't know it; that
+  one copy is reloaded by hand on the browser's extensions page.
 - Safari needs an app extension built in Xcode; Firefox needs its own manifest. Neither is done.
 - **In Figma** (13 Nov 2026): Screens 9.18 and 9.19 (Connections, Your browser), Overlays O8
   (the one-time card, the toolbar card in three states, Autowrite with the scan corners) and the

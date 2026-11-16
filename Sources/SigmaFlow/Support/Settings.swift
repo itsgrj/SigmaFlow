@@ -150,6 +150,16 @@ final class Settings {
         didSet { defaults.set(learnFromCorrections, forKey: Keys.learnFromCorrections) }
     }
 
+    /// In a browser with SigmaFlow's extension, a misspelled word is fixed the moment you
+    /// finish it (docs/mockups/browser-autocorrect.html, 16 Nov 2026). On by default; switched
+    /// on Settings, Connections and in the extension's toolbar card, which share this one value.
+    var fixSpellingAsYouType: Bool {
+        didSet {
+            defaults.set(fixSpellingAsYouType, forKey: Keys.fixSpellingAsYouType)
+            if fixSpellingAsYouType != oldValue { BrowserBridge.shared.sendSettings() }
+        }
+    }
+
     /// Browsers whose extension was taken away on Settings, Connections (Remove), by bundle
     /// identifier: SigmaFlow writes no helper manifest there and never asks about them.
     var browsersRemoved: [String] {
@@ -197,7 +207,7 @@ final class Settings {
     private static let portableKeys = [
         Keys.pushToTalkKey, Keys.customHotkey, Keys.activeModel, Keys.overlayMode,
         Keys.cleanupEnabled, Keys.smartCleanup, Keys.soundEnabled,
-        Keys.startSound, Keys.stopSound, Keys.pauseMedia, Keys.styleEngine, Keys.learnFromCorrections,
+        Keys.startSound, Keys.stopSound, Keys.pauseMedia, Keys.styleEngine, Keys.learnFromCorrections, Keys.fixSpellingAsYouType,
         Keys.defaultStyle, Keys.powerMode, Keys.askToRecordCalls, Keys.recordVideo, Keys.autowriteInstructions,
         LocalModels.Keys.kind, LocalModels.Keys.address, LocalModels.Keys.model,
     ]
@@ -259,6 +269,7 @@ final class Settings {
         localModelName = defaults.string(forKey: LocalModels.Keys.model) ?? localModelName
         defaultStyle = DefaultStyle(rawValue: defaults.string(forKey: Keys.defaultStyle) ?? "") ?? defaultStyle
         learnFromCorrections = defaults.object(forKey: Keys.learnFromCorrections) as? Bool ?? learnFromCorrections
+        fixSpellingAsYouType = defaults.object(forKey: Keys.fixSpellingAsYouType) as? Bool ?? fixSpellingAsYouType
     }
 
     private enum Keys {
@@ -281,6 +292,7 @@ final class Settings {
         static let startSound = "startSound"
         static let stopSound = "stopSound"
         static let learnFromCorrections = "learnFromCorrections"
+        static let fixSpellingAsYouType = "fixSpellingAsYouType"
         static let sigmaFlowFolderBookmark = "sigmaFlowFolderBookmark"
         static let sigmaFlowFolderPath = "sigmaFlowFolderPath"
         static let lastPage = "lastPage"
@@ -342,6 +354,7 @@ final class Settings {
         stopSound = defaults.string(forKey: Keys.stopSound) ?? "Pop"
         pauseMediaWhileRecording = defaults.object(forKey: Keys.pauseMedia) as? Bool ?? true
         learnFromCorrections = defaults.object(forKey: Keys.learnFromCorrections) as? Bool ?? true
+        fixSpellingAsYouType = defaults.object(forKey: Keys.fixSpellingAsYouType) as? Bool ?? true
         lastPage = defaults.string(forKey: Keys.lastPage) ?? ""
         browsersRemoved = defaults.stringArray(forKey: Keys.browsersRemoved) ?? []
         browsersAsked = defaults.stringArray(forKey: Keys.browsersAsked) ?? []

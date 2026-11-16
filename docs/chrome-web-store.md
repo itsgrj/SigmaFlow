@@ -13,12 +13,16 @@ Settings opens the store in place of the Developer mode steps.
 **Name:** SigmaFlow
 
 **Summary** (132 characters at most, the manifest's description):
-Learns from your fixes on websites, and lets Autowrite read the whole conversation. Works with SigmaFlow on your Mac.
+Fixes typos as you type, learns from your fixes, and lets Autowrite read the whole conversation. Works with SigmaFlow on your Mac.
 
 **Description:**
 
 SigmaFlow types what you say, anywhere on your Mac. This extension makes it just as good in
 your browser.
+
+Fixes typos as you type. Finish a word with a typo and it is fixed before your next letter,
+using your Mac's own spelling and your SigmaFlow dictionary. Press Delete right after to keep
+your word, and it is never changed again.
 
 Learns from your fixes. When you correct a word SigmaFlow got wrong in Gmail, a chat or a help
 desk, SigmaFlow remembers it, and gets it right next time. Your saved dictation keeps the words
@@ -44,13 +48,17 @@ nothing over the internet: what it reads goes to SigmaFlow on your Mac.
 ## Privacy tab
 
 **Single purpose:**
-Gives the SigmaFlow Mac app the text box it just typed into and, while the Autowrite key is
-held, the words of the page, so it can learn from corrections and write replies that fit.
+Helps you write on websites with the SigmaFlow Mac app: it fixes typos as you type, gives the
+app the text box it just typed into so it can learn from corrections, and, while the Autowrite
+key is held, the words of the page so it can write replies that fit.
 
 **Permission justifications:**
 
 - `nativeMessaging`: the only way the extension talks to the SigmaFlow app on the same Mac.
   Nothing it reads leaves through any other route.
+- Content script on every page: notices when a word is finished in a text box and sends that
+  one word, with the few words before it, to the SigmaFlow app, which answers with a spelling
+  fix or nothing. Nothing typed is kept.
 - `scripting`: reads the focused text box after SigmaFlow types into it, and the page's words
   while the Autowrite key is held, only when the SigmaFlow app asks.
 - `storage`: keeps the list of sites the person switched the extension off for.
@@ -61,8 +69,9 @@ held, the words of the page, so it can learn from corrections and write replies 
 
 **Remote code:** No, I am not using remote code.
 
-**Data usage:** Website content (the text box SigmaFlow typed into, and the page's words for
-Autowrite). Not sold to third parties; not used or transferred for purposes unrelated to the
+**Data usage:** Website content (each word as you finish typing it, with the few words before
+it, for a spelling fix; the text box SigmaFlow typed into; and the page's words for Autowrite).
+All of it goes only to the SigmaFlow app on the same Mac. Not sold to third parties; not used or transferred for purposes unrelated to the
 single purpose; not used to determine creditworthiness or for lending.
 
 **Privacy policy:** https://github.com/itsgrj/SigmaFlow/blob/main/PRIVACY.md

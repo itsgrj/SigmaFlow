@@ -8,14 +8,28 @@
 //   field.read   that box's text now
 //   field.forget the learner has stopped watching
 //   page.read    the page's words, for Autowrite, while its key is held
+//   settings     whether to fix spelling as you type, and this browser's name
+//   reload       SigmaFlow brought a newer copy of this extension
+//
+// And the page asks, through this, one thing (docs/mockups/browser-autocorrect.html):
+//
+//   spell.check  the word just typed and the words before it; SigmaFlow answers spell.fix
+//   spell.kept   a fix taken back with Delete, so SigmaFlow keeps the word
 //
 // Every answer goes back down the same port and nowhere else. A site switched off in the
-// toolbar card (pick 07) answers nothing.
+// toolbar card (pick 07) answers nothing and asks nothing.
 
 const HOST = "com.grj.sigmaflow";
 
 let port = null;
 let appConnected = false;
+// From SigmaFlow's `settings`: off until it says, so nothing is sent before it has.
+let fixSpelling = false;
+let browserName = "";
+// spell.check id -> its answer's resolve.
+const spellAsked = new Map();
+let spellCount = 0;
+const spellWait = 400;
 // token -> { tabId, frameId } for the box each watch began on.
 const watched = new Map();
 
@@ -31,6 +45,7 @@ function connect() {
   port.onDisconnect.addListener(() => {
     port = null;
     appConnected = false;
+    fixSpelling = false;
     void chrome.runtime.lastError;
   });
 }
@@ -45,6 +60,22 @@ async function onMessage(message) {
     // From the helper: whether SigmaFlow itself is running and listening.
     appConnected = !!message.app;
     if (appConnected) send({ type: "hello", version: chrome.runtime.getManifest().version });
+    else fixSpelling = false;
+    return;
+  }
+  if (message.type === "settings") {
+    fixSpelling = !!message.fixSpelling;
+    browserName = typeof message.browser === "string" ? message.browser : "";
+    return;
+  }
+  if (message.type === "spell.fix") {
+    const resolve = spellAsked.get(message.id);
+    spellAsked.delete(message.id);
+    if (resolve) resolve(typeof message.fix === "string" ? message.fix : null);
+    return;
+  }
+  if (message.type === "reload") {
+    chrome.runtime.reload();
     return;
   }
   const id = message.id;
@@ -176,13 +207,70 @@ async function readPage() {
   return { ok: true, host, title: (top && top.value.title) || tab.title || "", text };
 }
 
+// MARK: Fixing spelling as you type
+
+// Sites with editors of their own, where a word put in from outside goes wrong: Google Docs,
+// Sheets and Slides (their own autocorrect too), Figma, and code editors.
+const noFixHosts = [
+  "docs.google.com", "figma.com", "vscode.dev", "github.dev", "codesandbox.io", "stackblitz.com",
+  "replit.com", "codepen.io", "colab.research.google.com",
+];
+
+function isNoFixHost(host) {
+  return noFixHosts.some((h) => host === h || host.endsWith("." + h));
+}
+
+async function spellCheck(message, sender) {
+  if (!port || !appConnected || !fixSpelling) return {};
+  const host = sender.tab && hostOf(sender.tab.url || "");
+  if (!host || isNoFixHost(host) || await isOff(host)) return {};
+  const word = String(message.word || "").slice(0, 40);
+  const text = String(message.text || "").slice(-200);
+  if (!word) return {};
+  const id = `spell-${++spellCount}`;
+  const fix = await new Promise((resolve) => {
+    spellAsked.set(id, resolve);
+    send({ type: "spell.check", id, word, text: text + word });
+    setTimeout(() => {
+      if (spellAsked.delete(id)) resolve(null);
+    }, spellWait);
+  });
+  return fix ? { fix } : {};
+}
+
+async function spellKept(message, sender) {
+  if (!port || !appConnected || !fixSpelling) return;
+  const host = sender.tab && hostOf(sender.tab.url || "");
+  if (!host || await isOff(host)) return;
+  const word = String(message.word || "").slice(0, 40);
+  if (word) send({ type: "spell.kept", word });
+}
+
 // MARK: The toolbar card
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
   if (!message || sender.id !== chrome.runtime.id) return false;
+  if (message.type === "spell.check") {
+    spellCheck(message, sender).then(reply, () => reply({}));
+    return true;
+  }
+  if (message.type === "spell.kept") {
+    spellKept(message, sender).catch(() => {});
+    reply({});
+    return false;
+  }
   if (message.type === "status") {
     connect();
-    reply({ app: appConnected });
+    reply({ app: appConnected, fixSpelling, browser: browserName });
+    return false;
+  }
+  if (message.type === "fixSpelling.set") {
+    // The toolbar card's switch (pick 06): the same setting as SigmaFlow's Settings.
+    if (port && appConnected) {
+      fixSpelling = !!message.on;
+      send({ type: "settings.set", fixSpelling });
+    }
+    reply({ fixSpelling });
     return false;
   }
   if (message.type === "openApp") {

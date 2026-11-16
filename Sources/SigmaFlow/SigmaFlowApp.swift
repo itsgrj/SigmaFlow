@@ -79,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if SearchCheck.runIfRequested() { return }
         if WriteCheck.runIfRequested() { return }
         if BrowserCheck.runIfRequested() { return }
+        if TypingCheck.runIfRequested() { return }
         if ReadmeFrames.runIfRequested(controller: controller) { return }
 
         // A regular app now: dock icon, app menu, standard windows. The HUD is still a

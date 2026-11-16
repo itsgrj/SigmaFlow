@@ -9,7 +9,9 @@ import SwiftUI
 // the web or a help desk the correction learner never fired, and Autowrite only had a
 // screenshot to read. A Chromium extension (BrowserExtension/) does both from inside the page:
 // the text of the box SigmaFlow just typed into, and the page's words while the Autowrite key
-// is held. Nothing else, and nothing leaves this Mac.
+// is held. Since 16 Nov 2026 also the word you just typed, for a spelling fix
+// (Support/TypingFixes.swift, docs/mockups/browser-autocorrect.html). Nothing else, and
+// nothing leaves this Mac.
 //
 //   extension  <- native messaging ->  sigmaflow-browser  <- unix socket ->  this file
 //
@@ -117,6 +119,7 @@ final class BrowserBridge {
             writeManifest(for: browser)
         }
         if FileManager.default.fileExists(atPath: Self.extensionFolder.path) { copyExtension() }
+        TypingFixes.warm()
     }
 
     func isAdded(_ browser: KnownBrowser) -> Bool {
@@ -321,12 +324,69 @@ final class BrowserBridge {
             guard let id = peers[connection] else { return }
             connected.insert(id)
             waiting.remove(id)
-            Log.app.info("browser: extension \(message["version"] as? String ?? "?", privacy: .public) connected in \(id, privacy: .public)")
+            let version = message["version"] as? String ?? "?"
+            Log.app.info("browser: extension \(version, privacy: .public) connected in \(id, privacy: .public)")
+            sendSettings(to: connection)
+            reloadIfOlder(version, connection: connection, browser: id)
         case "openApp":
             openConnections()
+        case "spell.check":
+            // The word just typed and the words before it; the answer goes back at once,
+            // with or without a fix. Neither is kept or logged.
+            guard let id = message["id"] as? String else { return }
+            let text = String((message["text"] as? String ?? "").suffix(TypingFixes.longestText))
+            let word = message["word"] as? String ?? ""
+            var reply: [String: Any] = ["type": "spell.fix", "id": id]
+            if let fix = TypingFixes.fix(word: word, in: text) { reply["fix"] = fix }
+            if let data = try? JSONSerialization.data(withJSONObject: reply) { server.send(data, to: connection) }
+        case "spell.kept":
+            if let word = message["word"] as? String { TypingFixes.keep(word) }
+        case "settings.set":
+            // The toolbar card's switch (pick 06): the same value as Settings, Connections.
+            if let on = message["fixSpelling"] as? Bool { Settings.shared.fixSpellingAsYouType = on }
         default:
             break
         }
+    }
+
+    /// What the extension needs to know of SigmaFlow's settings: whether to fix spelling, and
+    /// the browser's name for its toolbar card. To one connection, or to all of them.
+    func sendSettings(to connection: Int? = nil) {
+        let targets = connection.map { [$0] } ?? Array(peers.keys)
+        for target in targets {
+            let name = peers[target].flatMap { KnownBrowser.with(bundleID: $0)?.name } ?? ""
+            let message: [String: Any] = [
+                "type": "settings", "fixSpelling": Settings.shared.fixSpellingAsYouType, "browser": name,
+            ]
+            if let data = try? JSONSerialization.data(withJSONObject: message) { server.send(data, to: target) }
+        }
+    }
+
+    /// The version inside this app's bundle (BrowserExtension/manifest.json).
+    private static let bundledVersion: String? = {
+        guard let url = Bundle.main.resourceURL?.appendingPathComponent("BrowserExtension/manifest.json"),
+              let data = try? Data(contentsOf: url),
+              let manifest = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        else { return nil }
+        return manifest["version"] as? String
+    }()
+
+    private var reloadAsked: Set<String> = []
+
+    /// Until the extension is on the store, a browser runs the copy in `extensionFolder`, which
+    /// `start()` refreshes from the app; a browser never reloads such a copy by itself. An
+    /// older one is asked to reload once per launch (extensions from 1.1.0 on understand it),
+    /// so an app update reaches the browser too. Once per launch, so a copy loaded from
+    /// anywhere else can never loop.
+    private func reloadIfOlder(_ version: String, connection: Int, browser: String) {
+        guard Self.storeURL == nil, let bundled = Self.bundledVersion,
+              version.compare(bundled, options: .numeric) == .orderedAscending,
+              !reloadAsked.contains(browser),
+              let data = try? JSONSerialization.data(withJSONObject: ["type": "reload"])
+        else { return }
+        reloadAsked.insert(browser)
+        Log.app.info("browser: asking extension \(version, privacy: .public) in \(browser, privacy: .public) to reload as \(bundled, privacy: .public)")
+        server.send(data, to: connection)
     }
 
     private func closed(_ connection: Int) {

@@ -409,8 +409,15 @@ struct SettingsPage: View {
             VStack(alignment: .leading, spacing: DS.Space.eyebrowGap) {
                 Eyebrow("Your browser")
                 Card {
-                    ForEach(Array(browsers.enumerated()), id: \.element.id) { index, browser in
-                        browserRow(browser, isLast: index == browsers.count - 1)
+                    ForEach(browsers) { browser in
+                        browserRow(browser, isLast: false)
+                    }
+                    // One switch for every browser (docs/mockups/browser-autocorrect.html, 04);
+                    // the extension's toolbar card shows the same value (06).
+                    CardRow("Fix my spelling as I type",
+                            caption: "When you finish a word with a typo, SigmaFlow fixes it. Press Delete right after to keep your word.",
+                            isLast: true) {
+                        settingsToggle($settings.fixSpellingAsYouType)
                     }
                 } footer: {
                     CardFooter(hint: "What SigmaFlow reads on websites goes to SigmaFlow on this Mac, and from Autowrite only to the AI model you chose on Styles.") { EmptyView() }
@@ -423,7 +430,9 @@ struct SettingsPage: View {
     private func browserRow(_ browser: KnownBrowser, isLast: Bool) -> some View {
         let isDefault = browser.id.caseInsensitiveCompare(Self.defaultBrowser ?? "") == .orderedSame
         if bridge.isConnected(browser) {
-            CardRow(browser.name, caption: "Learning from your fixes, and Autowrite reads the whole conversation.",
+            CardRow(browser.name, caption: settings.fixSpellingAsYouType
+                    ? "Fixing your spelling and learning from your fixes, and Autowrite reads the whole conversation."
+                    : "Learning from your fixes, and Autowrite reads the whole conversation.",
                     data: "Connected", isLast: isLast, icon: browser.icon) {
                 AppButton(title: "Remove", kind: .secondary, icon: "close") { bridge.remove(browser) }
             }
