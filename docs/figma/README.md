@@ -52,6 +52,17 @@ open, and the site row's line reads "Fixes your spelling, learns from your fixes
 page." wherever its switch is on. 08 (a kept word into the Dictionary, tagged LEARNED) is not drawn: the
 Dictionary screens have no LEARNED row to follow.
 
+On 16 Nov 2026 the website got a page of its own, Website (100:16698), for a new hero: a black MacBook Right
+Command key alone in the first window, which runs a live transcript in the app's own overlay when pressed.
+Drawn before any code, for Gokul to agree. W1 is the hero in a browser window: waiting, the browser's
+microphone question, Listening, words arriving, Processing, landed, then the phone with a finger on the key.
+The overlays are clones of O1's HUD cards, so they match the app. W2 is the key two ways (alone on the page,
+or in a cropped close-up of a MacBook deck) and holds the page's local components: Site/Right command key
+(Up, Down), Site/Browser bar, Site/Announce, Site/Nav and Site/Mac screen, plus a hidden frame of the uploaded
+images (app icon, Dock icons, the painting) whose fills the page reuses. W3 is the whole page at 1440: the
+key hero, then today's page below it unchanged. Headlines are Geist with tracking for Pixel, as everywhere in
+this file; the key's legends are Inter, because SF Pro lays out at zero width from a script here.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,
