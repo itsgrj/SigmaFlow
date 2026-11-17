@@ -125,8 +125,8 @@
   const contextLength = 120;
   const markHold = 2000;
   const takeBackWithin = 10_000;
-  // Code editors and boxes the page itself keeps spelling out of.
-  const codeLike = "code, pre, .monaco-editor, .cm-editor, .cm-content, .CodeMirror, .ace_editor, [spellcheck=false], [autocorrect=off]";
+  // Code editors, and code blocks inside a rich editor (the cursor's own element is checked).
+  const codeLike = "code, pre, .monaco-editor, .cm-editor, .cm-content, .CodeMirror, .ace_editor";
 
   let fixing = false;   // our own edit is going in: its events are not typing
   let lastFix = null;   // { box, original, fixed, ender, at }
@@ -134,9 +134,69 @@
 
   function fixable(box) {
     if (!box) return false;
-    if (box.tagName === "INPUT" && !["", "text", "search"].includes((box.type || "").toLowerCase())) return false;
-    const element = focused();
-    return !(element && element.closest && element.closest(codeLike)) && !box.closest(codeLike);
+    if (box.closest(codeLike)) return false;
+    if (box.tagName === "INPUT" || box.tagName === "TEXTAREA") {
+      if (box.tagName === "INPUT" && !["", "text", "search"].includes((box.type || "").toLowerCase())) return false;
+      // A plain field the page keeps spelling out of (a search box, a username, a code)
+      // stays as typed. `spellcheck` reads the attribute as inherited from the ancestors.
+      if (!box.spellcheck) return false;
+      const autocorrect = box.closest("[autocorrect]");
+      if (autocorrect && autocorrect.getAttribute("autocorrect").toLowerCase() === "off") return false;
+      return true;
+    }
+    // A rich editor is fixed even with spelling switched off: Gmail and others switch the
+    // browser's checker off to draw their own lines. Only a code block inside it is left.
+    const at = window.getSelection()?.anchorNode;
+    const element = at && (at.nodeType === Node.ELEMENT_NODE ? at : at.parentElement);
+    return !(element && element.closest(codeLike));
+  }
+
+  // An element a word can't run across: a block (a paragraph, a line's div), a line break,
+  // a picture, or a piece the page won't let you type into (a chip, a mention).
+  function breaksWords(element) {
+    if (["BR", "IMG", "INPUT", "TEXTAREA", "SELECT", "BUTTON", "HR"].includes(element.tagName)) return true;
+    if (!element.isContentEditable) return true;
+    return !getComputedStyle(element).display.startsWith("inline");
+  }
+
+  // The text nodes before the cursor, back to the start of its line or far enough for the
+  // context, as { node, to } pieces (each from its start, the last one to the cursor).
+  // An editor may wrap a word in its own span (an underline, a highlight); this reads
+  // through it, so "lunch <span>sesson</span> " still ends in "sesson ".
+  function piecesBefore(box, node, offset) {
+    const pieces = [{ node, to: offset }];
+    let length = offset;
+    let current = node;
+    walk: while (length < contextLength + 60) {
+      let previous = current.previousSibling;
+      if (!previous) {
+        const parent = current.parentNode;
+        if (!parent || parent === box || parent.nodeType !== Node.ELEMENT_NODE || breaksWords(parent)) break;
+        current = parent;
+        continue;
+      }
+      while (previous.nodeType === Node.ELEMENT_NODE) {
+        if (breaksWords(previous)) break walk;
+        if (!previous.lastChild) break;
+        previous = previous.lastChild;
+      }
+      current = previous;
+      if (previous.nodeType === Node.TEXT_NODE && previous.data.length) {
+        pieces.unshift({ node: previous, to: previous.data.length });
+        length += previous.data.length;
+      }
+    }
+    return pieces;
+  }
+
+  // The place `count` characters before the end of `pieces`.
+  function placeBack(pieces, count) {
+    let left = count;
+    for (let i = pieces.length - 1; i >= 0; i--) {
+      if (pieces[i].to >= left) return { node: pieces[i].node, offset: pieces[i].to - left };
+      left -= pieces[i].to;
+    }
+    return null;
   }
 
   // What sits just before the cursor in `box`: the text there, and how to put something
@@ -165,19 +225,15 @@
     const node = selection.anchorNode;
     const offset = selection.anchorOffset;
     if (!node || node.nodeType !== Node.TEXT_NODE || !box.contains(node)) return null;
-    let text = node.data.slice(0, offset);
-    // A word that starts at the very front of this piece of text may run on from the piece
-    // before it (pri<b>cng</b>): a letter put in front says so, and the word won't count.
-    const previous = node.previousSibling;
-    if (previous && (previous.nodeType === Node.TEXT_NODE ||
-        (previous.nodeType === Node.ELEMENT_NODE && getComputedStyle(previous).display.startsWith("inline")))) {
-      text = "x" + text;
-    }
+    const pieces = piecesBefore(box, node, offset);
+    const text = pieces.map((piece) => piece.node.data.slice(0, piece.to)).join("");
     return {
       text: text.slice(-(contextLength + 60)),
       replace(length, replacement) {
+        const start = placeBack(pieces, length);
+        if (!start) return;
         const range = document.createRange();
-        range.setStart(node, offset - length);
+        range.setStart(start.node, start.offset);
         range.setEnd(node, offset);
         selection.removeAllRanges();
         selection.addRange(range);
@@ -190,10 +246,14 @@
       rect(from, to) {
         const now = window.getSelection();
         const at = now && now.anchorNode;
-        if (!at || at.nodeType !== Node.TEXT_NODE || now.anchorOffset < from) return null;
+        if (!at || at.nodeType !== Node.TEXT_NODE || !box.contains(at)) return null;
+        const after = piecesBefore(box, at, now.anchorOffset);
+        const start = placeBack(after, from);
+        const end = placeBack(after, to);
+        if (!start || !end) return null;
         const range = document.createRange();
-        range.setStart(at, now.anchorOffset - from);
-        range.setEnd(at, now.anchorOffset - to);
+        range.setStart(start.node, start.offset);
+        range.setEnd(end.node, end.offset);
         return range.getClientRects()[0] || null;
       },
     };

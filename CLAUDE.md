@@ -899,8 +899,11 @@ extension (background.js, content.js)  <- native messaging ->  sigmaflow-browser
   behind macOS's "Correct spelling automatically" (about 2 ms warm). The SigmaFlow dictionary sits on
   top: a word in it is right as typed, and a one-word rule is the fix only for a word the Mac also
   finds wrong. Never touched: all capitals, camelCase, digits, addresses and emails, non-Latin script,
-  email and url inputs, code editors and `spellcheck=false`, and Google Docs, Figma and the hosted code
-  editors (`noFixHosts`). The fix goes in with `execCommand("insertText")`, so the page's editor hears
+  email and url inputs, code editors and code blocks, a plain input or text area with `spellcheck=false`
+  or `autocorrect=off` (Google's search box), and Google Docs, Figma and the hosted code editors
+  (`noFixHosts`). A rich editor is fixed even with `spellcheck=false`: Gmail switches the browser's
+  checker off to draw its own lines, and skipping it (1.1.0) meant Gmail never got a fix. The word is
+  read across the editor's own spans (`piecesBefore`), up to the start of its line. The fix goes in with `execCommand("insertText")`, so the page's editor hears
   it and ⌘Z undoes it, and is dropped if the text before the cursor changed meanwhile. A dotted line
   sits under it for 2 s (02). **Delete straight after** (keydown, window capture, before any editor)
   puts the word back with the space and sends `spell.kept`: a LEARNED term in the Dictionary (08), or,

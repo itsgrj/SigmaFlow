@@ -230,7 +230,7 @@ async function spellCheck(message, sender) {
   const id = `spell-${++spellCount}`;
   const fix = await new Promise((resolve) => {
     spellAsked.set(id, resolve);
-    send({ type: "spell.check", id, word, text: text + word });
+    send({ type: "spell.check", id, word, text });
     setTimeout(() => {
       if (spellAsked.delete(id)) resolve(null);
     }, spellWait);

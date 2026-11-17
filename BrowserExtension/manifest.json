@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SigmaFlow",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Fixes typos as you type, learns from your fixes, and lets Autowrite read the whole conversation. Works with SigmaFlow on your Mac.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4tguIUNYtcAv6TLo3QuFKyDua5i8EqMjmIv5yFkbYEFam0ro8mUNuvAyKoeMQnD9gnVvlwQ2i/TaGcr3xkcj09nmE/w73rwO4Igaoob4uODltYN7JwscK1zoL3snZ7nAKAId5yCR2z7G5N5WV6QcwqtkOSp6D+enKjdHszsTb8XBV1kvijziyLIvQeNmlYZJIKgGoozSffi/JLE+OTt0Qh5ARd09cNg85XkCIdzJF/M6Y7iQE2YvYvlYJseAKaCX73S8LGLZ2+RXQOvm3oogBeMgfB4vqx14Ll5CCiAE0m6Z5Frm5JDZ85gK9tQnwIh2l1WwbEKu4OD/NeAwpEltPQIDAQAB",
   "minimum_chrome_version": "116",
