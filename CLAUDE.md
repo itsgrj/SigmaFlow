@@ -47,7 +47,8 @@ swift test --filter VectorTests                          # the dictionary test v
 
 `swift test` needs a real Xcode for the swift-testing `Testing` module. Until 8 Nov 2026 this
 machine had only `/Library/Developer/CommandLineTools`, so it failed locally with `no such
-module 'Testing'`; with Xcode 27.2 installed it has not been tried yet. CI (`.github/workflows/macos.yml`,
+module 'Testing'`; with Xcode 27.2 it runs (16 Nov 2026) as `swift test --scratch-path
+"$HOME/Library/Caches/SigmaFlowBuild/scratch-tests" --build-system native --filter VectorTests`. CI (`.github/workflows/macos.yml`,
 macos-26, since mlx-swift needs Swift 6.3) selects the newest Xcode and is the actual gate. The app target itself builds
 fine locally; it's only the test target that needs Xcode.
 
@@ -1018,6 +1019,10 @@ Its `learningCases` are the other contract in the same file: which edits `Learne
 may offer as a rule and, mostly, which it must refuse. `LearnedCorrection` lives in the
 platform-neutral target for exactly this reason — it is a heuristic, and CI can only gate it
 there. Loosening it is how the Dictionary page fills up with rules nobody wanted.
+Since 16 Nov 2026 it refuses one ordinary word for another ("bills" → "builds", Gokul: a rule
+from a real-word slip is stupid): the app asks the Mac's spell checker per lowercased word,
+the vectors' `ordinaryWords` list stands in for it. A capital the user added (`derry` → `Terry`)
+still makes it a name, so learned names the dictionary happens to know keep coming.
 The Windows port and its `shared/` vectors folder were removed in September 2026; do not
 recreate either.
 

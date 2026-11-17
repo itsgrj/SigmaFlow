@@ -357,6 +357,19 @@
       ]
     }
   ],
+  "ordinaryWords": {
+    "$comment": [
+      "Stands in for the Mac's English spell checker, which the app asks with each word",
+      "lowercased (so a name like 'claude' is not an ordinary word, though 'Claude' is).",
+      "A learning case is judged as if exactly these words were ordinary."
+    ],
+    "words": [
+      "bills", "builds", "click", "pod", "cast", "podcast", "sigma", "flow", "raj",
+      "phone", "quantize", "meeting", "our", "standup", "parakeet", "whisper", "in", "on",
+      "there", "their", "team", "cloud", "code", "and", "five", "plan", "next", "year",
+      "looks", "the", "quarter", "is", "park", "mark"
+    ]
+  },
   "learningCases": [
     {
       "name": "a misheard name is the case this exists for",
@@ -392,6 +405,40 @@
       "after": "pick up the phone",
       "hear": "fone",
       "write": "phone"
+    },
+    {
+      "name": "a name the engine wrote as an ordinary word is still learned",
+      "$comment": "'Cliq' lowercased is no word, so this is the engine not knowing a name, which a rule fixes.",
+      "before": "post it in click when it's done",
+      "after": "post it in Cliq when it's done",
+      "hear": "click",
+      "write": "Cliq"
+    },
+    {
+      "name": "joining two ordinary words is spacing, not a swap",
+      "before": "it was on the pod cast yesterday",
+      "after": "it was on the podcast yesterday",
+      "hear": "pod cast",
+      "write": "podcast"
+    },
+    {
+      "name": "one real word heard as another is a slip, not a rule",
+      "$comment": "Gokul, 16 Nov 2026. Sounds close, so it passed; but a 'bills' rule would rewrite every bill he does mean.",
+      "before": "the bills are failing again",
+      "after": "the builds are failing again"
+    },
+    {
+      "name": "the same slip at the start of a sentence, where the capital was already there",
+      "before": "Bills keep failing on main.",
+      "after": "Builds keep failing on main."
+    },
+    {
+      "name": "a capital the user added makes an ordinary word a name",
+      "$comment": "'mark' is in the dictionary, but nobody types 'Mark' mid-sentence for the verb.",
+      "before": "ask park about the launch",
+      "after": "ask Mark about the launch",
+      "hear": "park",
+      "write": "Mark"
     },
     {
       "name": "the user rewording their own sentence is not a mishearing",

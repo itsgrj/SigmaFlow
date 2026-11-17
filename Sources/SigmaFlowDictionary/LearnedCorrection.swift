@@ -17,6 +17,13 @@ import Foundation
 ///   anything too short to be distinctive. A rule the app would talk you out of by hand is
 ///   not a rule it should propose on its own, so that check is reused verbatim.
 /// - **No numbers.** `5` → `five` is a formatting taste, and cleanup's job.
+/// - **Not one ordinary word for another.** `bills` → `builds` sounds close and is a real
+///   mishearing, but both are words the user says on purpose: a rule would rewrite every
+///   bill they do mean. Fixing it in place was right; remembering it is not. A rule needs
+///   one side the language doesn't know, a name (`click` → `Cliq`) or a misspelling
+///   (`fone` → `phone`). A capital the user added makes the word a name even when the
+///   dictionary has it (`park` → `Mark`); one at a sentence start was there already and
+///   says nothing. Joining words (`pod cast` → `podcast`) is spacing, not a swap.
 /// - **It has to sound like the target.** Compared with spaces and case removed — so
 ///   `sigma flow` → `SigmaFlow` is a distance of zero, exactly the rule worth having — and
 ///   then held to a small edit distance. This is what separates `clode` → `Claude` from
@@ -38,8 +45,21 @@ public struct LearnedCorrection: Equatable, Sendable {
 
     /// The rule worth offering for an edit from `before` to `after`, or nil when the change
     /// doesn't look like a mishearing being fixed.
-    public static func propose(from before: String, to after: String) -> LearnedCorrection? {
-        guard let change = changedPhrase(from: before, to: after), isMishearing(change) else {
+    ///
+    /// - Parameter isWord: whether a lowercased word is an ordinary word of the language.
+    ///   The app asks the Mac's spell checker; the vectors pass their own list.
+    public static func propose(
+        from before: String, to after: String, isWord: (String) -> Bool
+    ) -> LearnedCorrection? {
+        guard let (change, heardAsTyped) = changedPhrase(from: before, to: after),
+              isMishearing(change) else {
+            return nil
+        }
+        // Both sides ordinary words: a slip between real words, not a name the engine can't
+        // spell. Unless only the spacing moved, or the user made the word a name.
+        if compact(change.hear) != compact(change.write),
+           !addsCapital(heard: heardAsTyped, written: change.write),
+           allOrdinary(change.hear, isWord), allOrdinary(change.write, isWord) {
             return nil
         }
         return change
@@ -54,8 +74,11 @@ public struct LearnedCorrection: Equatable, Sendable {
 
     /// The single short run of words that differs between two texts: everything matching is
     /// peeled off both ends, and what's left in the middle is the change. Nil when nothing
-    /// changed, when too much did, or when only punctuation and case moved.
-    static func changedPhrase(from before: String, to after: String) -> LearnedCorrection? {
+    /// changed, when too much did, or when only punctuation and case moved. Also hands back
+    /// the heard words as they were typed, before lowercasing.
+    static func changedPhrase(
+        from before: String, to after: String
+    ) -> (LearnedCorrection, heardAsTyped: String)? {
         let a = words(of: before), b = words(of: after)
         guard !a.isEmpty, !b.isEmpty else { return nil }
 
@@ -70,10 +93,11 @@ public struct LearnedCorrection: Equatable, Sendable {
             return nil
         }
 
-        let hear = clean(spoken.joined(separator: " ")).lowercased()
+        let typed = clean(spoken.joined(separator: " "))
+        let hear = typed.lowercased()
         let write = clean(written.joined(separator: " "))
         guard !hear.isEmpty, !write.isEmpty, hear != write.lowercased() else { return nil }
-        return LearnedCorrection(hear: hear, write: write)
+        return (LearnedCorrection(hear: hear, write: write), typed)
     }
 
     // MARK: - The shape test
@@ -120,6 +144,23 @@ public struct LearnedCorrection: Equatable, Sendable {
     /// joins or capitalises words scores as no change at all.
     private static func compact(_ text: String) -> String {
         text.lowercased().filter { $0.isLetter || $0.isNumber }
+    }
+
+    /// True when the user wrote a capital the engine didn't: past the first letter anywhere
+    /// (`UI`, `SigmaFlow`), or a first letter the engine had in lowercase (`derry` → `Terry`).
+    private static func addsCapital(heard: String, written: String) -> Bool {
+        guard let first = written.first else { return false }
+        if written.dropFirst().contains(where: \.isUppercase) { return true }
+        return first.isUppercase && heard.first?.isUppercase != true
+    }
+
+    /// True when every word of `text`, lowercased, is one `isWord` knows.
+    private static func allOrdinary(_ text: String, _ isWord: (String) -> Bool) -> Bool {
+        let parts = text.lowercased()
+            .split(whereSeparator: { $0.isWhitespace || $0 == "-" })
+            .map { clean(String($0)) }
+            .filter { !$0.isEmpty }
+        return !parts.isEmpty && parts.allSatisfy(isWord)
     }
 
     /// Levenshtein, two rows.

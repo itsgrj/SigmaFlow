@@ -12,7 +12,13 @@ struct VectorTests {
     struct Vectors: Decodable {
         let version: Int
         let cases: [Case]
+        let ordinaryWords: OrdinaryWords
         let learningCases: [LearningCase]
+    }
+
+    /// The words the learning cases treat as ordinary, in place of the Mac's spell checker.
+    struct OrdinaryWords: Decodable {
+        let words: [String]
     }
 
     struct Case: Decodable {
@@ -97,8 +103,11 @@ struct VectorTests {
         let vectors = try Self.load()
         #expect(vectors.learningCases.isEmpty == false)
 
+        let ordinary = Set(vectors.ordinaryWords.words)
         for testCase in vectors.learningCases {
-            let proposed = LearnedCorrection.propose(from: testCase.before, to: testCase.after)
+            let proposed = LearnedCorrection.propose(
+                from: testCase.before, to: testCase.after, isWord: ordinary.contains
+            )
             let got = proposed.map { $0.hear + " → " + $0.write } ?? "no proposal"
             #expect(proposed == testCase.expected, "\(testCase.name): got \(got)")
         }

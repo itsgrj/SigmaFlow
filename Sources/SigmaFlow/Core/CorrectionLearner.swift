@@ -125,7 +125,9 @@ final class CorrectionLearner {
                 }
                 // One misheard-looking phrase inside what we typed?
                 if learning,
-                   let fix = LearnedCorrection.propose(from: baseline, to: current),
+                   let fix = LearnedCorrection.propose(
+                       from: baseline, to: current, isWord: Self.isOrdinaryWord
+                   ),
                    inserted.localizedCaseInsensitiveContains(fix.hear) {
                     offer(fix)
                     learning = false
@@ -134,6 +136,15 @@ final class CorrectionLearner {
                 // later single-word fix can still be caught.
             }
         }
+    }
+
+    /// Whether the Mac's English dictionary knows `word` as written, lowercased, so a
+    /// name ("claude") is not ordinary even though "Claude" is in the dictionary.
+    static func isOrdinaryWord(_ word: String) -> Bool {
+        NSSpellChecker.shared.checkSpelling(
+            of: word, startingAt: 0, language: "en", wrap: false,
+            inSpellDocumentWithTag: 0, wordCount: nil
+        ).location == NSNotFound
     }
 
     // MARK: - Following the transcript
