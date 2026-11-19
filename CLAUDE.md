@@ -1068,7 +1068,10 @@ weight, not color.
 Meetings, Conversations, Dictionary, Snippets, Styles, Autowrite, Settings — each its own file (`DictionaryPanel.swift` and
 `SettingsWindow.swift` keep their old names), each an IBM Carbon icon in the sidebar. Add a
 page by adding a `Section` case there; nothing else routes. The last page and the open tab of
-each page persist in `Settings.lastPage` / `Settings.openTabs`.
+each page persist in `Settings.lastPage` / `Settings.openTabs`, but only within a run: since
+19 Nov 2026 (Gokul) every launch after the first opens on Transcriptions, Insights
+(`applicationDidFinishLaunching`). The first open still lands on History (8E), and a recording
+opened with the launch still brings Meetings forward.
 
 **Words follow [docs/copy-voice.md](docs/copy-voice.md)** (19 Oct 2026, Gokul: written the way
 tryvoiceink.com is written). Say what the person gets, in plain words, with SigmaFlow doing

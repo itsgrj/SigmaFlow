@@ -4,7 +4,8 @@ import SwiftUI
 /// The app's main window, to the Figma file "SigmaFlow 1.0": a sidebar on the rail with
 /// the wordmark and seven pages, and a content column on the painting. Recording happens
 /// through the hotkey, so the window's job is finding what you said and changing how the
-/// app behaves. The page that was open last time opens again.
+/// app behaves. A launch opens on Transcriptions, Insights (set in `AppDelegate`); within a
+/// run, the page that was open last time opens again.
 struct MainWindow: View {
     @Bindable var controller: DictationController
 

@@ -94,6 +94,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let isFirstOpen = !Settings.shared.firstOpenDone
         if isFirstOpen { FirstOpen.shared.beginFirstRun(controller: controller) }
 
+        // Every launch after the first opens on Transcriptions, Insights tab (19 Nov 2026,
+        // Gokul), whatever was open when SigmaFlow quit. Within a run the window still
+        // reopens where it was left. The first open keeps its own landing (History, 8E), and
+        // a recording opened with the launch still brings Meetings forward below.
+        if !isFirstOpen, !CommandLine.arguments.contains("--snapshot-dir") {
+            Settings.shared.lastPage = MainWindow.Section.transcriptions.rawValue
+            Settings.shared.openTabs["transcriptions"] = TranscriptionsPage.Tab.insights.rawValue
+        }
+
         // The SigmaFlow folder: made on the first run, found again on every later one. A
         // recording left behind by a quit mid-meeting is filed now rather than lost.
         MeetingLibrary.shared.locate()
