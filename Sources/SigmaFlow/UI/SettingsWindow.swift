@@ -88,7 +88,7 @@ struct SettingsPage: View {
         Card {
             if !controller.hotkeyArmed { hotkeyWarning }
 
-            CardRow("Push-to-talk key", caption: "Hold to dictate. Double-tap to latch.") {
+            CardRow("Dictation key", caption: "Hold it and talk. Tap it twice to talk hands free.") {
                 PopupButton(selection: hotkeyChoice, options: [
                     (.rightOption, "Right Option ⌥"),
                     (.rightCommand, "Right Command ⌘"),
@@ -104,16 +104,16 @@ struct SettingsPage: View {
             CardRow("Power mode", caption: powerModeAvailable
                 // No-break spaces keep each key name on one line when the caption wraps.
                 ? "When turned on, you will be able to auto-send your messages. Hold Right\u{00A0}⌥ with Right\u{00A0}⌘ together."
-                : "Works when your push-to-talk key is Right\u{00A0}⌘.") {
+                : "Works when your dictation key is Right\u{00A0}⌘.") {
                 settingsToggle($settings.powerMode)
                     .disabled(!powerModeAvailable)
             }
 
-            CardRow("Ask to record calls") {
+            CardRow("Ask to record calls", caption: "When a call starts, SigmaFlow asks if you want to record it.") {
                 settingsToggle($settings.askToRecordCalls)
             }
 
-            CardRow("Microphone", caption: "Which input records. Plug one in and it appears here.") {
+            CardRow("Microphone", caption: "The mic SigmaFlow listens to. A new one shows up here when you plug it in.") {
                 PopupButton(selection: microphoneSelection, options: microphoneOptions)
             }
 
@@ -180,7 +180,7 @@ struct SettingsPage: View {
             "Removes umms and false starts. Capitals and punctuation follow your default style."
         case .smart:
             FoundationModelFormatter.isAvailable
-                ? "Also fixes punctuation, applies your self-corrections and formats lists. Adds a few seconds after you release."
+                ? "Also fixes punctuation, and puts a list you say on its own lines. Takes a few seconds longer."
                 : (FoundationModelFormatter.unavailableReason ?? "Needs a Mac with Apple Intelligence turned on.")
         }
     }
@@ -275,9 +275,9 @@ struct SettingsPage: View {
                     Caption(captureHint)
                 } else if let combo = settings.savedCustomCombo, !isCapturing {
                     KeyChip(text: combo.display)
-                    Caption("Any modifiers with a key, like ⌃⌥D.")
+                    Caption("Hold ⌃, ⌥, ⇧ or ⌘ and press a key, like ⌃⌥D.")
                 } else {
-                    Caption("Any modifiers with a key, like ⌃⌥D.")
+                    Caption("Hold ⌃, ⌥, ⇧ or ⌘ and press a key, like ⌃⌥D.")
                 }
             }
         }
@@ -327,7 +327,7 @@ struct SettingsPage: View {
         let hasModifier = flags.contains(.control) || flags.contains(.option)
             || flags.contains(.shift) || flags.contains(.command)
         guard hasModifier else {
-            captureHint = "Add at least one modifier: ⌃, ⌥, ⇧ or ⌘."
+            captureHint = "Hold ⌃, ⌥, ⇧ or ⌘ as well."
             return
         }
 
@@ -389,14 +389,14 @@ struct SettingsPage: View {
                     EmptyView()
                 }
             }
-            CardRow("Claude Code", caption: "Paste one command in the terminal and Claude Code can read your dictations too.") {
+            CardRow("Claude Code", caption: "Paste this command in Terminal, and Claude Code can read your dictations, meetings and conversations too.") {
                 CopyButton(text: "claude mcp add sigmaflow -- \(ClaudeConnection.helperURL.path)", title: "Copy command", kind: .secondary)
             }
             CardRow("Other apps", caption: "Any app that speaks MCP can connect with this path.", isLast: true) {
                 CopyButton(text: ClaudeConnection.helperURL.path, title: "Copy path", kind: .secondary)
             }
         } footer: {
-            CardFooter(hint: "Connected apps read your dictation history on this Mac. Nothing leaves it.") { EmptyView() }
+            CardFooter(hint: "SigmaFlow never sends your history anywhere. Claude reads it only when you ask it something.") { EmptyView() }
         }
     }
 
@@ -420,7 +420,7 @@ struct SettingsPage: View {
                         settingsToggle($settings.fixSpellingAsYouType)
                     }
                 } footer: {
-                    CardFooter(hint: "What SigmaFlow reads on websites goes to SigmaFlow on this Mac, and from Autowrite only to the AI model you chose on Styles.") { EmptyView() }
+                    CardFooter(hint: "What SigmaFlow reads on websites stays on this Mac. Only Autowrite sends it on, to the AI model you picked on the Styles page.") { EmptyView() }
                 }
             }
         }
@@ -431,19 +431,19 @@ struct SettingsPage: View {
         let isDefault = browser.id.caseInsensitiveCompare(Self.defaultBrowser ?? "") == .orderedSame
         if bridge.isConnected(browser) {
             CardRow(browser.name, caption: settings.fixSpellingAsYouType
-                    ? "Fixing your spelling and learning from your fixes, and Autowrite reads the whole conversation."
-                    : "Learning from your fixes, and Autowrite reads the whole conversation.",
+                    ? "Fixes your spelling, learns from your fixes, and lets Autowrite read the page."
+                    : "Learns from your fixes, and lets Autowrite read the page.",
                     data: "Connected", isLast: isLast, icon: browser.icon) {
                 AppButton(title: "Remove", kind: .secondary, icon: "close") { bridge.remove(browser) }
             }
         } else if bridge.waiting.contains(browser.id) {
             CardRow(browser.name, caption: "In \(browser.name)’s Extensions page, turn on Developer mode, then drag the Browser Extension folder onto it.",
                     isLast: isLast, icon: browser.icon) {
-                AppButton(title: "Show again", kind: .secondary) { bridge.add(browser) }
+                AppButton(title: "Show the folder again", kind: .secondary) { bridge.add(browser) }
             }
         } else {
             CardRow(browser.name,
-                    caption: isDefault ? "SigmaFlow learns from your fixes on websites too, and Autowrite reads the whole conversation." : nil,
+                    caption: isDefault ? "SigmaFlow learns from your fixes on websites too, and Autowrite can read the page." : nil,
                     isLast: isLast, icon: browser.icon) {
                 AppButton(title: "Add to \(browser.name)", kind: isDefault ? .inverted : .secondary, icon: "add") { bridge.add(browser) }
             }
@@ -459,8 +459,7 @@ struct SettingsPage: View {
 
     private var claudeCaption: String? {
         switch claude.status {
-        case .connected: "Ask Claude about your dictations."
-        case .notConnected: "Lets Claude Desktop search your dictations and answer questions about them."
+        case .connected, .notConnected: "Ask Claude about your dictations, meetings and conversations."
         case .claudeNotInstalled: "Claude Desktop is not installed on this Mac."
         case .failed(let message): message
         }
@@ -484,7 +483,7 @@ struct SettingsPage: View {
             } else {
                 CardRow(
                     "SigmaFlow folder",
-                    caption: "Where your meetings are kept.",
+                    caption: "Where your dictations, meetings and conversations are kept.",
                     isLast: true
                 ) {
                     HStack(spacing: DS.Space.snug) {
@@ -499,7 +498,7 @@ struct SettingsPage: View {
     private var dataCard: some View {
         Card {
             CardRow("Meetings", data: library.meetings.count.formatted())
-            CardRow("Transcriptions", data: RunStore.shared.runs.count.formatted())
+            CardRow("Dictations", data: RunStore.shared.runs.count.formatted())
             CardRow("Dictionary", data: "\(DictionaryStore.shared.entries.count.formatted()) word\(DictionaryStore.shared.entries.count == 1 ? "" : "s")")
             CardRow("Snippets", data: SnippetStore.shared.snippets.count.formatted())
             CardRow("Styles", data: StyleStore.shared.styles.count.formatted())
@@ -511,7 +510,7 @@ struct SettingsPage: View {
                 outcomeRow(dataOutcome)
             }
         } footer: {
-            CardFooter(hint: "Moving to another Mac? Export takes your dictionary, snippets, styles and settings.") {
+            CardFooter(hint: "Moving to another Mac? Export takes your dictations, dictionary, snippets, styles and settings.") {
                 AppButton(title: "Import a folder", kind: .secondary) { beginImport() }
                 AppButton(title: "Export", kind: .inverted) { runExport() }
             }
@@ -524,13 +523,13 @@ struct SettingsPage: View {
         CardContentRow(isLast: true) {
             VStack(alignment: .leading, spacing: DS.Space.snug) {
                 Eyebrow("Found in \(pending.folder.lastPathComponent)")
-                Caption("\(pending.manifest.summary). This Mac has \(RunStore.shared.runs.count) transcriptions, \(DictionaryStore.shared.entries.count) dictionary words, \(SnippetStore.shared.snippets.count) snippets and \(StyleStore.shared.styles.count) styles.")
+                Caption("This folder has \(pending.manifest.summary).")
                 HStack(spacing: DS.Space.snug) {
-                    AppButton(title: "Merge into this Mac", kind: .secondary) {
+                    AppButton(title: "Add to this Mac", kind: .secondary) {
                         dataOutcome = .imported(DataPortability.merge(pending.manifest))
                         pendingImport = nil
                     }
-                    AppButton(title: "Replace everything here", kind: .secondary) {
+                    AppButton(title: "Replace what\u{2019}s on this Mac", kind: .secondary) {
                         dataOutcome = .imported(DataPortability.replace(with: pending.manifest))
                         pendingImport = nil
                         controller.reloadHotkey()

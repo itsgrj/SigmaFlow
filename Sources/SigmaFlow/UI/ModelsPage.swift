@@ -25,7 +25,7 @@ struct ModelsPage: View {
         PageScroll {
             PageHeader(
                 "Models",
-                subtitle: "The engine that turns your voice into text. Every engine runs on this Mac; nothing you say leaves it."
+                subtitle: "Pick how SigmaFlow hears you. Every model runs on this Mac, so nothing you say leaves it."
             )
             TabStrip(tabs: [(.english, "English only"), (.multilingual, "Multilingual")], selection: tab)
         } content: {

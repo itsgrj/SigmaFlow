@@ -20,12 +20,12 @@ enum DataPortability {
 
         var summary: String {
             var parts: [String] = []
-            parts.append("\(runs.count) recording\(runs.count == 1 ? "" : "s")")
-            parts.append("\(dictionary.count) dictionary entr\(dictionary.count == 1 ? "y" : "ies")")
+            parts.append("\(runs.count.formatted()) dictation\(runs.count == 1 ? "" : "s")")
+            parts.append("\(dictionary.count.formatted()) dictionary word\(dictionary.count == 1 ? "" : "s")")
             parts.append("\(snippets.count) snippet\(snippets.count == 1 ? "" : "s")")
             parts.append("\(styles.count) style\(styles.count == 1 ? "" : "s")")
-            if settings != nil { parts.append("settings") }
-            return parts.joined(separator: ", ")
+            // "865 dictations, 40 dictionary words, 5 snippets and 3 styles"
+            return parts.dropLast().joined(separator: ", ") + " and " + parts[parts.count - 1]
         }
 
         var isEmpty: Bool {
@@ -39,7 +39,7 @@ enum DataPortability {
 
         var errorDescription: String? {
             switch self {
-            case .notAnExport: "That folder does not look like a SigmaFlow export. Nothing was changed."
+            case .notAnExport: "That folder isn\u{2019}t a SigmaFlow export, so nothing changed."
             case .io(let message): message
             }
         }
@@ -130,20 +130,17 @@ enum DataPortability {
         let haveRuns = Set(RunStore.shared.runs.map(\.id))
         let newRuns = manifest.runs.filter { !haveRuns.contains($0.id) }
         if !newRuns.isEmpty { RunLog.record(newRuns) }
-        let words = DictionaryStore.shared.merge(manifest.dictionary)
-        let snippets = SnippetStore.shared.merge(manifest.snippets)
+        _ = DictionaryStore.shared.merge(manifest.dictionary)
+        _ = SnippetStore.shared.merge(manifest.snippets)
         let styles = StyleStore.shared.merge(manifest.styles)
 
-        var parts = [
-            "\(newRuns.count) recording\(newRuns.count == 1 ? "" : "s")",
-            "\(words) dictionary entr\(words == 1 ? "y" : "ies")",
-            "\(snippets) snippet\(snippets == 1 ? "" : "s")",
-            "\(styles.added) style\(styles.added == 1 ? "" : "s")",
-        ]
+        var line = "Added to this Mac. Your settings here didn\u{2019}t change."
         if styles.skipped > 0 {
-            parts.append("\(styles.skipped) style\(styles.skipped == 1 ? "" : "s") skipped for a clashing name or shortcut")
+            line += styles.skipped == 1
+                ? " 1 style wasn\u{2019}t added, because its name or shortcut is already taken."
+                : " \(styles.skipped) styles weren\u{2019}t added, because their names or shortcuts are already taken."
         }
-        return "Merged: " + parts.joined(separator: ", ") + ". Settings were left as they are on this Mac."
+        return line
     }
 
     /// Makes this Mac match the export.
@@ -155,7 +152,7 @@ enum DataPortability {
         if let settings = manifest.settings {
             Settings.shared.apply(exported: settings)
         }
-        return "Replaced. This Mac now has \(manifest.summary). Your API keys were not touched."
+        return "This Mac now has \(manifest.summary). Your API keys didn\u{2019}t change."
     }
 
     /// The standard folder picker, pointed at the Desktop.

@@ -38,7 +38,7 @@ struct MainWindow: View {
         var title: String {
             switch self {
             case .models: "Models"
-            case .transcriptions: "Transcriptions"
+            case .transcriptions: "Dictations"
             case .meetings: "Meetings"
             case .conversations: "Conversations"
             case .dictionary: "Dictionary"
@@ -158,7 +158,7 @@ struct MainWindow: View {
                 Text("\(ready) is ready")
                 Spacer(minLength: 0)
                 if updates.restartWanted {
-                    Text("After this")
+                    Text("Restarts when you\u{2019}re done")
                 } else {
                     Button("Restart") { updates.requestRestart() }
                         .buttonStyle(.plain)

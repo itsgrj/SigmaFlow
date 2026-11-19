@@ -29,7 +29,7 @@ struct StylesPage: View {
         PageScroll {
             PageHeader(
                 "Styles",
-                subtitle: "A default style shapes every dictation you type. Custom styles rewrite selected text in a voice you define, each with its own shortcut."
+                subtitle: "Pick how everything you dictate looks. Make your own styles to rewrite any text you select, each with its own shortcut."
             ) {
                 if tab.wrappedValue == .custom {
                     AppButton(title: "New style", kind: .secondary, icon: "add", isEnabled: store.nextFreeShortcut != nil) {
@@ -59,7 +59,7 @@ struct StylesPage: View {
                 }
             }
             .frame(height: DS.Material.tileHeightDefault)
-            Text("The default style shapes every dictation, in every app. It needs no account and no key.")
+            Text("This is how your words look when SigmaFlow types them, in every app.")
                 .font(DS.Font.caption)
                 .foregroundStyle(DS.Color.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -89,7 +89,7 @@ struct StylesPage: View {
                 Card {
                     EmptyCardBody(
                         "No custom styles yet",
-                        detail: "Pick an engine above and add its key. Then press New style to start blank, or add three starters you can edit or delete: Clean, Boss mode and Friendly."
+                        detail: "Press New style to write your own, or start with three you can change: Clean, Boss mode and Friendly."
                     ) {
                         AppButton(title: "Add the three starters", kind: .secondary) {
                             withAnimation(DS.Motion.panel) { store.addStarters() }
@@ -131,12 +131,12 @@ struct StylesPage: View {
 
     private var engineSummary: some View {
         CardRow(
-            "Rewrites run on \(engineName(settings.styleEngine))",
+            "Your styles use \(engineName(settings.styleEngine))",
             caption: engineSummaryCaption,
             isLast: true
         ) {
             HStack(spacing: DS.Space.tight) {
-                AppButton(title: "Change engine") { isChoosingEngine = true }
+                AppButton(title: "Change") { isChoosingEngine = true }
                 if settings.styleEngine == .claude || settings.styleEngine == .openRouter {
                     AppButton(title: "Change key") { isChoosingEngine = true }
                 }
@@ -331,7 +331,7 @@ private struct EngineChooser: View {
         group("With your key")
         engineRow(
             .claude, name: "Claude",
-            blurb: "Anthropic's model with your own API key. The best rewrites; you pay Anthropic per use.",
+            blurb: "Claude, with your own Anthropic key. The best writing. Anthropic charges you for what you use.",
             key: $anthropicKey, prompt: "Paste your Anthropic API key"
         ) { Keychain.anthropicKey = $0 }
         CardDivider()
@@ -661,7 +661,7 @@ private struct StyleEditorCard: View {
                 }
                 LabeledField(label: "Instructions") {
                     VStack(alignment: .leading, spacing: DS.Space.fieldLabelGap) {
-                        Text("Brief SigmaFlow the way you would brief a person. When you press ⌥\(draft.shortcut) on selected text, it rewrites that text by these instructions and pastes the result back. The first line is what the tile shows.")
+                        Text("Write it the way you\u{2019}d explain it to a person. Select text in any app and press ⌥\(draft.shortcut), and SigmaFlow rewrites it this way. The first line shows on the tile.")
                             .font(DS.Font.caption)
                             .foregroundStyle(DS.Color.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)

@@ -57,14 +57,17 @@ enum CloudTextError: LocalizedError {
             "Add your \(provider.displayName) API key on the Styles page."
         case .http(let provider, let code, let message):
             if provider != .local && (code == 401 || code == 403) {
-                "\(provider.displayName) rejected that API key. Check it on the Styles page."
+                "\(provider.displayName) didn\u{2019}t accept that key. Check it on the Styles page."
             } else if provider == .anthropic && message.contains("anthropic-workspace-id") {
                 "This key is linked to a workspace. Paste the workspace ID under the key on the Styles page."
+            } else if code == 429 || code >= 500 {
+                // Busy or down, mostly Anthropic's 529 Overloaded: say what it means, not the code.
+                "\(provider == .anthropic ? "Claude" : provider.displayName) couldn\u{2019}t answer just now, so your text wasn\u{2019}t changed. Try again in a minute."
             } else {
-                "\(provider.displayName) returned an error (\(code)). \(message)"
+                "\(provider == .anthropic ? "Claude" : provider.displayName) couldn\u{2019}t answer (\(code)), so your text wasn\u{2019}t changed. \(message)"
             }
         case .emptyResponse(let provider):
-            "\(provider.displayName) returned nothing."
+            "\(provider.displayName) sent nothing back."
         }
     }
 }

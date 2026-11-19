@@ -279,7 +279,7 @@ MeetingLibrary.file ─► MeetingLibrary.transcribe (one at a time) ─► Meet
   opened and say so. The drop target is left off in snapshot runs (the renderer paints it as
   its "unsupported" stand-in over the whole page).
 - **Four ways in besides the drop** (28 Oct 2026, [docs/mockups/meeting-drop-discover.html](docs/mockups/meeting-drop-discover.html),
-  picks 05 15 16 17 19; Figma 3.1 to 3.22, 3.7, 0.19): **Upload meeting** (Carbon `upload`) beside
+  picks 05 15 16 17 19; Figma 3.1 to 3.22, 3.7, 0.19): **Transcribe meeting** (Carbon `upload`; called Upload meeting until the 19 Nov 2026 copy audit) beside
   Record meeting opens a file picker into `MeetingLibrary.add(recordings:)`; the drop veil names
   the held file and its length, read off the system's drag pasteboard (`MeetingImport.dragged`);
   a file dropped on the **Dock icon** or opened with SigmaFlow (`CFBundleDocumentTypes`, audio and
@@ -625,12 +625,16 @@ waiting. Dictations only, never meetings.
   overshoots by a point widens the window, which widens the gap: an endless layout loop that
   freezes the app on launch. Widths are read off an empty strip, gaps round down.
 - **Today leads** (21 Oct 2026, Gokul: people hold today and this week, not 3,574): "SigmaFlow
-  wrote 97% of your words today", then the day as a sum, written with SigmaFlow + typed by you
-  = your words today, then "Without SigmaFlow, you'd have typed all N" and how long that would
-  have taken at 40 a minute. Never "you said": the words are SigmaFlow's. The all-time words and
-  dictations live in the bookcase's sentence; the squares' heading is the time back a day, with
-  the working under it in three numbers that add up (`UsageInsights.averageDay`). The four
-  tiles, words a minute and the next-100,000 line are gone.
+  wrote 97% of your words today", then two numbers side by side, written with SigmaFlow and
+  typed by you (no + or =, 19 Nov 2026 copy audit), then "Typing all N yourself would have
+  taken about M minutes" at 40 a minute. Never "you said": the words are SigmaFlow's. The all-time words and
+  dictations live in the bookcase's sentence; the squares' heading is the time saved a day
+  ("You've been saving about 35 minutes a day with SigmaFlow"), with one sentence under it
+  saying where it comes from ("On a typical day, SigmaFlow writes about 2,400 words for you, so
+  you don't have to type them", `UsageInsights.averageDay`, the count rounded). Never a sum for
+  the reader to check: on 19 Nov 2026 Gokul turned down "Typing the 2,419 words... takes about
+  60 minutes. Saying them takes about 25. The other 35 are yours." as math homework, a number
+  out of nowhere, and a tagline. The four tiles, words a minute and the next-100,000 line are gone.
 - **Typed words**: `Support/TypedWords.swift` counts typing from `HotkeyMonitor`'s tap
   (`onTyping`), which already sees every key in every app: a word is letters then a space,
   Return, Tab, an arrow or a ⌘/⌃ shortcut, as a dictation's words are counted by spaces; Delete
@@ -1064,7 +1068,9 @@ tokens exist but resolve to 0), no gradients, nothing blinks. The one exception 
 monochrome is the live audio meter, which reads system green. Recording reads through
 weight, not color.
 
-`UI/MainWindow.swift` is the shell: nine pages in the reviewed order — Models, Transcriptions,
+`UI/MainWindow.swift` is the shell: nine pages in the reviewed order — Models, Dictations
+(called Transcriptions until 19 Nov 2026; the code, `Section.transcriptions`, `TranscriptionsPage`
+and `--pages transcriptions/...` keep the old name),
 Meetings, Conversations, Dictionary, Snippets, Styles, Autowrite, Settings — each its own file (`DictionaryPanel.swift` and
 `SettingsWindow.swift` keep their old names), each an IBM Carbon icon in the sidebar. Add a
 page by adding a `Section` case there; nothing else routes. The last page and the open tab of
@@ -1170,5 +1176,5 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - `log` is shadowed in this shell. Use `/usr/bin/log show --predicate 'subsystem == "com.grj.sigmaflow"'`.
 - `tccutil reset Accessibility com.grj.sigmaflow` — **always with the bundle ID**; a bare
   reset wipes every app on the machine.
-- `CFBundleShortVersionString` is `1.3.0`, `CFBundleVersion` 11, since 17 Nov 2026 (1.0.0 was the
-  first public build, 1.0.1 on 28 Oct, 1.1.0 on 12 Nov, 1.2.0 on 13 Nov); the sidebar foot reads it. Raise both for every release.
+- `CFBundleShortVersionString` is `1.3.1`, `CFBundleVersion` 12, since 19 Nov 2026 (1.0.0 was the
+  first public build, 1.0.1 on 28 Oct, 1.1.0 on 12 Nov, 1.2.0 on 13 Nov, 1.3.0 on 17 Nov); the sidebar foot reads it. Raise both for every release.

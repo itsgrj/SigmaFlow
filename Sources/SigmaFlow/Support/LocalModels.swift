@@ -58,8 +58,8 @@ enum LocalModelError: LocalizedError {
             "Pick your own model on the Styles page."
         case .notAnswering(let server):
             server.kind == .other
-                ? "Nothing is answering at \(server.place)."
-                : "\(server.name) isn’t open."
+                ? "Nothing is answering at \(server.place). Open your model\u{2019}s app, then try again."
+                : "\(server.name) isn\u{2019}t answering. Open it, then try again."
         case .missingModel(let target):
             "\(target.server.name) doesn’t have \(target.model) any more. Pick another on the Styles page."
         }

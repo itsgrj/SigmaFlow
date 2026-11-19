@@ -37,9 +37,9 @@ enum SpeechModelID: String, CaseIterable, Sendable {
         case .nemotron:
             "Live multilingual transcription. Detects the language on its own."
         case .parakeet110m:
-            "Tiny and quick. A good fit when disk space matters."
+            "Small and quick. Good when your Mac is short on space."
         case .cohere:
-            "The accuracy ceiling. Slower, and a big download."
+            "The most accurate. Slower, and a big download."
         }
     }
 
@@ -76,7 +76,7 @@ enum SpeechModelID: String, CaseIterable, Sendable {
 
     /// How the text arrives, as the Models page says it.
     var deliveryText: String {
-        streamsLiveText ? "Live as you speak" : "Text after you release"
+        streamsLiveText ? "Words appear while you talk" : "Words appear after you talk"
     }
 
     /// Which tab of the Models page a model sits on. A model never changes tabs.

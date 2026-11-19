@@ -49,13 +49,14 @@ enum TranscriptionError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .localeUnsupported(let locale):
-            return "Dictation isn't available for \(locale.identifier) on this Mac."
+            let language = Locale.current.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
+            return "Apple\u{2019}s model doesn\u{2019}t know \(language) on this Mac. Pick another on the Models page."
         case .modelInstallFailed(let detail):
             return "Couldn't install the speech model: \(detail)"
         case .noAudioFormat:
-            return "No compatible audio format available for the speech engine."
+            return "SigmaFlow can\u{2019}t use this microphone. Pick another in Settings."
         case .notRunning:
-            return "The transcription engine isn't running."
+            return "SigmaFlow wasn\u{2019}t ready. Try again."
         }
     }
 }

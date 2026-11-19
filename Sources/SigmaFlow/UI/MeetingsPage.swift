@@ -29,8 +29,8 @@ struct MeetingsPage: View {
         var title: String { self == .meetings ? "Meetings" : "Conversations" }
         var subtitle: String {
             self == .meetings
-                ? "Record a meeting and read it back the moment it ends."
-                : "Write down a conversation in the room as it happens."
+                ? "Record a meeting and get the transcript the moment it ends."
+                : "SigmaFlow writes down a conversation in the room as it happens."
         }
         /// "meeting", "conversation": the count and the empty card.
         var noun: String { self == .meetings ? "meeting" : "conversation" }
@@ -266,7 +266,7 @@ struct MeetingsPage: View {
     /// the Stop button is in its row, so both step aside without the header changing height.
     private var recordControl: some View {
         HStack(alignment: .top, spacing: DS.Space.snug) {
-            AppButton(title: "Upload meeting", kind: .secondary, icon: "upload") {
+            AppButton(title: "Transcribe meeting", kind: .secondary, icon: "upload") {
                 library.pickRecordings()
             }
             VStack(spacing: DS.Space.snug) {
@@ -335,7 +335,7 @@ struct MeetingsPage: View {
     private var footer: some View {
         if isPicking {
             let count = tickedMeetings.count
-            CardFooter(hint: count == 0 ? "Tick the \(kind.noun)s to delete" : "\(count.formatted()) selected") {
+            CardFooter(hint: count == 0 ? "Choose the ones to delete" : "\(count.formatted()) selected") {
                 folderPath
             } actions: {
                 AppButton(title: "Cancel", kind: .secondary) { stopPicking() }

@@ -76,7 +76,7 @@ final class MeetingSession {
         guard Permissions.hasMicrophone else {
             Task { @MainActor in
                 if await Permissions.requestMicrophone() { self.start(for: call, video: video) }
-                else { self.lastError = "SigmaFlow needs the microphone to record. Allow it in System Settings, Privacy & Security." }
+                else { self.lastError = "SigmaFlow can\u{2019}t hear you. Turn on Microphone for SigmaFlow in System Settings, Privacy & Security." }
             }
             return
         }

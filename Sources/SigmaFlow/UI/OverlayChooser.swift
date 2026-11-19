@@ -306,7 +306,7 @@ private struct OverlayPreviewCard: View {
 
     private var statusText: String {
         switch frame.phase {
-        case .processing: "Processing"
+        case .processing: "Writing"
         case .error: "Error"
         case .recording, .hidden: "Rec"
         }

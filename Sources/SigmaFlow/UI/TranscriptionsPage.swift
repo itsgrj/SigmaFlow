@@ -65,8 +65,8 @@ struct TranscriptionsPage: View {
     @ViewBuilder
     private var header: some View {
         PageHeader(
-            "Transcriptions",
-            subtitle: "Everything you have dictated, newest first. Search it, copy a line back out, or delete what you no longer need."
+            "Dictations",
+            subtitle: "Everything you\u{2019}ve dictated, newest first. Search it, copy it again, or delete what you don\u{2019}t need."
         )
         TabStrip(tabs: [(.history, "History"), (.insights, "Insights")], selection: tab)
     }
@@ -91,7 +91,7 @@ struct TranscriptionsPage: View {
     private var history: some View {
         ListPage {
             header
-            ListToolbar(query: $query, placeholder: "Search transcriptions", count: countLabel)
+            ListToolbar(query: $query, placeholder: "Search dictations", count: countLabel)
             Card {
                 if store.runs.isEmpty {
                     EmptyCardBody(
@@ -110,7 +110,7 @@ struct TranscriptionsPage: View {
         .overlay {
             if let question {
                 DeleteQuestionView(
-                    question: question, noun: "transcription",
+                    question: question, noun: "dictation",
                     onCancel: { self.question = nil },
                     onDelete: { answer(question) })
             }
@@ -170,7 +170,7 @@ struct TranscriptionsPage: View {
         if isPicking {
             let count = ticked.count
             let shown = runs
-            CardFooter(hint: count == 0 ? "Tick the transcriptions to delete" : "\(count.formatted()) selected") {
+            CardFooter(hint: count == 0 ? "Choose the ones to delete" : "\(count.formatted()) selected") {
                 folderPath
             } actions: {
                 if !shown.allSatisfy({ ticked.contains($0.id) }) {
@@ -186,13 +186,13 @@ struct TranscriptionsPage: View {
             }
         } else if let deleted = store.lastDeleted {
             let count = deleted.runs.count
-            CardFooter(hint: "\(count.formatted()) transcription\(count == 1 ? "" : "s") deleted") {
+            CardFooter(hint: "\(count.formatted()) dictation\(count == 1 ? "" : "s") deleted") {
                 folderPath
             } actions: {
                 AppButton(title: "Undo", kind: .secondary) { store.undoDelete() }
             }
         } else if !store.runs.isEmpty {
-            FaintDelete(title: "Delete transcriptions") {
+            FaintDelete(title: "Delete dictations") {
                 folderPath
             } action: {
                 isPicking = true
@@ -307,7 +307,7 @@ private struct CorrectionLine: View {
 
     var body: some View {
         HStack(spacing: DS.Space.snug) {
-            Eyebrow("Corrected")
+            Eyebrow("Dictionary fixed")
             ForEach(corrections, id: \.self) { correction in
                 HStack(spacing: DS.Space.snug) {
                     Text(correction.from)

@@ -23,7 +23,7 @@ struct ClaudeAskBar: View {
                     .font(DS.Font.body)
                     .foregroundStyle(isHovering ? DS.Color.ink : DS.Color.inkSecondary)
                 Spacer(minLength: DS.Space.base)
-                Text("Once, for every \(noun)")
+                Text("Set it up once, and it works for every \(noun).")
                     .font(DS.Font.caption)
                     .foregroundStyle(DS.Color.dim)
                 // Drawn as a compact secondary button; the bar around it is the button.
@@ -72,7 +72,7 @@ struct AskClaudeQuestions: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: DS.Space.tight) {
                 Eyebrow("Ask about this \(noun)")
-                Text("Pick one. SigmaFlow copies it and opens Claude for you to paste.")
+                Text("Pick a question. SigmaFlow copies it and opens Claude, ready for you to paste.")
                     .font(DS.Font.caption)
                     .foregroundStyle(DS.Color.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)

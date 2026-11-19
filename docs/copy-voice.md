@@ -29,6 +29,23 @@ so every new screen, button and line sounds like the same product. The first ope
    not on every screen.
 9. **Small badges are three to four words.** "Runs on your Mac", "Words as you speak",
    "Works in every app".
+10. **Never make the reader do the math.** One number per sentence, and the number that
+    matters goes in the headline. Two durations side by side ("takes 60 minutes. Saying them
+    takes 25.") read as a sum to check. If the working is needed, say where the number comes
+    from in words, not in more numbers.
+11. **No number out of nowhere.** Before a figure appears, the sentence says what it counts,
+    in the reader's terms ("On a typical day, SigmaFlow writes about 2,400 words for you").
+    Round what nobody needs exactly: 2,400, not 2,419.
+12. **Talk like a person, not a tagline.** Write the line you would say to a friend looking
+    at the screen. "You've been saving about 35 minutes a day with SigmaFlow", not "Every
+    day, SigmaFlow gives you 35 minutes back", and never a clever closer like "The other 35
+    are yours." Read it aloud; if it sounds like an ad or a riddle, rewrite it.
+13. **Every verb names what it acts on.** "Words appear after you let go" leaves the reader
+    asking "let go of what?", and "Live as you speak" asks "live where?" (19 Nov 2026). Say
+    "Words appear after you talk". No shorthand that only makes sense once you know the app.
+14. **Privacy lines say what SigmaFlow does, and stay true.** "SigmaFlow never sends your
+    history anywhere. Claude reads it only when you ask it something." Not a line explaining
+    what another app does with the data, and never a promise the app can't keep.
 
 ## What stays the same
 
@@ -38,6 +55,13 @@ so every new screen, button and line sounds like the same product. The first ope
   the rules above.
 - No em dashes and no middle dots, anywhere.
 - Contractions are fine ("you're", "it's"), written with a curly apostrophe.
+
+## Before and after, Insights (19 Nov 2026)
+
+| Turned down | In this voice |
+|---|---|
+| Every day, SigmaFlow gives you about 35 minutes back | You’ve been saving about 35 minutes a day with SigmaFlow |
+| Typing the 2,419 words SigmaFlow writes on an average day takes about 60 minutes. Saying them takes about 25. The other 35 are yours. | On a typical day, SigmaFlow writes about 2,400 words for you, so you don’t have to type them. |
 
 ## Before and after, from the first open
 

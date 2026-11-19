@@ -52,7 +52,7 @@ enum MeetingProcessor {
         var errorDescription: String? {
             switch self {
             case .tooShort: "The recording is too short to transcribe."
-            case .nothingHeard: "Nothing was heard."
+            case .nothingHeard: "SigmaFlow didn\u{2019}t hear anyone in this recording."
             }
         }
     }

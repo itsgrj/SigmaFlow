@@ -26,7 +26,7 @@ enum StyleError: LocalizedError {
         case .appleModelUnavailable(let reason):
             reason
         case .emptyResponse:
-            "The model returned nothing. Your text was left alone."
+            "Nothing came back, so your text wasn\u{2019}t changed."
         case .timedOut:
             "That rewrite took too long, so your text was left alone."
         }

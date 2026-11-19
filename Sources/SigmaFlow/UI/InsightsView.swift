@@ -39,17 +39,12 @@ private struct TodayCard: View {
                     .foregroundStyle(DS.Color.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .top, spacing: DS.Space.wide) {
+                    // Two numbers side by side, never a sum to check (19 Nov 2026, copy audit).
                     term(dictated, "Written with\nSigmaFlow", ink: DS.Color.ink)
-                    sign("+")
                     term(typed, "Typed\nby you", ink: DS.Color.inkSecondary)
-                    sign("=")
-                    term(total, "Your words\ntoday", ink: DS.Color.ink)
                 }
                 if total > 0 {
-                    VStack(alignment: .leading, spacing: DS.Space.tight) {
-                        Text("Without SigmaFlow, you\u{2019}d have typed all \(total.formatted()).")
-                        Text("That would have taken you \(Self.typingTime(words: total)).")
-                    }
+                    Text("Typing all \(total.formatted()) yourself would have taken \(Self.typingTime(words: total)).")
                     .font(DS.Font.caption)
                     .foregroundStyle(DS.Color.dim)
                     .fixedSize(horizontal: false, vertical: true)
@@ -69,8 +64,8 @@ private struct TodayCard: View {
 
     private func term(_ words: Int, _ caption: String, ink: Color) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.snug) {
-            // Full size always: a day's words stay a few digits, so three numbers and two
-            // signs fit even the narrowest window.
+            // Full size always: a day's words stay a few digits, so two numbers fit even
+            // the narrowest window.
             Text(words.formatted())
                 .font(DS.Font.insightNumber)
                 .foregroundStyle(ink)
@@ -80,12 +75,6 @@ private struct TodayCard: View {
                 .foregroundStyle(DS.Color.dim)
                 .fixedSize(horizontal: false, vertical: true)
         }
-    }
-
-    private func sign(_ text: String) -> some View {
-        Text(text)
-            .font(DS.Font.insightNumber)
-            .foregroundStyle(DS.Color.dim)
     }
 
     /// Typing at the usual 40 words a minute: "about 59 minutes", "about 1 hour 12 minutes".
@@ -161,7 +150,7 @@ private struct YearSquares: View {
                     // Time saved leads here (21 Oct 2026, pointer 2); before there is any,
                     // the year's words.
                     Text(average.savedMinutes > 0
-                         ? "Every day, SigmaFlow gives you about \(Self.minutes(average.savedMinutes)) back"
+                         ? "You\u{2019}ve been saving about \(Self.span(average.savedMinutes)) a day with SigmaFlow"
                          : "\(yearWords.formatted()) words in the last year")
                         .font(DS.Font.insightSentence)
                         .foregroundStyle(DS.Color.ink)
@@ -171,8 +160,9 @@ private struct YearSquares: View {
                         .foregroundStyle(DS.Color.dim)
                 }
                 if average.savedMinutes > 0 {
-                    // How it is worked out, in plain words (pointer 5); the three numbers add up.
-                    Text("Typing the \(average.words.formatted()) words SigmaFlow writes on an average day takes \(Self.about(average.typingMinutes)). Saying them takes \(Self.about(average.talkingMinutes, short: true)). The other \(average.savedMinutes) are yours.")
+                    // Where the time comes from, in one plain sentence and one number
+                    // (19 Nov 2026, Gokul: the old line was a sum the reader had to do).
+                    Text("On a typical day, SigmaFlow writes about \(Self.roughly(average.words)) words for you, so you don\u{2019}t have to type them.")
                         .font(DS.Font.caption)
                         .foregroundStyle(DS.Color.dim)
                         .fixedSize(horizontal: false, vertical: true)
@@ -261,26 +251,21 @@ private struct YearSquares: View {
     private func tipText(date: Date, usage: UsageInsights.Day, today: Date) -> String {
         let when = Self.dayFormatter.string(from: date) + (date == today ? " so far" : "")
         guard usage.words > 0 else { return "No words on \(when)" }
-        return "\(usage.words.formatted()) words, \(Self.duration(usage.savedMinutes)) saved on \(when)"
+        return "\(when): \(usage.words.formatted()) words, \(Self.span(Int(usage.savedMinutes.rounded()))) saved"
     }
 
-    /// "27 minutes", "a minute".
-    private static func minutes(_ count: Int) -> String {
-        count == 1 ? "a minute" : "\(count) minutes"
+    /// "35 minutes", "a minute", "an hour", "1 hour 10 minutes".
+    private static func span(_ minutes: Int) -> String {
+        if minutes < 60 { return minutes == 1 ? "a minute" : "\(minutes) minutes" }
+        let hours = minutes / 60, rest = minutes % 60
+        let lead = hours == 1 ? (rest == 0 ? "an hour" : "1 hour") : "\(hours) hours"
+        return rest == 0 ? lead : lead + (rest == 1 ? " 1 minute" : " \(rest) minutes")
     }
 
-    /// "about 49 minutes", or with `short` just "about 22", after a figure already in minutes.
-    private static func about(_ count: Int, short: Bool = false) -> String {
-        if count < 1 { return "under a minute" }
-        if short { return "about \(count)" }
-        return "about " + minutes(count)
-    }
-
-    /// "1 h 12 min", "40 min".
-    private static func duration(_ minutes: Double) -> String {
-        let total = Int(minutes.rounded())
-        guard total >= 60 else { return "\(total) min" }
-        return "\(total / 60) h" + (total % 60 > 0 ? " \(total % 60) min" : "")
+    /// A count a person reads at a glance: 2,419 is "2,400", 487 is "490", 42 stays 42.
+    private static func roughly(_ count: Int) -> String {
+        let step = count >= 1_000 ? 100 : count >= 100 ? 10 : 1
+        return (Int((Double(count) / Double(step)).rounded()) * step).formatted()
     }
 
     private static func level(words: Int) -> Int {
@@ -408,13 +393,12 @@ private struct Bookshelf: View {
     /// has written and every dictation, as a page count and the longest famous book as long.
     private var sentence: String {
         let words = insights.words.formatted()
-        let runs = insights.dictations == 1 ? "1 dictation" : "\(insights.dictations.formatted()) dictations"
         let pages = insights.pages
-        let lead = "SigmaFlow has written \(words) words for you, in \(runs)."
+        let lead = "SigmaFlow has written \(words) words for you."
         guard let book = insights.longestBookPassed else {
             return lead + (pages == 1 ? " That\u{2019}s a page." : " That\u{2019}s \(pages.formatted()) pages.")
         }
-        return lead + " That\u{2019}s \(Self.article(pages)) \(pages.formatted())-page book, as long as \(book.title)."
+        return lead + " That\u{2019}s as long as \(book.title)."
     }
 
     /// "an 8-page book", "an 11-page book", "a 336-page book".

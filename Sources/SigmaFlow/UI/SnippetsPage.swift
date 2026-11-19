@@ -81,7 +81,7 @@ struct SnippetsPage: View {
                         .focused($focusedField, equals: .trigger)
                 }
                 LabeledField(label: "SigmaFlow should type") {
-                    GrowingTextArea(prompt: "The text to insert, as many lines as you need.", text: $text, counter: counter)
+                    GrowingTextArea(prompt: "What SigmaFlow types, as many lines as you need.", text: $text, counter: counter)
                         .focused($focusedField, equals: .text)
                 }
             }

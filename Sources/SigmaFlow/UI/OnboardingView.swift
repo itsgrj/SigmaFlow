@@ -113,7 +113,7 @@ struct OnboardingView: View {
             line = "Keep talking. Tap once to finish, or press Esc to throw it away."
         } else if flow.talkedHandsFree {
             title = "Hands free"
-            line = "Hands free, whenever you need it."
+            line = "Talk as long as you like, without holding the key."
         } else {
             title = "Tap \(keyName) twice"
             line = "For longer thoughts. Talk with your hands free, and tap once when you’re done."

@@ -38,7 +38,7 @@ struct DictionaryPanel: View {
         ListPage {
             PageHeader(
                 "Dictionary",
-                subtitle: "Names, products and terms the engines mishear, each with the spelling you want typed."
+                subtitle: "Names and words SigmaFlow gets wrong, and how you want them spelled."
             )
             ListToolbar(query: $query, placeholder: "Search entries", count: countLabel, addTitle: "Add word", onAdd: startAdding)
             Card {
@@ -165,10 +165,10 @@ struct DictionaryPanel: View {
     private var learningFooter: some View {
         HStack(alignment: .center, spacing: DS.Space.roomy) {
             VStack(alignment: .leading, spacing: DS.Space.captionGap) {
-                Text("Learn from my corrections")
+                Text("Learn from my fixes")
                     .font(DS.Font.body)
                     .foregroundStyle(DS.Color.ink)
-                Text("When you edit a word after SigmaFlow transcribes it, the correction is recorded here so the next transcriptions get that word right.")
+                Text("When you fix a word SigmaFlow typed, it remembers the spelling for next time.")
                     .font(DS.Font.caption)
                     .foregroundStyle(DS.Color.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)

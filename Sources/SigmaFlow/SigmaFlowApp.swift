@@ -23,7 +23,7 @@ struct SigmaFlowApp: App {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(after: .appInfo) {
                 WelcomeCommand(controller: delegate.controller)
-                Button("Reveal Dictionary File") {
+                Button("Show Dictionary in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([DictionaryStore.fileURL])
                 }
             }
@@ -296,14 +296,18 @@ private struct MenuContent: View {
             }
         }
 
-        Toggle("Clean up text", isOn: $settings.cleanupEnabled)
-
-        if settings.cleanupEnabled {
-            Toggle("Smart cleanup (on-device AI)", isOn: $settings.smartCleanup)
-                .disabled(!FoundationModelFormatter.isAvailable)
-            if let reason = FoundationModelFormatter.unavailableReason {
-                Text(reason).font(.caption)
+        // The same three choices, in the same words, as Settings' "Clean up what you say".
+        Picker("Clean up what you say", selection: Binding(
+            get: { settings.cleanupEnabled ? (settings.smartCleanup ? 2 : 1) : 0 },
+            set: { choice in
+                settings.cleanupEnabled = choice > 0
+                if choice > 0 { settings.smartCleanup = choice == 2 }
             }
+        )) {
+            Text("Off").tag(0)
+            Text("Basic fixes").tag(1)
+            Text("With Apple Intelligence").tag(2)
+                .selectionDisabled(!FoundationModelFormatter.isAvailable)
         }
 
         Toggle("Sound", isOn: $settings.soundEnabled)
@@ -311,10 +315,10 @@ private struct MenuContent: View {
         Divider()
 
         if !Permissions.hasAccessibility {
-            Button("Grant Accessibility") { Permissions.openAccessibilitySettings() }
+            Button("Allow Accessibility") { Permissions.openAccessibilitySettings() }
         }
         if !Permissions.hasMicrophone {
-            Button("Grant Microphone") { Permissions.openMicrophoneSettings() }
+            Button("Allow Microphone") { Permissions.openMicrophoneSettings() }
         }
 
         Button("Quit SigmaFlow") { NSApp.terminate(nil) }

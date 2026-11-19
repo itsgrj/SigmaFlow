@@ -61,7 +61,7 @@ struct HUDView: View {
             // A style rewrite borrows the overlay: no timer, no meter, nothing recording.
             HStack(spacing: DS.Space.snug) {
                 HUDGlyph(kind: activity.isError ? .warning : .busy)
-                Eyebrow(activity.isError ? "Style failed" : activity.name, color: DS.Color.ink)
+                Eyebrow(activity.isError ? "Couldn\u{2019}t rewrite" : activity.name, color: DS.Color.ink)
                 Spacer(minLength: 0)
             }
         } else {
@@ -96,7 +96,7 @@ struct HUDView: View {
         case .starting, .listening:
             controller.isWriting ? "Autowrite"
                 : controller.isLatched ? "Locked" : (controller.isPowerHeld ? "Rec in Power mode" : "Rec")
-        case .finishing: controller.isWriting ? "Autowrite" : "Processing"
+        case .finishing: controller.isWriting ? "Autowrite" : "Writing"
         case .error: "Error"
         case .idle: ""
         }

@@ -533,7 +533,7 @@ final class DictationController {
         Task { @MainActor in
             do {
                 guard await Permissions.requestMicrophone() else {
-                    fail("Microphone access is off. Enable it in System Settings ▸ Privacy & Security ▸ Microphone.")
+                    fail("SigmaFlow can\u{2019}t hear you. Turn on Microphone for SigmaFlow in System Settings, Privacy & Security.")
                     return
                 }
 
@@ -635,7 +635,7 @@ final class DictationController {
                       self.runGeneration == generation, self.state == .finishing else { return }
                 Log.speech.error("watchdog: transcription overran \(Int(timeout))s — abandoning")
                 self.cancelDictation(
-                    message: "That took too long, so the recording was abandoned. Try again, or pick a faster model in Models."
+                    message: "That took too long, so nothing was typed. Try again, or pick a faster model on the Models page."
                 )
             }
             defer { watchdog.cancel() }

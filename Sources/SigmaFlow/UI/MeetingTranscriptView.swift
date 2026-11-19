@@ -292,7 +292,7 @@ struct MeetingTranscriptView: View {
             .padding(.leading, DS.Material.transcriptTimeColumn + DS.Space.rowPadX)
             .padding(.vertical, DS.Space.rowPadY)
         } else if shownLines.isEmpty {
-            EmptyCardBody("Nothing in this transcript", detail: "This meeting has no words in it.")
+            EmptyCardBody("No words in this recording", detail: "SigmaFlow didn\u{2019}t hear anyone speak.")
             FaintDelete(title: "Delete \(library.noun)", action: onDelete)
         } else if isSnapshotting {
             lines(Array(shownLines.prefix(DS.Material.snapshotRows * 2)))

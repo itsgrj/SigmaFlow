@@ -707,7 +707,7 @@ final class MeetingLibrary {
             Log.meetings.error("couldn't add a recording: \(error.localizedDescription, privacy: .public)")
         case .success(let seconds) where seconds < 2:
             try? FileManager.default.removeItem(at: staged)
-            addErrors.append("\(fileName) is too short.")
+            addErrors.append("\(fileName) is too short to transcribe.")
         case .success(let seconds):
             do {
                 let meeting = try file(recording: staged, date: item.date, duration: seconds, title: item.title)
@@ -833,7 +833,7 @@ final class MeetingLibrary {
     enum LibraryError: LocalizedError {
         case folderMissing
         var errorDescription: String? {
-            "Can't find your meetings. Show SigmaFlow where they are in Settings, Your data."
+            "Can\u{2019}t find your meetings. Show SigmaFlow where they are in Settings, under Your data."
         }
     }
 }

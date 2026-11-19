@@ -117,7 +117,7 @@ actor TamilSpeech {
 
         var errorDescription: String? {
             switch self {
-            case .download: "Couldn't download the Tamil model."
+            case .download: "Couldn\u{2019}t download Tamil. Check your connection, then choose Transcribe again."
             case .damaged: "The Tamil model is damaged."
             }
         }

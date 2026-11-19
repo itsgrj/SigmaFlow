@@ -17,10 +17,10 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3.0</string>
+	<string>1.3.1</string>
 	<!-- Sparkle compares this one: raise it by one with every release. -->
 	<key>CFBundleVersion</key>
-	<string>11</string>
+	<string>12</string>
 	<!-- Updates (Sources/SigmaFlow/Support/Updates.swift): the list of releases, read once a day,
 	     and the public half of the key every release is signed with (account sigmaflow in
 	     the login keychain of the Mac that releases). Checked and downloaded with no
@@ -91,7 +91,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>SigmaFlow listens while you hold the push-to-talk key so it can turn your speech into text.</string>
+	<string>SigmaFlow listens while you hold your dictation key and turns what you say into text.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>SigmaFlow takes a photo every 30 seconds while live notes are on.</string>
 	<key>NSAudioCaptureUsageDescription</key>
@@ -99,6 +99,6 @@
 	<key>NSAppleEventsUsageDescription</key>
 	<string>SigmaFlow names a recorded browser call after the site it was on, such as Google Meet or Zoho Cliq.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>SigmaFlow transcribes your speech on-device to insert text where you're typing.</string>
+	<string>SigmaFlow turns what you say into text, on this Mac.</string>
 </dict>
 </plist>
