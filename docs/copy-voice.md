@@ -32,7 +32,9 @@ so every new screen, button and line sounds like the same product. The first ope
 10. **Never make the reader do the math.** One number per sentence, and the number that
     matters goes in the headline. Two durations side by side ("takes 60 minutes. Saying them
     takes 25.") read as a sum to check. If the working is needed, say where the number comes
-    from in words, not in more numbers.
+    from in words, not in more numbers. One exception, Gokul's call (20 Nov 2026): Insights'
+    Today card keeps its sum, written + typed = your words today, laid out as an equation
+    with a caption under each number.
 11. **No number out of nowhere.** Before a figure appears, the sentence says what it counts,
     in the reader's terms ("On a typical day, SigmaFlow writes about 2,400 words for you").
     Round what nobody needs exactly: 2,400, not 2,419.

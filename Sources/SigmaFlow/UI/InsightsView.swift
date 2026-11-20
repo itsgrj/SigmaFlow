@@ -39,9 +39,13 @@ private struct TodayCard: View {
                     .foregroundStyle(DS.Color.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .top, spacing: DS.Space.wide) {
-                    // Two numbers side by side, never a sum to check (19 Nov 2026, copy audit).
+                    // The sum stays (20 Nov 2026, Gokul): the 19 Nov audit took it out, he
+                    // wants it back.
                     term(dictated, "Written with\nSigmaFlow", ink: DS.Color.ink)
+                    sign("+")
                     term(typed, "Typed\nby you", ink: DS.Color.inkSecondary)
+                    sign("=")
+                    term(total, "Your words\ntoday", ink: DS.Color.ink)
                 }
                 if total > 0 {
                     Text("Typing all \(total.formatted()) yourself would have taken \(Self.typingTime(words: total)).")
@@ -64,8 +68,8 @@ private struct TodayCard: View {
 
     private func term(_ words: Int, _ caption: String, ink: Color) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.snug) {
-            // Full size always: a day's words stay a few digits, so two numbers fit even
-            // the narrowest window.
+            // Full size always: a day's words stay a few digits, so three numbers and two
+            // signs fit even the narrowest window.
             Text(words.formatted())
                 .font(DS.Font.insightNumber)
                 .foregroundStyle(ink)
@@ -75,6 +79,12 @@ private struct TodayCard: View {
                 .foregroundStyle(DS.Color.dim)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private func sign(_ text: String) -> some View {
+        Text(text)
+            .font(DS.Font.insightNumber)
+            .foregroundStyle(DS.Color.dim)
     }
 
     /// Typing at the usual 40 words a minute: "about 59 minutes", "about 1 hour 12 minutes".
@@ -154,10 +164,13 @@ private struct YearSquares: View {
                          : "\(yearWords.formatted()) words in the last year")
                         .font(DS.Font.insightSentence)
                         .foregroundStyle(DS.Color.ink)
+                        // Wraps rather than cutting off in a narrow window.
+                        .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: DS.Space.wide)
                     Text("\(weekWords.formatted()) words this week")
                         .font(DS.Font.caption)
                         .foregroundStyle(DS.Color.dim)
+                        .fixedSize()
                 }
                 if average.savedMinutes > 0 {
                     // Where the time comes from, in one plain sentence and one number

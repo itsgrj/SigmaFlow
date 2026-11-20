@@ -225,8 +225,8 @@ and `localModelName` (exported); `LocalModels.saved` reads the same keys off the
   held back (`ThinkingFilter`).
 - `SigmaFlow --write-check "ASK" --engine local` writes with the saved model; run it from the
   staged bundle, since a bare binary reads another defaults domain and finds no model.
-- **Figma is behind**: the two-group chooser, the open row and its states were built from the
-  mockup; draw them in "[ SIGMAFLOW ]".
+- **In Figma** (19 Nov 2026): the two-group chooser on 7.5 to 7.8, and Your own model's states
+  as 7.15 to 7.18.
 
 Provider marks on the Styles page load from `Resources/ProviderMarks/` as template images,
 so they render in the current ink and stay inside the monochrome rule.
@@ -625,8 +625,9 @@ waiting. Dictations only, never meetings.
   overshoots by a point widens the window, which widens the gap: an endless layout loop that
   freezes the app on launch. Widths are read off an empty strip, gaps round down.
 - **Today leads** (21 Oct 2026, Gokul: people hold today and this week, not 3,574): "SigmaFlow
-  wrote 97% of your words today", then two numbers side by side, written with SigmaFlow and
-  typed by you (no + or =, 19 Nov 2026 copy audit), then "Typing all N yourself would have
+  wrote 97% of your words today", then the day as a sum, written with SigmaFlow + typed by you
+  = your words today (the 19 Nov 2026 copy audit took the sum out; Gokul wanted it back on
+  20 Nov, 1.3.2), then "Typing all N yourself would have
   taken about M minutes" at 40 a minute. Never "you said": the words are SigmaFlow's. The all-time words and
   dictations live in the bookcase's sentence; the squares' heading is the time saved a day
   ("You've been saving about 35 minutes a day with SigmaFlow"), with one sentence under it
@@ -725,8 +726,8 @@ say what you want written ("reply to Priya, Thursday works but not before eleven
 reads the screen and types the writing where the cursor is. It never presses Return.
 `Core/Autowrite.swift` holds the key, the screen, the prompt and the engines;
 `DictationController` runs it as a dictation whose transcript is the ask (`isWriting`).
-**Figma is behind** (still Write for me, still the try): the Figma connector was down on 26 Oct
-2026; redraw section 8 and O6 from the app when it is back.
+**In Figma** (19 Nov 2026): section 8 is the page as built (8.1 to 8.5 its states, 8.7 your own
+model; 8.6 is the notes idea, drawn, not built) and O6 the overlay as built, spotlight included.
 
 - **You can tell it from a dictation three ways** (round 3, 4-01, 4-09, 4-11): a pen in place of
   the dot and AUTOWRITE in place of REC; the screen it read, small, beside your words
@@ -1176,5 +1177,5 @@ mode via `\.isSnapshotting`, and lists show `DS.Material.snapshotRows` rows.
 - `log` is shadowed in this shell. Use `/usr/bin/log show --predicate 'subsystem == "com.grj.sigmaflow"'`.
 - `tccutil reset Accessibility com.grj.sigmaflow` — **always with the bundle ID**; a bare
   reset wipes every app on the machine.
-- `CFBundleShortVersionString` is `1.3.1`, `CFBundleVersion` 12, since 19 Nov 2026 (1.0.0 was the
-  first public build, 1.0.1 on 28 Oct, 1.1.0 on 12 Nov, 1.2.0 on 13 Nov, 1.3.0 on 17 Nov); the sidebar foot reads it. Raise both for every release.
+- `CFBundleShortVersionString` is `1.3.2`, `CFBundleVersion` 13, since 20 Nov 2026 (1.0.0 was the
+  first public build, 1.0.1 on 28 Oct, 1.1.0 on 12 Nov, 1.2.0 on 13 Nov, 1.3.0 on 17 Nov, 1.3.1 on 19 Nov); the sidebar foot reads it. Raise both for every release.

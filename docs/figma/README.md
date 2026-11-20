@@ -63,6 +63,23 @@ images (app icon, Dock icons, the painting) whose fills the page reuses. W3 is t
 key hero, then today's page below it unchanged. Headlines are Geist with tracking for Pixel, as everywhere in
 this file; the key's legends are Inter, because SF Pro lays out at zero width from a script here.
 
+On 19 Nov 2026 the file was brought level with the build of 1.3.1, after the copy audit
+(docs/copy-voice.md rules 10 to 14). Every text layer took the new copy by script (Transcriptions is
+Dictations, Write for me is Autowrite, Processing is Writing, version 1.3.1), and the frames, sections
+and Sidebar variants (Page=Dictations, Page=Autowrite) were renamed with it. Then each area was
+compared with the app's own `--snapshot-dir` renders and the code, and redrawn where it differed:
+Insights' year heading is a plain sentence (2.10, 2.11); call recordings carry their source,
+a phone and the app, on the Meetings list, and every transcript has Ask Claude beside Play, which
+reads Pause while playing; Styles' chooser has its two groups and Your own model (7.15 to 7.18);
+section 8 is the Autowrite page as built (four steps, Key, AI model, Custom instructions; 8.7 your
+own model); Settings' Ask to record calls has its caption and Copy command turns into Copied; the
+menu bar's cleanup is one "Clean up what you say" submenu (O5); O6 is the Autowrite overlay with
+the pen, the screen picture and the spotlight; the call card asks With video or Sound only (O4.2,
+the old Record meeting card, was removed). The App icon tile now carries the real gradient icon, and
+Icon/phone joined the Icons board after Icon/pause.
+On 20 Nov 2026 (1.3.2) the Today card's sum came back on 2.10 and 2.11, Written with SigmaFlow +
+Typed by you = Your words today, and the Version line reads 1.3.2 (its Ready states, 1.4.0).
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,
