@@ -8,7 +8,7 @@ first, and the code follows it.
 Pages: Read me, Flows (ten journeys), Screens (sections 0 First open to 9 Settings, frames numbered 2.1,
 2.2, ... inside each), Overlays (O1 overlay, O2 correction notice, O3 live notes card, O4 call prompt,
 O5 menu bar and app menu, O6 Write for me), Foundations, Components, App renders (the app's own
---snapshot-dir renders of 20 Oct, locked, for checking).
+--snapshot-dir renders, last redrawn 24 Nov 2026 from 1.3.2, locked, for checking).
 
 On 23 Oct 2026 Write for me was drawn as section 8, after Styles as in the sidebar, and Settings became 9
 (its frames 9.1 to 9.17, notes and Flows references renumbered with it). The Sidebar component has a
@@ -79,6 +79,14 @@ the old Record meeting card, was removed). The App icon tile now carries the rea
 Icon/phone joined the Icons board after Icon/pause.
 On 20 Nov 2026 (1.3.2) the Today card's sum came back on 2.10 and 2.11, Written with SigmaFlow +
 Typed by you = Your words today, and the Version line reads 1.3.2 (its Ready states, 1.4.0).
+On 24 Nov 2026 the file was checked against the installed 1.3.2 again: every page and tab drawn with
+`--snapshot-dir` and laid over its frame, and every UI text layer on Screens and Overlays matched
+against the source strings. All copy matched. Two things had drifted: the Models page's Use buttons
+hugged their text, where the app gives them `DS.Material.useButtonWidth` (72, since 1.0), so they are
+fixed at 72 in 1.2 and 1.5; and O7.3's UPDATED notice read SigmaFlow 1.3.1, now 1.3.2. The App renders
+page now holds the 24 Nov renders of 1.3.2, plus autowrite and welcome-meetings, which it never had.
+What still differs is the Geist stand-in for Geist Pixel (glyph widths, so text-led widths such as
+Download run a few points wider) and the renderer's traffic lights, which the renders leave out.
 
 ## Sources here
 
