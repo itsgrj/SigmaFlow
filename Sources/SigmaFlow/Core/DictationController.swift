@@ -99,6 +99,8 @@ final class DictationController {
         var phase: Phase
         var ask: String
         var text: String
+        /// A line under the words in secondary ink: where a copied dictation is (O1.15).
+        var note: String? = nil
     }
     private(set) var writing: Writing?
     /// The screen as Autowrite read it, for the small picture in the overlay (O6, 4-09):
@@ -156,6 +158,20 @@ final class DictationController {
     private var engine: (any TranscriptionEngine)?
     private var consumeTask: Task<Void, Never>?
     private var feedTask: Task<Void, Never>?
+    /// Watches the microphone while it is open: no audio for `micQuietLimit` reopens it once,
+    /// and no audio again ends the run with what was heard (`micStopped`).
+    private var micWatchTask: Task<Void, Never>?
+    /// This run ended because the microphone stopped delivering audio. The overlay says so
+    /// when it lands (O1.17), and Power mode never sends it.
+    private var micStopped = false
+    /// Buffers arrive every few tens of milliseconds even in silence, so this long without one
+    /// means the capture has stopped, not that the user went quiet.
+    private static let micQuietLimit: TimeInterval = 2
+    /// A hold this long or longer that comes out empty says so (O1.16); shorter ones were
+    /// probably a slip of the key and end quietly.
+    private static let emptyNoticeMinimum: TimeInterval = 2
+    /// How long the overlay's own messages stay (O1.16, O1.17).
+    private static let noticeHold: Duration = .seconds(4)
     private var audioContinuation: AsyncStream<AudioChunk>.Continuation?
 
     /// Timestamps for the run log: when the key went down, and when it came up. Read by
@@ -524,6 +540,7 @@ final class DictationController {
         if !isWriting { writeClearTask?.cancel(); writing = nil }
         state = .starting
         transcript = ""
+        micStopped = false
         runGeneration += 1
         let generation = runGeneration
         MediaPauser.shared.recordingStarted()
@@ -588,6 +605,7 @@ final class DictationController {
 
                 self.state = .listening
                 SystemSounds.playStart()
+                self.watchMicrophone(generation: generation)
 
                 self.consumeTask = Task { @MainActor in
                     do {
@@ -612,8 +630,12 @@ final class DictationController {
         guard state.isActive, state != .finishing else { return }
         // Decided at release, before the latch clears: the monitor updates Right ⌥ from
         // the same event that carries the ⌘ release, so this is the state at let-go.
-        let sendOnLand = isPowerHeld
+        // A run the microphone ended was never let go of, so it is never sent.
+        let sendOnLand = isPowerHeld && !micStopped
         let wasHandsFree = isLatched
+        let stoppedByMic = micStopped
+        micWatchTask?.cancel()
+        micWatchTask = nil
         state = .finishing
         isLatched = false
         capture.stop()
@@ -659,9 +681,7 @@ final class DictationController {
             let raw = transcript
             guard !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 dropWriting()
-                state = .idle
-                transcript = ""
-                isPreview = false
+                landedEmpty(audioSeconds: audioSeconds, stoppedByMic: stoppedByMic)
                 return
             }
 
@@ -700,6 +720,14 @@ final class DictationController {
                 Log.speech.info("snippets · \(expanded.count, privacy: .public) expanded")
             }
 
+            // Cleanup can leave nothing ("Uh." when the engine heard only a filler), and a
+            // blank row in Dictations helps nobody. Checked here, after every pass, not only
+            // on what the engine heard.
+            guard !output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                landedEmpty(audioSeconds: audioSeconds, stoppedByMic: stoppedByMic)
+                return
+            }
+
             // A preview hands its words to the overlay tiles and stops there: not saved,
             // not typed, nothing for the learner to watch.
             if isPreview {
@@ -718,6 +746,16 @@ final class DictationController {
 
             // Holding the key while SigmaFlow itself is the front app is the test: the
             // transcript is saved to the list above, but nothing gets typed anywhere.
+            // Nowhere to type it (a clear no, as Autowrite asks): it is copied and the overlay
+            // says so and where it is (O1.15). An unknown field is still typed into.
+            if !NSApp.isActive, TextInjector.focus() == .notText {
+                TextInjector.copy(output)
+                showCopied(output)
+                SystemSounds.playStop()
+                state = .idle
+                transcript = ""
+                return
+            }
             if !NSApp.isActive {
                 let front = NSWorkspace.shared.frontmostApplication
                 let target = TextInjector.insert(output, pressingReturn: sendOnLand)
@@ -738,8 +776,86 @@ final class DictationController {
             }
             SystemSounds.playStop()
 
-            state = .idle
             transcript = ""
+            if stoppedByMic {
+                showNotice("The microphone stopped. SigmaFlow typed what it heard until then.")
+            } else {
+                state = .idle
+            }
+        }
+    }
+
+    /// A run that came out with nothing to type: no blank row is saved. A hold long enough
+    /// to have been meant says why (O1.16, O1.17); a slip of the key ends quietly.
+    private func landedEmpty(audioSeconds: TimeInterval, stoppedByMic: Bool) {
+        transcript = ""
+        holdStarted = nil
+        releasedAt = nil
+        if stoppedByMic {
+            showNotice("The microphone stopped, so nothing was typed. Say it again.")
+        } else if audioSeconds >= Self.emptyNoticeMinimum {
+            showNotice("SigmaFlow didn\u{2019}t hear any words, so nothing was typed.")
+        } else {
+            state = .idle
+            isPreview = false
+        }
+    }
+
+    /// One of the overlay's own messages, shown as an error for `noticeHold`. Only this
+    /// message is cleared when the time is up, never a later one.
+    private func showNotice(_ message: String) {
+        Log.app.info("overlay: \(message, privacy: .public)")
+        let shown = State.error(message)
+        state = shown
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.noticeHold)
+            guard let self, self.state == shown else { return }
+            self.state = .idle
+            self.isPreview = false
+        }
+    }
+
+    /// A dictation with nowhere to type, copied (O1.15): Autowrite's Copied, the words, and
+    /// one line saying where they are, for `writeCopiedHold`.
+    private func showCopied(_ text: String) {
+        writing = Writing(
+            phase: .copied, ask: "", text: text,
+            note: "Nowhere to type it, so it\u{2019}s copied. Paste it with \u{2318}V, or find it in Dictations."
+        )
+        writeClearTask?.cancel()
+        writeClearTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(DS.Motion.writeCopiedHold))
+            guard let self, !Task.isCancelled, self.writing?.phase == .copied else { return }
+            self.writing = nil
+        }
+    }
+
+    /// Checks the microphone twice a second while it is open. Audio stopped arriving: open it
+    /// again once (a device change the system never announced); still nothing: end the run
+    /// as if the key came up, so what was heard is typed and saved, and say why.
+    private func watchMicrophone(generation: Int) {
+        micWatchTask?.cancel()
+        micWatchTask = Task { @MainActor [weak self] in
+            var reopened = false
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(500))
+                guard let self, !Task.isCancelled, self.runGeneration == generation,
+                      self.state == .listening else { return }
+                let quiet = self.capture.secondsSinceAudio
+                if quiet < Self.micQuietLimit {
+                    if quiet < 1 { reopened = false }
+                    continue
+                }
+                if !reopened {
+                    reopened = true
+                    self.capture.reopen(reason: "no audio for \(Int(quiet)) s")
+                    continue
+                }
+                Log.audio.error("capture: no audio after reopening, ending the dictation")
+                self.micStopped = true
+                self.endDictation()
+                return
+            }
         }
     }
 
@@ -748,6 +864,8 @@ final class DictationController {
     private func cancelDictation(message: String? = nil) {
         runGeneration += 1
         isLatched = false
+        micWatchTask?.cancel()
+        micWatchTask = nil
         dropWriting()
         capture.stop()
         MediaPauser.shared.recordingEnded()
@@ -780,6 +898,8 @@ final class DictationController {
     }
 
     private func teardown() async {
+        micWatchTask?.cancel()
+        micWatchTask = nil
         dropWriting()
         capture.stop()
         MediaPauser.shared.recordingEnded()
@@ -853,6 +973,8 @@ final class DictationController {
     private func fail(_ message: String) {
         Log.app.error("\(message)")
         isLatched = false
+        micWatchTask?.cancel()
+        micWatchTask = nil
         dropWriting()
         capture.stop()
         MediaPauser.shared.recordingEnded()

@@ -1,21 +1,55 @@
 import AudioToolbox
 import AVFoundation
 import Foundation
+import Synchronization
 
 /// Microphone capture with on-the-fly conversion to whatever format the speech engine wants.
 ///
 /// The tap runs on a real-time audio thread, so everything it touches lives behind
 /// `nonisolated(unsafe)` and is only ever mutated from that one thread.
+///
+/// **A device change reopens the microphone.** When AirPods connect (or anything else changes
+/// the system's audio setup) AVAudioEngine stops itself and posts
+/// `AVAudioEngineConfigurationChange`; nothing restarts it. On 26 Nov 2026 that happened 0.1 s
+/// into a 100 s dictation and the whole of it reached the model as nothing. The engine is now
+/// reopened on that notice, on the chosen microphone again, and `secondsSinceAudio` lets the
+/// controller notice a stall the notice didn't announce.
 final class AudioCapture: @unchecked Sendable {
     private let engine = AVAudioEngine()
     private nonisolated(unsafe) var converter: AVAudioConverter?
     private nonisolated(unsafe) var outputFormat: AVAudioFormat?
     private var isRunning = false
+    /// The microphone picked in Settings, kept for reopening after a device change.
+    private var inputDeviceUID: String?
+    /// Reopens in this run, capped so a device that keeps changing can't loop forever.
+    private var reopens = 0
+    private static let reopenLimit = 8
+    /// When the last buffer arrived from the microphone (or the capture opened).
+    private let lastAudio = Mutex(Date.distantPast)
+    private var configObserver: (any NSObjectProtocol)?
 
     /// Called on the audio thread with each converted buffer.
     private nonisolated(unsafe) var onBuffer: (@Sendable (AudioChunk) -> Void)?
     /// Called on the audio thread with a 0…1 RMS level, for the HUD waveform.
     private nonisolated(unsafe) var onLevel: (@Sendable (Float) -> Void)?
+
+    init() {
+        configObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main
+        ) { [weak self] _ in
+            self?.reopen(reason: "the audio device changed")
+        }
+    }
+
+    deinit {
+        if let configObserver { NotificationCenter.default.removeObserver(configObserver) }
+    }
+
+    /// Seconds since the microphone last delivered audio. Buffers keep coming through silence,
+    /// so a long gap means the capture itself has stopped.
+    var secondsSinceAudio: TimeInterval {
+        Date().timeIntervalSince(lastAudio.withLock { $0 })
+    }
 
     func start(
         outputFormat: AVAudioFormat,
@@ -28,7 +62,35 @@ final class AudioCapture: @unchecked Sendable {
         self.onBuffer = onBuffer
         self.onLevel = onLevel
         self.outputFormat = outputFormat
+        self.inputDeviceUID = inputDeviceUID
+        reopens = 0
 
+        try open(outputFormat: outputFormat)
+        isRunning = true
+    }
+
+    /// Stops and opens the microphone again, keeping the run's callbacks. Called on a device
+    /// change, and by the controller when no audio has arrived for a while.
+    func reopen(reason: String) {
+        guard isRunning, let outputFormat else { return }
+        guard reopens < Self.reopenLimit else {
+            Log.audio.error("capture: not reopening again (\(reason, privacy: .public))")
+            return
+        }
+        reopens += 1
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        do {
+            try open(outputFormat: outputFormat)
+            Log.audio.info("capture reopened: \(reason, privacy: .public)")
+        } catch {
+            Log.audio.error("capture: couldn't reopen (\(reason, privacy: .public)): \(error.localizedDescription)")
+        }
+    }
+
+    /// Points the input at the chosen microphone, builds the converter for its format, and
+    /// starts the engine with the tap installed.
+    private func open(outputFormat: AVAudioFormat) throws {
         let input = engine.inputNode
 
         // Point the input node at the chosen microphone before reading its format —
@@ -54,6 +116,12 @@ final class AudioCapture: @unchecked Sendable {
         }
 
         let nativeFormat = input.outputFormat(forBus: 0)
+        // Mid-switch, a device can report no format at all; a tap on it would throw.
+        guard nativeFormat.sampleRate > 0, nativeFormat.channelCount > 0 else {
+            throw NSError(domain: "AudioCapture", code: -1, userInfo: [
+                NSLocalizedDescriptionKey: "The microphone isn\u{2019}t ready.",
+            ])
+        }
 
         converter = nativeFormat == outputFormat
             ? nil
@@ -66,7 +134,7 @@ final class AudioCapture: @unchecked Sendable {
 
         engine.prepare()
         try engine.start()
-        isRunning = true
+        lastAudio.withLock { $0 = Date() }
         Log.audio.info("capture started — native \(nativeFormat.sampleRate)Hz → engine \(outputFormat.sampleRate)Hz")
     }
 
@@ -84,6 +152,7 @@ final class AudioCapture: @unchecked Sendable {
     // MARK: - Audio thread
 
     private func handle(_ buffer: AVAudioPCMBuffer) {
+        lastAudio.withLock { $0 = Date() }
         onLevel?(Self.rms(of: buffer))
 
         guard let outputFormat else { return }

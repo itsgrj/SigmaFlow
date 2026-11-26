@@ -88,6 +88,11 @@ page now holds the 24 Nov renders of 1.3.2, plus autowrite and welcome-meetings,
 What still differs is the Geist stand-in for Geist Pixel (glyph widths, so text-led widths such as
 Download run a few points wider) and the renderer's traffic lights, which the renders leave out.
 
+On 26 Nov 2026 the Overlay (HUD) section gained a third row, every section below it moving down 840:
+O1.15 Not typed, copied (a dictation with nowhere to type, Autowrite's Copied plus one line in secondary
+ink saying where it is), O1.16 No words heard and O1.17 Microphone stopped (both the error card). O1.11's
+note now says errors keep the panel up.
+
 ## Sources here
 
 - `components.js` drew the Components page once: Button, Toggle, Popup, Field, Search box, chips, marks,

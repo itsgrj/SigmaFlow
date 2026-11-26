@@ -90,6 +90,14 @@ Load-bearing invariants, all with a failure mode that is silent rather than loud
   session that replaced it. Add the guard to any new async tail.
 - **Watchdog on `.finishing`** — `min(180, max(30, audioSeconds * 3))`, then abandon with a
   visible reason. A hung batch model must never own the screen forever.
+- **A device change reopens the microphone** (26 Nov 2026). AirPods connecting stop
+  AVAudioEngine and post `AVAudioEngineConfigurationChange`; nothing restarted it, so a 100 s
+  dictation reached the model as nothing and was saved as a blank row. `AudioCapture` and
+  `MeetingRecorder` reopen on that notice (the recorder fills the gap with silence to keep the
+  meeting's clock), and `DictationController.watchMicrophone` reopens once after 2 s with no
+  buffers, then ends the run with what was heard and says so (Figma O1.17). An empty result
+  after cleanup is never saved (O1.16); a dictation with nowhere to type (`focus() == .notText`)
+  is copied and the overlay says where it is (O1.15). Errors now keep the panel up.
 - **`endDictation` refuses re-entry while `.finishing`.** `.finishing` counts as active; the
   window is seconds wide (batch transcription + up to 4s of LLM cleanup) and a second press
   would paste the same utterance twice.

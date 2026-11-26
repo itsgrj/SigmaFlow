@@ -208,9 +208,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self else { return }
                 // A preview run draws in the overlay tiles on Settings, never in the panel.
                 let dictating = self.controller.state.isActive && !self.controller.isPreview
-                // Autowrite's Copied and Couldn't write outlast the run itself.
+                // Copied (Autowrite's, or a dictation with nowhere to type) and Couldn't write
+                // outlast the run itself.
                 let writingNotice = self.controller.writing != nil && !self.controller.isPreview
-                if dictating || writingNotice || self.controller.styleActivity != nil {
+                // So does an error: until 26 Nov 2026 the panel began fading the moment one
+                // appeared, so a reason was on screen for 0.3 s and nobody could read it.
+                var erring = false
+                if case .error = self.controller.state { erring = !self.controller.isPreview }
+                if dictating || writingNotice || erring || self.controller.styleActivity != nil {
                     self.hud?.present()
                 } else {
                     self.hud?.dismiss()

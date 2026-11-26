@@ -203,6 +203,9 @@ struct WritingWords: View {
             if !writing.text.isEmpty {
                 line(writing.text, color: DS.Color.ink)
             }
+            if let note = writing.note {
+                line(note, color: DS.Color.inkSecondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)

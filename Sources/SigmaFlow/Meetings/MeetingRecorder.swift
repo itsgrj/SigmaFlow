@@ -30,6 +30,30 @@ final class MeetingRecorder: @unchecked Sendable {
     nonisolated(unsafe) var isMuted = false
     private var isRunning = false
     private(set) var fileURL: URL?
+    /// The microphone picked in Settings, kept for reopening after a device change.
+    private var inputDeviceUID: String?
+    /// When the tap last delivered a buffer. Only touched on the main thread while the tap is
+    /// removed, and on the audio thread otherwise.
+    private nonisolated(unsafe) var lastAudioAt = Date.distantPast
+    private var reopens = 0
+    private static let reopenLimit = 20
+    /// Silence written for a gap is capped, so a wrong clock can't write an hour of zeros.
+    private static let longestGap: TimeInterval = 60
+    private var configObserver: (any NSObjectProtocol)?
+
+    init() {
+        // AirPods connecting mid-meeting stop the engine and post this; without a reopen the
+        // rest of the meeting would be recorded as nothing (as a dictation was, 26 Nov 2026).
+        configObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main
+        ) { [weak self] _ in
+            self?.reopen()
+        }
+    }
+
+    deinit {
+        if let configObserver { NotificationCenter.default.removeObserver(configObserver) }
+    }
 
     static let outputFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
@@ -64,7 +88,48 @@ final class MeetingRecorder: @unchecked Sendable {
         self.onAudio = onAudio
         self.isPaused = false
         self.isMuted = false
+        self.inputDeviceUID = inputDeviceUID
+        reopens = 0
 
+        try open()
+        isRunning = true
+    }
+
+    /// Opens the microphone again after a device change, and fills the time it was gone with
+    /// silence, so the file keeps the meeting's clock: photo, screenshot and video times are
+    /// all read against it.
+    private func reopen() {
+        guard isRunning, let file else { return }
+        guard reopens < Self.reopenLimit else {
+            Log.audio.error("meeting: not reopening the microphone again")
+            return
+        }
+        reopens += 1
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        let gap = min(Date().timeIntervalSince(lastAudioAt), Self.longestGap)
+        if !isPaused, gap > 0.05, lastAudioAt != .distantPast {
+            writeSilence(seconds: gap, to: file)
+        }
+        do {
+            try open()
+            Log.audio.info("meeting: microphone reopened after a device change, \(gap, format: .fixed(precision: 2))s filled")
+        } catch {
+            Log.audio.error("meeting: couldn't reopen the microphone: \(error.localizedDescription)")
+        }
+    }
+
+    private func writeSilence(seconds: TimeInterval, to file: AVAudioFile) {
+        let frames = AVAudioFrameCount(seconds * Self.sampleRate)
+        guard frames > 0, let silence = AVAudioPCMBuffer(pcmFormat: Self.outputFormat, frameCapacity: frames) else {
+            return
+        }
+        silence.frameLength = frames
+        if let channel = silence.floatChannelData?[0] { channel.update(repeating: 0, count: Int(frames)) }
+        write(silence, to: file)
+    }
+
+    private func open() throws {
         let input = engine.inputNode
         if let inputDeviceUID {
             if var deviceID = MicrophoneDevices.audioDeviceID(forUID: inputDeviceUID),
@@ -81,6 +146,11 @@ final class MeetingRecorder: @unchecked Sendable {
         }
 
         let native = input.outputFormat(forBus: 0)
+        guard native.sampleRate > 0, native.channelCount > 0 else {
+            throw NSError(domain: "MeetingRecorder", code: -2, userInfo: [
+                NSLocalizedDescriptionKey: "The microphone isn\u{2019}t ready.",
+            ])
+        }
         converter = native == Self.outputFormat ? nil : AVAudioConverter(from: native, to: Self.outputFormat)
         // A nil converter must mean "formats already match", never "couldn't convert":
         // writing a mismatched buffer into the file raises an ObjC exception no catch sees.
@@ -96,7 +166,7 @@ final class MeetingRecorder: @unchecked Sendable {
         }
         engine.prepare()
         try engine.start()
-        isRunning = true
+        lastAudioAt = Date()
         Log.audio.info("meeting recording started — native \(native.sampleRate)Hz → 16kHz AAC")
     }
 
@@ -120,6 +190,7 @@ final class MeetingRecorder: @unchecked Sendable {
     // MARK: Audio thread
 
     private func handle(_ buffer: AVAudioPCMBuffer) {
+        lastAudioAt = Date()
         guard !isPaused else {
             onLevel?(0)
             return
