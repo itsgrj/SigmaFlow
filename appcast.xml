@@ -7,6 +7,15 @@
     <link>https://github.com/itsgrj/SigmaFlow/releases</link>
     <language>en</language>
     <item>
+      <title>SigmaFlow 1.3.3</title>
+      <pubDate>Thu, 26 Nov 2026 12:11:15 GMT</pubDate>
+      <sparkle:version>14</sparkle:version>
+      <sparkle:shortVersionString>1.3.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <sparkle:fullReleaseNotesLink>https://github.com/itsgrj/SigmaFlow/releases/tag/v1.3.3</sparkle:fullReleaseNotesLink>
+      <enclosure url="https://github.com/itsgrj/SigmaFlow/releases/download/v1.3.3/SigmaFlow.dmg" length="68997214" type="application/octet-stream" sparkle:edSignature="NWx376rMxR7iba0qp3v4FdUIUSEMqLchHyo/a1NwJZdyZBvaNr0tPicWe1bFSP0G3q/wKXfTomjHxzoHNOfkDg=="/>
+    </item>
+    <item>
       <title>SigmaFlow 1.3.2</title>
       <pubDate>Fri, 20 Nov 2026 08:18:06 GMT</pubDate>
       <sparkle:version>13</sparkle:version>
